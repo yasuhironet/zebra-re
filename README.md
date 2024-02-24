@@ -1,15 +1,32 @@
 <p align="center">
-<img src="http://docs.frrouting.org/en/latest/_static/frr-icon.svg" alt="Icon" width="20%"/>
+<img src="https://github.com/yasuhironet/zebra/blob/main/zebralogo.jpeg" alt="Icon" width="20%"/>
 </p>
 
-FRRouting
+Zebra
 =========
 
-FRR is free software that implements and manages various IPv4 and IPv6 routing
-protocols. It runs on nearly all distributions of Linux and BSD and
-supports all modern CPU architectures.
+Zebra is a free software that implements and manages various
+IPv4 and IPv6 routing protocols.
 
-FRR currently supports the following protocols:
+This repository is a local fork for the purpose of
+our personal developments.
+It is forked from [FRR](https://www.frrouting.org/) at frr-9.0.2.tar.gz.
+
+We are planning to make the following advancements:
+
+* develop a custom routing protocol extention which we call LS-EVPN.
+* simplify the code.
+* maintain a more easier way to debug.
+* change the fundamental design as the next challenges.
+
+At this moment, we are not planning to solicit and receive
+any contributions from others.
+
+Current differences from FRR:
+
+* The coding style is changed back to the GNU style.
+
+Supported the protocols:
 
 * BGP
 * OSPFv2
@@ -28,56 +45,4 @@ FRR currently supports the following protocols:
 * EIGRP (alpha)
 * NHRP (alpha)
 
-Installation & Use
-------------------
 
-For source tarballs, see the
-[releases page](https://github.com/FRRouting/frr/releases).
-
-For Debian and its derivatives, use the APT repository at
-[https://deb.frrouting.org/](https://deb.frrouting.org/).
-
-Instructions on building and installing from source for supported platforms may
-be found in the
-[developer docs](http://docs.frrouting.org/projects/dev-guide/en/latest/building.html).
-
-Once installed, please refer to the [user guide](http://docs.frrouting.org/)
-for instructions on use.
-
-Community
----------
-
-The FRRouting email list server is located
-[here](https://lists.frrouting.org/listinfo) and offers the following public
-lists:
-
-| Topic             | List                         |
-|-------------------|------------------------------|
-| Development       | dev@lists.frrouting.org      |
-| Users & Operators | frog@lists.frrouting.org     |
-| Announcements     | announce@lists.frrouting.org |
-
-For chat, we currently use [Slack](https://frrouting.slack.com). You can join
-by clicking the "Slack" link under the
-[Participate](https://frrouting.org/community) section of our website.
-
-
-Contributing
-------------
-
-FRR maintains [developer's documentation](http://docs.frrouting.org/projects/dev-guide/en/latest/index.html)
-which contains the [project workflow](http://docs.frrouting.org/projects/dev-guide/en/latest/workflow.html)
-and expectations for contributors. Some technical documentation on project
-internals is also available.
-
-We welcome and appreciate all contributions, no matter how small!
-
-
-Security
---------
-
-To report security issues, please use our security mailing list:
-
-```
-security [at] lists.frrouting.org
-```
