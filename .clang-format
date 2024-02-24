@@ -1,28 +1,22 @@
----
-BasedOnStyle: LLVM
-Language: Cpp
-IndentWidth: 8
-UseTab: Always
-BreakBeforeBraces: Linux
-AlwaysBreakBeforeMultilineStrings: true
+BasedOnStyle: GNU
+AlwaysBreakBeforeMultilineStrings: false
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: false
+
 IndentCaseLabels: false
 AlignEscapedNewlinesLeft: false
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: false
 AlignAfterOpenBracket: true
-SpaceAfterCStyleCast: false
+SpaceAfterCStyleCast: true
 MaxEmptyLinesToKeep: 2
+
+AlignConsecutiveMacros: true
+SpaceAfterLogicalNot: true
 BreakBeforeBinaryOperators: None
 BreakStringLiterals: false
 SortIncludes:    false
-IncludeCategories:
-  - Regex:           '^(<|lib)'
-    Priority:        0
-CommentPragmas: '\$(FRR|clippy)'
-ContinuationIndentWidth: 8
 ForEachMacros:
   # lib
   - darr_foreach_p
