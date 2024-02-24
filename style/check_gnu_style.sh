@@ -4,7 +4,8 @@
 
 diffcmd=`which diff`
 fixdefun=style/fix-defun.awk
-clangformat=clang-format-12
+clangformat=clang-format
+awk=gawk
 
 IGNORE_PATHS=""
 
@@ -14,7 +15,7 @@ check () {
         do
             [[ ! -z "$IGNORE_PATHS" && "$file" =~ $IGNORE_PATHS ]] && \
                 continue;
-            cat "$file" | $clangformat | awk -f $fixdefun | \
+            cat "$file" | $clangformat | $awk -f $fixdefun | \
                 $diffcmd -q "$file" - > /dev/null
             if [[ $? -eq 1 ]]; then
                 echo "$file needs to be fixed by update.";
@@ -22,7 +23,7 @@ check () {
         done <   <(find . -name '*.[ch]' -print0)
     else
         for file in "$@"; do
-            cat "$file" | $clangformat | awk -f $fixdefun | \
+            cat "$file" | $clangformat | $awk -f $fixdefun | \
                 $diffcmd -q "$file" - > /dev/null
             if [[ $? -eq 1 ]]; then
                 echo "$file needs to be fixed by update.";
@@ -37,20 +38,20 @@ diff () {
         do
             [[ ! -z "$IGNORE_PATHS" && "$file" =~ $IGNORE_PATHS ]] && \
                 continue;
-            cat "$file" | $clangformat | awk -f $fixdefun | \
+            cat "$file" | $clangformat | $awk -f $fixdefun | \
                 $diffcmd -q "$file" - > /dev/null
             if [[ $? -eq 1 ]]; then
-                cat "$file" | $clangformat | awk -f $fixdefun \
+                cat "$file" | $clangformat | $awk -f $fixdefun \
                     | $diffcmd -u "$file" -
             fi
         done <   <(find . -name '*.[ch]' -print0)
      else
         for file in "$@"
         do
-            cat "$file" | $clangformat | awk -f $fixdefun | \
+            cat "$file" | $clangformat | $awk -f $fixdefun | \
                 $diffcmd -q "$file" - > /dev/null
             if [[ $? -eq 1 ]]; then
-                cat "$file" | $clangformat | awk -f $fixdefun \
+                cat "$file" | $clangformat | $awk -f $fixdefun \
                     | $diffcmd -u "$file" -
             fi
         done
@@ -63,23 +64,23 @@ update () {
         do
             [[ ! -z "$IGNORE_PATHS" && "$file" =~ $IGNORE_PATHS ]] && \
                 continue;
-            cat "$file" | $clangformat | awk -f $fixdefun | \
+            cat "$file" | $clangformat | $awk -f $fixdefun | \
                 $diffcmd -q "$file" - > /dev/null
             if [[ $? -eq 1 ]]; then
                 cp -f "$file" "$file".bak
                 cat "$file".bak | $clangformat | \
-                    awk -f $fixdefun > "$file"
+                    $awk -f $fixdefun > "$file"
                 echo "$file has been fixed by update.";
             fi
         done <   <(find . -name '*.[ch]' -print0)
      else
         for file in "$@"; do
-            cat "$file" | $clangformat | awk -f $fixdefun | \
+            cat "$file" | $clangformat | $awk -f $fixdefun | \
                 $diffcmd -q "$file" - > /dev/null
             if [[ $? -eq 1 ]]; then
                 cp -f "$file" "$file".bak
                 cat "$file".bak | $clangformat | \
-                    awk -f $fixdefun > "$file"
+                    $awk -f $fixdefun > "$file"
                 echo "$file has been fixed by update.";
             fi
         done
