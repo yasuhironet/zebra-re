@@ -2815,9 +2815,7 @@ ospf_maxpath_set (struct vty *vty, struct ospf *ospf, uint16_t paths)
 DEFUN (ospf_max_multipath,
        ospf_max_multipath_cmd,
        "maximum-paths "
-       CMD_RANGE_STR
-       (1,
-       MULTIPATH_NUM),
+       CMD_RANGE_STR (1, MULTIPATH_NUM),
        "Max no of multiple paths for ECMP support\n"
        "Number of paths\n")
 {
