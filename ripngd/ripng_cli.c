@@ -89,9 +89,8 @@ cli_show_router_ripng (struct vty *vty, const struct lyd_node *dnode,
 DEFUN_YANG (ripng_allow_ecmp,
             ripng_allow_ecmp_cmd,
             "allow-ecmp ["
-            CMD_RANGE_STR
-            (1,
-            MULTIPATH_NUM)"]",
+            CMD_RANGE_STR (1, MULTIPATH_NUM)
+            "]",
             "Allow Equal Cost MultiPath\n"
             "Number of paths\n")
 {
@@ -111,9 +110,8 @@ DEFUN_YANG (ripng_allow_ecmp,
 DEFUN_YANG (no_ripng_allow_ecmp,
             no_ripng_allow_ecmp_cmd,
             "no allow-ecmp ["
-            CMD_RANGE_STR
-            (1,
-            MULTIPATH_NUM)"]",
+            CMD_RANGE_STR (1, MULTIPATH_NUM)
+            "]",
             NO_STR "Allow Equal Cost MultiPath\n"
                    "Number of paths\n")
 {

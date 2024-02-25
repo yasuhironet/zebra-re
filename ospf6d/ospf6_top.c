@@ -1363,9 +1363,7 @@ ospf6_maxpath_set (struct ospf6 *ospf6, uint16_t paths)
 DEFUN (ospf6_max_multipath,
        ospf6_max_multipath_cmd,
        "maximum-paths "
-       CMD_RANGE_STR
-       (1,
-       MULTIPATH_NUM),
+       CMD_RANGE_STR (1, MULTIPATH_NUM),
        "Max no of multiple paths for ECMP support\n"
        "Number of paths\n")
 {
@@ -1381,9 +1379,7 @@ DEFUN (ospf6_max_multipath,
 DEFUN (no_ospf6_max_multipath,
        no_ospf6_max_multipath_cmd,
        "no maximum-paths ["
-       CMD_RANGE_STR
-       (1,
-       MULTIPATH_NUM)"]",
+       CMD_RANGE_STR (1, MULTIPATH_NUM)"]",
        NO_STR "Max no of multiple paths for ECMP support\n"
               "Number of paths\n")
 {
