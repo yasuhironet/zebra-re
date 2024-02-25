@@ -6,6 +6,6 @@
  */
 #ifndef __PBR_MEMORY_H__
 
-DECLARE_MGROUP(PBRD);
+DECLARE_MGROUP (PBRD);
 
 #endif

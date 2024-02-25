@@ -27,86 +27,86 @@ static pceplib_free_func ffunc = NULL;
 
 /* Internal memory types */
 struct pceplib_memory_type pceplib_infra_mt = {
-	.memory_type_name = "PCEPlib Infrastructure memory",
-	.total_bytes_allocated = 0,
-	.num_allocates = 0,
-	.total_bytes_freed = 0,
-	.num_frees = 0};
+  .memory_type_name = "PCEPlib Infrastructure memory",
+  .total_bytes_allocated = 0,
+  .num_allocates = 0,
+  .total_bytes_freed = 0,
+  .num_frees = 0
+};
 struct pceplib_memory_type pceplib_messages_mt = {
-	.memory_type_name = "PCEPlib Messages memory",
-	.total_bytes_allocated = 0,
-	.num_allocates = 0,
-	.total_bytes_freed = 0,
-	.num_frees = 0};
+  .memory_type_name = "PCEPlib Messages memory",
+  .total_bytes_allocated = 0,
+  .num_allocates = 0,
+  .total_bytes_freed = 0,
+  .num_frees = 0
+};
 
 /* The memory type pointers default to the internal memory types */
 void *PCEPLIB_INFRA = &pceplib_infra_mt;
 void *PCEPLIB_MESSAGES = &pceplib_messages_mt;
 
 /* Initialize memory function pointers and memory type pointers */
-bool pceplib_memory_initialize(void *pceplib_infra_mt,
-			       void *pceplib_messages_mt,
-			       pceplib_malloc_func mf, pceplib_calloc_func cf,
-			       pceplib_realloc_func rf, pceplib_strdup_func sf,
-			       pceplib_free_func ff)
+bool
+pceplib_memory_initialize (void *pceplib_infra_mt, void *pceplib_messages_mt,
+                           pceplib_malloc_func mf, pceplib_calloc_func cf,
+                           pceplib_realloc_func rf, pceplib_strdup_func sf,
+                           pceplib_free_func ff)
 {
-	PCEPLIB_INFRA = (pceplib_infra_mt ? pceplib_infra_mt : PCEPLIB_INFRA);
-	PCEPLIB_MESSAGES =
-		(pceplib_messages_mt ? pceplib_messages_mt : PCEPLIB_MESSAGES);
+  PCEPLIB_INFRA = (pceplib_infra_mt ? pceplib_infra_mt : PCEPLIB_INFRA);
+  PCEPLIB_MESSAGES =
+      (pceplib_messages_mt ? pceplib_messages_mt : PCEPLIB_MESSAGES);
 
-	mfunc = (mf ? mf : mfunc);
-	cfunc = (cf ? cf : cfunc);
-	rfunc = (rf ? rf : rfunc);
-	sfunc = (sf ? sf : sfunc);
-	ffunc = (ff ? ff : ffunc);
+  mfunc = (mf ? mf : mfunc);
+  cfunc = (cf ? cf : cfunc);
+  rfunc = (rf ? rf : rfunc);
+  sfunc = (sf ? sf : sfunc);
+  ffunc = (ff ? ff : ffunc);
 
-	return true;
+  return true;
 }
 
-void pceplib_memory_reset(void)
+void
+pceplib_memory_reset (void)
 {
-	pceplib_infra_mt.total_bytes_allocated = 0;
-	pceplib_infra_mt.num_allocates = 0;
-	pceplib_infra_mt.total_bytes_freed = 0;
-	pceplib_infra_mt.num_frees = 0;
+  pceplib_infra_mt.total_bytes_allocated = 0;
+  pceplib_infra_mt.num_allocates = 0;
+  pceplib_infra_mt.total_bytes_freed = 0;
+  pceplib_infra_mt.num_frees = 0;
 
-	pceplib_messages_mt.total_bytes_allocated = 0;
-	pceplib_messages_mt.num_allocates = 0;
-	pceplib_messages_mt.total_bytes_freed = 0;
-	pceplib_messages_mt.num_frees = 0;
+  pceplib_messages_mt.total_bytes_allocated = 0;
+  pceplib_messages_mt.num_allocates = 0;
+  pceplib_messages_mt.total_bytes_freed = 0;
+  pceplib_messages_mt.num_frees = 0;
 }
 
-void pceplib_memory_dump(void)
+void
+pceplib_memory_dump (void)
 {
-	if (PCEPLIB_INFRA) {
-		pcep_log(
-			LOG_INFO,
-			"%s: Memory Type [%s] Total [allocs, alloc bytes, frees] [%d, %d, %d]",
-			__func__,
-			((struct pceplib_memory_type *)PCEPLIB_INFRA)
-				->memory_type_name,
-			((struct pceplib_memory_type *)PCEPLIB_INFRA)
-				->num_allocates,
-			((struct pceplib_memory_type *)PCEPLIB_INFRA)
-				->total_bytes_allocated,
-			((struct pceplib_memory_type *)PCEPLIB_INFRA)
-				->num_frees);
-	}
+  if (PCEPLIB_INFRA)
+    {
+      pcep_log (
+          LOG_INFO,
+          "%s: Memory Type [%s] Total [allocs, alloc bytes, frees] [%d, %d, %d]",
+          __func__,
+          ((struct pceplib_memory_type *) PCEPLIB_INFRA)->memory_type_name,
+          ((struct pceplib_memory_type *) PCEPLIB_INFRA)->num_allocates,
+          ((struct pceplib_memory_type *) PCEPLIB_INFRA)
+              ->total_bytes_allocated,
+          ((struct pceplib_memory_type *) PCEPLIB_INFRA)->num_frees);
+    }
 
-	if (PCEPLIB_MESSAGES) {
-		pcep_log(
-			LOG_INFO,
-			"%s: Memory Type [%s] Total [allocs, alloc bytes, frees] [%d, %d, %d]",
-			__func__,
-			((struct pceplib_memory_type *)PCEPLIB_MESSAGES)
-				->memory_type_name,
-			((struct pceplib_memory_type *)PCEPLIB_MESSAGES)
-				->num_allocates,
-			((struct pceplib_memory_type *)PCEPLIB_MESSAGES)
-				->total_bytes_allocated,
-			((struct pceplib_memory_type *)PCEPLIB_MESSAGES)
-				->num_frees);
-	}
+  if (PCEPLIB_MESSAGES)
+    {
+      pcep_log (
+          LOG_INFO,
+          "%s: Memory Type [%s] Total [allocs, alloc bytes, frees] [%d, %d, %d]",
+          __func__,
+          ((struct pceplib_memory_type *) PCEPLIB_MESSAGES)->memory_type_name,
+          ((struct pceplib_memory_type *) PCEPLIB_MESSAGES)->num_allocates,
+          ((struct pceplib_memory_type *) PCEPLIB_MESSAGES)
+              ->total_bytes_allocated,
+          ((struct pceplib_memory_type *) PCEPLIB_MESSAGES)->num_frees);
+    }
 }
 
 /* PCEPlib memory functions:
@@ -114,99 +114,116 @@ void pceplib_memory_dump(void)
  * implementations, which just increment simple counters and call the
  * C stdlib memory implementations. */
 
-void *pceplib_malloc(void *mem_type, size_t size)
+void *
+pceplib_malloc (void *mem_type, size_t size)
 {
-	if (mfunc == NULL) {
-		if (mem_type != NULL) {
-			((struct pceplib_memory_type *)mem_type)
-				->total_bytes_allocated += size;
-			((struct pceplib_memory_type *)mem_type)
-				->num_allocates++;
-		}
+  if (mfunc == NULL)
+    {
+      if (mem_type != NULL)
+        {
+          ((struct pceplib_memory_type *) mem_type)->total_bytes_allocated +=
+              size;
+          ((struct pceplib_memory_type *) mem_type)->num_allocates++;
+        }
 
-		return malloc(size);
-	} else {
-		return mfunc(mem_type, size);
-	}
+      return malloc (size);
+    }
+  else
+    {
+      return mfunc (mem_type, size);
+    }
 }
 
-void *pceplib_calloc(void *mem_type, size_t size)
+void *
+pceplib_calloc (void *mem_type, size_t size)
 {
-	if (cfunc == NULL) {
-		if (mem_type != NULL) {
-			((struct pceplib_memory_type *)mem_type)
-				->total_bytes_allocated += size;
-			((struct pceplib_memory_type *)mem_type)
-				->num_allocates++;
-		}
+  if (cfunc == NULL)
+    {
+      if (mem_type != NULL)
+        {
+          ((struct pceplib_memory_type *) mem_type)->total_bytes_allocated +=
+              size;
+          ((struct pceplib_memory_type *) mem_type)->num_allocates++;
+        }
 
-		return calloc(1, size);
-	} else {
-		return cfunc(mem_type, size);
-	}
+      return calloc (1, size);
+    }
+  else
+    {
+      return cfunc (mem_type, size);
+    }
 }
 
-void *pceplib_realloc(void *mem_type, void *ptr, size_t size)
+void *
+pceplib_realloc (void *mem_type, void *ptr, size_t size)
 {
-	if (rfunc == NULL) {
-		if (mem_type != NULL) {
-			/* TODO should add previous allocated bytes to
-			 * total_bytes_freed */
-			((struct pceplib_memory_type *)mem_type)
-				->total_bytes_allocated += size;
-			((struct pceplib_memory_type *)mem_type)
-				->num_allocates++;
-		}
+  if (rfunc == NULL)
+    {
+      if (mem_type != NULL)
+        {
+          /* TODO should add previous allocated bytes to
+           * total_bytes_freed */
+          ((struct pceplib_memory_type *) mem_type)->total_bytes_allocated +=
+              size;
+          ((struct pceplib_memory_type *) mem_type)->num_allocates++;
+        }
 
-		return realloc(ptr, size);
-	} else {
-		return rfunc(mem_type, ptr, size);
-	}
+      return realloc (ptr, size);
+    }
+  else
+    {
+      return rfunc (mem_type, ptr, size);
+    }
 }
 
-void *pceplib_strdup(void *mem_type, const char *str)
+void *
+pceplib_strdup (void *mem_type, const char *str)
 {
-	if (sfunc == NULL) {
-		if (mem_type != NULL) {
-			((struct pceplib_memory_type *)mem_type)
-				->total_bytes_allocated += strlen(str);
-			((struct pceplib_memory_type *)mem_type)
-				->num_allocates++;
-		}
+  if (sfunc == NULL)
+    {
+      if (mem_type != NULL)
+        {
+          ((struct pceplib_memory_type *) mem_type)->total_bytes_allocated +=
+              strlen (str);
+          ((struct pceplib_memory_type *) mem_type)->num_allocates++;
+        }
 
-		return strdup(str);
-	} else {
-		return sfunc(mem_type, str);
-	}
+      return strdup (str);
+    }
+  else
+    {
+      return sfunc (mem_type, str);
+    }
 }
 
-void pceplib_free(void *mem_type, void *ptr)
+void
+pceplib_free (void *mem_type, void *ptr)
 {
-	if (ffunc == NULL) {
-		if (mem_type != NULL) {
-			/* TODO in order to increment total_bytes_freed, we need
-			 * to keep track of the bytes allocated per pointer.
-			 * Currently not implemented. */
-			((struct pceplib_memory_type *)mem_type)->num_frees++;
-			if (((struct pceplib_memory_type *)mem_type)
-				    ->num_allocates
-			    < ((struct pceplib_memory_type *)mem_type)
-				      ->num_frees) {
-				pcep_log(
-					LOG_ERR,
-					"%s: pceplib_free MT N_Alloc < N_Free: MemType [%s] NumAllocates [%d] NumFrees [%d]",
-					__func__,
-					((struct pceplib_memory_type *)mem_type)
-						->memory_type_name,
-					((struct pceplib_memory_type *)mem_type)
-						->num_allocates,
-					((struct pceplib_memory_type *)mem_type)
-						->num_frees);
-			}
-		}
+  if (ffunc == NULL)
+    {
+      if (mem_type != NULL)
+        {
+          /* TODO in order to increment total_bytes_freed, we need
+           * to keep track of the bytes allocated per pointer.
+           * Currently not implemented. */
+          ((struct pceplib_memory_type *) mem_type)->num_frees++;
+          if (((struct pceplib_memory_type *) mem_type)->num_allocates <
+              ((struct pceplib_memory_type *) mem_type)->num_frees)
+            {
+              pcep_log (
+                  LOG_ERR,
+                  "%s: pceplib_free MT N_Alloc < N_Free: MemType [%s] NumAllocates [%d] NumFrees [%d]",
+                  __func__,
+                  ((struct pceplib_memory_type *) mem_type)->memory_type_name,
+                  ((struct pceplib_memory_type *) mem_type)->num_allocates,
+                  ((struct pceplib_memory_type *) mem_type)->num_frees);
+            }
+        }
 
-		return free(ptr);
-	} else {
-		return ffunc(mem_type, ptr);
-	}
+      return free (ptr);
+    }
+  else
+    {
+      return ffunc (mem_type, ptr);
+    }
 }

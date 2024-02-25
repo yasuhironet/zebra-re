@@ -7,5 +7,5 @@
 #ifndef __PBR_VTY_H__
 #define __PBR_VTY_H__
 
-extern void pbr_vty_init(void);
+extern void pbr_vty_init (void);
 #endif

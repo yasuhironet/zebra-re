@@ -174,8 +174,9 @@ static struct log_ref ferr_ospf_err[] = {
 };
 /* clang-format on */
 
-void ospf_error_init(void)
+void
+ospf_error_init (void)
 {
-	log_ref_add(ferr_ospf_warn);
-	log_ref_add(ferr_ospf_err);
+  log_ref_add (ferr_ospf_warn);
+  log_ref_add (ferr_ospf_err);
 }

@@ -17,113 +17,117 @@
 #include "bgpd.h"
 #include "bgp_advertise.h"
 
-struct bgp_table {
-	/* table belongs to this instance */
-	struct bgp *bgp;
+struct bgp_table
+{
+  /* table belongs to this instance */
+  struct bgp *bgp;
 
-	/* afi/safi of this table */
-	afi_t afi;
-	safi_t safi;
+  /* afi/safi of this table */
+  afi_t afi;
+  safi_t safi;
 
-	int lock;
+  int lock;
 
-	/* soft_reconfig_table in progress */
-	bool soft_reconfig_init;
-	struct event *soft_reconfig_thread;
+  /* soft_reconfig_table in progress */
+  bool soft_reconfig_init;
+  struct event *soft_reconfig_thread;
 
-	/* list of peers on which soft_reconfig_table has to run */
-	struct list *soft_reconfig_peers;
+  /* list of peers on which soft_reconfig_table has to run */
+  struct list *soft_reconfig_peers;
 
-	struct route_table *route_table;
-	uint64_t version;
+  struct route_table *route_table;
+  uint64_t version;
 };
 
-enum bgp_path_selection_reason {
-	bgp_path_selection_none,
-	bgp_path_selection_first,
-	bgp_path_selection_evpn_sticky_mac,
-	bgp_path_selection_evpn_seq,
-	bgp_path_selection_evpn_local_path,
-	bgp_path_selection_evpn_non_proxy,
-	bgp_path_selection_evpn_lower_ip,
-	bgp_path_selection_weight,
-	bgp_path_selection_local_pref,
-	bgp_path_selection_accept_own,
-	bgp_path_selection_local_route,
-	bgp_path_selection_aigp,
-	bgp_path_selection_confed_as_path,
-	bgp_path_selection_as_path,
-	bgp_path_selection_origin,
-	bgp_path_selection_med,
-	bgp_path_selection_peer,
-	bgp_path_selection_confed,
-	bgp_path_selection_igp_metric,
-	bgp_path_selection_older,
-	bgp_path_selection_router_id,
-	bgp_path_selection_cluster_length,
-	bgp_path_selection_stale,
-	bgp_path_selection_local_configured,
-	bgp_path_selection_neighbor_ip,
-	bgp_path_selection_default,
+enum bgp_path_selection_reason
+{
+  bgp_path_selection_none,
+  bgp_path_selection_first,
+  bgp_path_selection_evpn_sticky_mac,
+  bgp_path_selection_evpn_seq,
+  bgp_path_selection_evpn_local_path,
+  bgp_path_selection_evpn_non_proxy,
+  bgp_path_selection_evpn_lower_ip,
+  bgp_path_selection_weight,
+  bgp_path_selection_local_pref,
+  bgp_path_selection_accept_own,
+  bgp_path_selection_local_route,
+  bgp_path_selection_aigp,
+  bgp_path_selection_confed_as_path,
+  bgp_path_selection_as_path,
+  bgp_path_selection_origin,
+  bgp_path_selection_med,
+  bgp_path_selection_peer,
+  bgp_path_selection_confed,
+  bgp_path_selection_igp_metric,
+  bgp_path_selection_older,
+  bgp_path_selection_router_id,
+  bgp_path_selection_cluster_length,
+  bgp_path_selection_stale,
+  bgp_path_selection_local_configured,
+  bgp_path_selection_neighbor_ip,
+  bgp_path_selection_default,
 };
 
-struct bgp_node {
-	/*
-	 * CAUTION
-	 *
-	 * These fields must be the very first fields in this structure.
-	 *
-	 * @see bgp_node_to_rnode
-	 * @see bgp_node_from_rnode
-	 */
-	ROUTE_NODE_FIELDS
+struct bgp_node
+{
+  /*
+   * CAUTION
+   *
+   * These fields must be the very first fields in this structure.
+   *
+   * @see bgp_node_to_rnode
+   * @see bgp_node_from_rnode
+   */
+  ROUTE_NODE_FIELDS
 
-	struct bgp_adj_out_rb adj_out;
+  struct bgp_adj_out_rb adj_out;
 
-	struct bgp_adj_in *adj_in;
+  struct bgp_adj_in *adj_in;
 
-	struct bgp_dest *pdest;
+  struct bgp_dest *pdest;
 
-	STAILQ_ENTRY(bgp_dest) pq;
+  STAILQ_ENTRY (bgp_dest) pq;
 
-	uint64_t version;
+  uint64_t version;
 
-	mpls_label_t local_label;
+  mpls_label_t local_label;
 
-	uint16_t flags;
-#define BGP_NODE_PROCESS_SCHEDULED	(1 << 0)
-#define BGP_NODE_USER_CLEAR             (1 << 1)
-#define BGP_NODE_LABEL_CHANGED          (1 << 2)
-#define BGP_NODE_REGISTERED_FOR_LABEL   (1 << 3)
-#define BGP_NODE_SELECT_DEFER           (1 << 4)
-#define BGP_NODE_FIB_INSTALL_PENDING    (1 << 5)
-#define BGP_NODE_FIB_INSTALLED          (1 << 6)
-#define BGP_NODE_LABEL_REQUESTED        (1 << 7)
-#define BGP_NODE_SOFT_RECONFIG (1 << 8)
+  uint16_t flags;
+#define BGP_NODE_PROCESS_SCHEDULED    (1 << 0)
+#define BGP_NODE_USER_CLEAR           (1 << 1)
+#define BGP_NODE_LABEL_CHANGED        (1 << 2)
+#define BGP_NODE_REGISTERED_FOR_LABEL (1 << 3)
+#define BGP_NODE_SELECT_DEFER         (1 << 4)
+#define BGP_NODE_FIB_INSTALL_PENDING  (1 << 5)
+#define BGP_NODE_FIB_INSTALLED        (1 << 6)
+#define BGP_NODE_LABEL_REQUESTED      (1 << 7)
+#define BGP_NODE_SOFT_RECONFIG        (1 << 8)
 
-	struct bgp_addpath_node_data tx_addpath;
+  struct bgp_addpath_node_data tx_addpath;
 
-	enum bgp_path_selection_reason reason;
+  enum bgp_path_selection_reason reason;
 };
 
-extern void bgp_delete_listnode(struct bgp_dest *dest);
+extern void bgp_delete_listnode (struct bgp_dest *dest);
 /*
  * bgp_table_iter_t
  *
  * Structure that holds state for iterating over a bgp table.
  */
-typedef struct bgp_table_iter_t_ {
-	struct bgp_table *table;
-	route_table_iter_t rt_iter;
+typedef struct bgp_table_iter_t_
+{
+  struct bgp_table *table;
+  route_table_iter_t rt_iter;
 } bgp_table_iter_t;
 
-extern struct bgp_table *bgp_table_init(struct bgp *bgp, afi_t, safi_t);
-extern void bgp_table_lock(struct bgp_table *);
-extern void bgp_table_unlock(struct bgp_table *);
-extern void bgp_table_finish(struct bgp_table **);
-extern void bgp_dest_unlock_node(struct bgp_dest *dest);
-extern struct bgp_dest *bgp_dest_lock_node(struct bgp_dest *dest);
-extern const char *bgp_dest_get_prefix_str(struct bgp_dest *dest);
+extern struct bgp_table *bgp_table_init (struct bgp *bgp, afi_t, safi_t);
+extern void bgp_table_lock (struct bgp_table *);
+extern void bgp_table_unlock (struct bgp_table *);
+extern void bgp_table_finish (struct bgp_table **);
+extern void bgp_dest_unlock_node (struct bgp_dest *dest);
+extern struct bgp_dest *bgp_dest_lock_node (struct bgp_dest *dest);
+extern const char *bgp_dest_get_prefix_str (struct bgp_dest *dest);
 
 
 /*
@@ -131,9 +135,10 @@ extern const char *bgp_dest_get_prefix_str(struct bgp_dest *dest);
  *
  * Returns the bgp_dest structure corresponding to a route_node.
  */
-static inline struct bgp_dest *bgp_dest_from_rnode(struct route_node *rnode)
+static inline struct bgp_dest *
+bgp_dest_from_rnode (struct route_node *rnode)
 {
-	return (struct bgp_dest *)rnode;
+  return (struct bgp_dest *) rnode;
 }
 
 /*
@@ -141,9 +146,10 @@ static inline struct bgp_dest *bgp_dest_from_rnode(struct route_node *rnode)
  *
  * Returns the route_node structure corresponding to a bgp_dest.
  */
-static inline struct route_node *bgp_dest_to_rnode(const struct bgp_dest *dest)
+static inline struct route_node *
+bgp_dest_to_rnode (const struct bgp_dest *dest)
 {
-	return (struct route_node *)dest;
+  return (struct route_node *) dest;
 }
 
 /*
@@ -151,9 +157,10 @@ static inline struct route_node *bgp_dest_to_rnode(const struct bgp_dest *dest)
  *
  * Returns the bgp_table that the given dest is in.
  */
-static inline struct bgp_table *bgp_dest_table(struct bgp_dest *dest)
+static inline struct bgp_table *
+bgp_dest_table (struct bgp_dest *dest)
 {
-	return route_table_get_info(bgp_dest_to_rnode(dest)->table);
+  return route_table_get_info (bgp_dest_to_rnode (dest)->table);
 }
 
 /*
@@ -161,11 +168,12 @@ static inline struct bgp_table *bgp_dest_table(struct bgp_dest *dest)
  *
  * Gets the parent dest of the given node without locking it.
  */
-static inline struct bgp_dest *bgp_dest_parent_nolock(struct bgp_dest *dest)
+static inline struct bgp_dest *
+bgp_dest_parent_nolock (struct bgp_dest *dest)
 {
-	struct route_node *rn = bgp_dest_to_rnode(dest)->parent;
+  struct route_node *rn = bgp_dest_to_rnode (dest)->parent;
 
-	return bgp_dest_from_rnode(rn);
+  return bgp_dest_from_rnode (rn);
 }
 
 /*
@@ -176,97 +184,101 @@ static inline struct bgp_dest *bgp_dest_parent_nolock(struct bgp_dest *dest)
  * @see bgp_table_top
  */
 static inline struct bgp_dest *
-bgp_table_top_nolock(const struct bgp_table *const table)
+bgp_table_top_nolock (const struct bgp_table *const table)
 {
-	return bgp_dest_from_rnode(table->route_table->top);
+  return bgp_dest_from_rnode (table->route_table->top);
 }
 
 /*
  * bgp_table_top
  */
 static inline struct bgp_dest *
-bgp_table_top(const struct bgp_table *const table)
+bgp_table_top (const struct bgp_table *const table)
 {
-	return bgp_dest_from_rnode(route_top(table->route_table));
+  return bgp_dest_from_rnode (route_top (table->route_table));
 }
 
 /*
  * bgp_route_next
  */
-static inline struct bgp_dest *bgp_route_next(struct bgp_dest *dest)
+static inline struct bgp_dest *
+bgp_route_next (struct bgp_dest *dest)
 {
-	return bgp_dest_from_rnode(route_next(bgp_dest_to_rnode(dest)));
+  return bgp_dest_from_rnode (route_next (bgp_dest_to_rnode (dest)));
 }
 
 /*
  * bgp_route_next_until
  */
-static inline struct bgp_dest *bgp_route_next_until(struct bgp_dest *dest,
-						    struct bgp_dest *limit)
+static inline struct bgp_dest *
+bgp_route_next_until (struct bgp_dest *dest, struct bgp_dest *limit)
 {
-	struct route_node *rnode;
+  struct route_node *rnode;
 
-	rnode = route_next_until(bgp_dest_to_rnode(dest),
-			bgp_dest_to_rnode(limit));
+  rnode =
+      route_next_until (bgp_dest_to_rnode (dest), bgp_dest_to_rnode (limit));
 
-	return bgp_dest_from_rnode(rnode);
+  return bgp_dest_from_rnode (rnode);
 }
 
 /*
  * bgp_node_get
  */
-static inline struct bgp_dest *bgp_node_get(struct bgp_table *const table,
-					    const struct prefix *p)
+static inline struct bgp_dest *
+bgp_node_get (struct bgp_table *const table, const struct prefix *p)
 {
-	return bgp_dest_from_rnode(route_node_get(table->route_table, p));
+  return bgp_dest_from_rnode (route_node_get (table->route_table, p));
 }
 
 /*
  * bgp_node_lookup
  */
 static inline struct bgp_dest *
-bgp_node_lookup(const struct bgp_table *const table, const struct prefix *p)
+bgp_node_lookup (const struct bgp_table *const table, const struct prefix *p)
 {
-	struct route_node *rn = route_node_lookup(table->route_table, p);
+  struct route_node *rn = route_node_lookup (table->route_table, p);
 
-	return bgp_dest_from_rnode(rn);
+  return bgp_dest_from_rnode (rn);
 }
 
 /*
  * bgp_node_match
  */
-static inline struct bgp_dest *bgp_node_match(const struct bgp_table *table,
-					      const struct prefix *p)
+static inline struct bgp_dest *
+bgp_node_match (const struct bgp_table *table, const struct prefix *p)
 {
-	struct route_node *rn = route_node_match(table->route_table, p);
+  struct route_node *rn = route_node_match (table->route_table, p);
 
-	return bgp_dest_from_rnode(rn);
+  return bgp_dest_from_rnode (rn);
 }
 
-static inline unsigned long bgp_table_count(const struct bgp_table *const table)
+static inline unsigned long
+bgp_table_count (const struct bgp_table *const table)
 {
-	return route_table_count(table->route_table);
+  return route_table_count (table->route_table);
 }
 
 /*
  * bgp_table_get_next
  */
-static inline struct bgp_dest *bgp_table_get_next(const struct bgp_table *table,
-						  const struct prefix *p)
+static inline struct bgp_dest *
+bgp_table_get_next (const struct bgp_table *table, const struct prefix *p)
 {
-	return bgp_dest_from_rnode(route_table_get_next(table->route_table, p));
+  return bgp_dest_from_rnode (route_table_get_next (table->route_table, p));
 }
 
 /* This would benefit from a real atomic operation...
  * until then. */
-static inline uint64_t bgp_table_next_version(struct bgp_table *table)
+static inline uint64_t
+bgp_table_next_version (struct bgp_table *table)
 {
-	return ++table->version;
+  return ++table->version;
 }
 
-static inline uint64_t bgp_table_version(struct bgp_table *table)
+static inline uint64_t
+bgp_table_version (struct bgp_table *table)
 {
-	return table->version;
+  return table->version;
 }
 
 /* Find the subtree of the prefix p
@@ -276,113 +288,119 @@ static inline uint64_t bgp_table_version(struct bgp_table *table)
  *
  * If the subtree is not present in the table, NULL is returned.
  */
-struct bgp_dest *bgp_table_subtree_lookup(const struct bgp_table *table,
-					  const struct prefix *p);
+struct bgp_dest *bgp_table_subtree_lookup (const struct bgp_table *table,
+                                           const struct prefix *p);
 
 static inline struct bgp_aggregate *
-bgp_dest_get_bgp_aggregate_info(struct bgp_dest *dest)
+bgp_dest_get_bgp_aggregate_info (struct bgp_dest *dest)
 {
-	return dest ? dest->info : NULL;
+  return dest ? dest->info : NULL;
 }
 
 static inline void
-bgp_dest_set_bgp_aggregate_info(struct bgp_dest *dest,
-				struct bgp_aggregate *aggregate)
+bgp_dest_set_bgp_aggregate_info (struct bgp_dest *dest,
+                                 struct bgp_aggregate *aggregate)
 {
-	dest->info = aggregate;
+  dest->info = aggregate;
 }
 
 static inline struct bgp_distance *
-bgp_dest_get_bgp_distance_info(struct bgp_dest *dest)
+bgp_dest_get_bgp_distance_info (struct bgp_dest *dest)
 {
-	return dest ? dest->info : NULL;
-}
-
-static inline void bgp_dest_set_bgp_distance_info(struct bgp_dest *dest,
-						  struct bgp_distance *distance)
-{
-	dest->info = distance;
-}
-
-static inline struct bgp_static *
-bgp_dest_get_bgp_static_info(struct bgp_dest *dest)
-{
-	return dest ? dest->info : NULL;
-}
-
-static inline void bgp_dest_set_bgp_static_info(struct bgp_dest *dest,
-						struct bgp_static *bgp_static)
-{
-	dest->info = bgp_static;
-}
-
-static inline struct bgp_connected_ref *
-bgp_dest_get_bgp_connected_ref_info(struct bgp_dest *dest)
-{
-	return dest ? dest->info : NULL;
+  return dest ? dest->info : NULL;
 }
 
 static inline void
-bgp_dest_set_bgp_connected_ref_info(struct bgp_dest *dest,
-				    struct bgp_connected_ref *bc)
+bgp_dest_set_bgp_distance_info (struct bgp_dest *dest,
+                                struct bgp_distance *distance)
 {
-	dest->info = bc;
+  dest->info = distance;
+}
+
+static inline struct bgp_static *
+bgp_dest_get_bgp_static_info (struct bgp_dest *dest)
+{
+  return dest ? dest->info : NULL;
+}
+
+static inline void
+bgp_dest_set_bgp_static_info (struct bgp_dest *dest,
+                              struct bgp_static *bgp_static)
+{
+  dest->info = bgp_static;
+}
+
+static inline struct bgp_connected_ref *
+bgp_dest_get_bgp_connected_ref_info (struct bgp_dest *dest)
+{
+  return dest ? dest->info : NULL;
+}
+
+static inline void
+bgp_dest_set_bgp_connected_ref_info (struct bgp_dest *dest,
+                                     struct bgp_connected_ref *bc)
+{
+  dest->info = bc;
 }
 
 static inline struct bgp_nexthop_cache *
-bgp_dest_get_bgp_nexthop_info(struct bgp_dest *dest)
+bgp_dest_get_bgp_nexthop_info (struct bgp_dest *dest)
 {
-	return dest ? dest->info : NULL;
+  return dest ? dest->info : NULL;
 }
 
-static inline void bgp_dest_set_bgp_nexthop_info(struct bgp_dest *dest,
-						 struct bgp_nexthop_cache *bnc)
+static inline void
+bgp_dest_set_bgp_nexthop_info (struct bgp_dest *dest,
+                               struct bgp_nexthop_cache *bnc)
 {
-	dest->info = bnc;
+  dest->info = bnc;
 }
 
 static inline struct bgp_path_info *
-bgp_dest_get_bgp_path_info(struct bgp_dest *dest)
+bgp_dest_get_bgp_path_info (struct bgp_dest *dest)
 {
-	return dest ? dest->info : NULL;
+  return dest ? dest->info : NULL;
 }
 
-static inline void bgp_dest_set_bgp_path_info(struct bgp_dest *dest,
-					      struct bgp_path_info *bi)
+static inline void
+bgp_dest_set_bgp_path_info (struct bgp_dest *dest, struct bgp_path_info *bi)
 {
-	dest->info = bi;
+  dest->info = bi;
 }
 
 static inline struct bgp_table *
-bgp_dest_get_bgp_table_info(struct bgp_dest *dest)
+bgp_dest_get_bgp_table_info (struct bgp_dest *dest)
 {
-	return dest->info;
+  return dest->info;
 }
 
-static inline void bgp_dest_set_bgp_table_info(struct bgp_dest *dest,
-					       struct bgp_table *table)
+static inline void
+bgp_dest_set_bgp_table_info (struct bgp_dest *dest, struct bgp_table *table)
 {
-	dest->info = table;
+  dest->info = table;
 }
 
-static inline bool bgp_dest_has_bgp_path_info_data(struct bgp_dest *dest)
+static inline bool
+bgp_dest_has_bgp_path_info_data (struct bgp_dest *dest)
 {
-	return !!dest->info;
+  return ! ! dest->info;
 }
 
-static inline const struct prefix *bgp_dest_get_prefix(const struct bgp_dest *dest)
+static inline const struct prefix *
+bgp_dest_get_prefix (const struct bgp_dest *dest)
 {
-	return &dest->p;
+  return &dest->p;
 }
 
-static inline unsigned int bgp_dest_get_lock_count(const struct bgp_dest *dest)
+static inline unsigned int
+bgp_dest_get_lock_count (const struct bgp_dest *dest)
 {
-	return dest->lock;
+  return dest->lock;
 }
 
 #ifdef _FRR_ATTRIBUTE_PRINTFRR
-#pragma FRR printfrr_ext "%pRN"  (struct bgp_node *)
-#pragma FRR printfrr_ext "%pBD"  (struct bgp_dest *)
+#pragma FRR printfrr_ext "%pRN"(struct bgp_node *)
+#pragma FRR printfrr_ext "%pBD"(struct bgp_dest *)
 #endif
 
 #endif /* _QUAGGA_BGP_TABLE_H */

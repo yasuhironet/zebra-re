@@ -14,7 +14,7 @@
 /**
  * Initializes PIM BFD integration code.
  */
-void pim_bfd_init(void);
+void pim_bfd_init (void);
 
 /**
  * Write configuration to `show running-config`.
@@ -22,7 +22,7 @@ void pim_bfd_init(void);
  * \param vty the vty output pointer.
  * \param ifp the interface pointer that has the configuration.
  */
-void pim_bfd_write_config(struct vty *vty, struct interface *ifp);
+void pim_bfd_write_config (struct vty *vty, struct interface *ifp);
 
 /**
  * Enables or disables all peers BFD sessions.
@@ -30,7 +30,7 @@ void pim_bfd_write_config(struct vty *vty, struct interface *ifp);
  * \param ifp interface pointer.
  * \param enable session state to set.
  */
-void pim_bfd_reg_dereg_all_nbr(struct interface *ifp);
+void pim_bfd_reg_dereg_all_nbr (struct interface *ifp);
 
 /**
  * Create and configure peer BFD session if it does not exist. It will use
@@ -39,7 +39,7 @@ void pim_bfd_reg_dereg_all_nbr(struct interface *ifp);
  * \param pim_ifp the interface configuration pointer.
  * \param neigh the neighbor configuration pointer.
  */
-void pim_bfd_info_nbr_create(struct pim_interface *pim_ifp,
-			     struct pim_neighbor *neigh);
+void pim_bfd_info_nbr_create (struct pim_interface *pim_ifp,
+                              struct pim_neighbor *neigh);
 
 #endif /* _PIM_BFD_H */

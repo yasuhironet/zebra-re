@@ -14,25 +14,27 @@
 /*
  * Circuit states
  */
-enum isis_circuit_state {
-	C_STATE_NA,
-	C_STATE_INIT, /* Connected to interface */
-	C_STATE_CONF, /* Configured for ISIS    */
-	C_STATE_UP,   /* CONN | CONF            */
+enum isis_circuit_state
+{
+  C_STATE_NA,
+  C_STATE_INIT, /* Connected to interface */
+  C_STATE_CONF, /* Configured for ISIS    */
+  C_STATE_UP,   /* CONN | CONF            */
 };
 
 /*
  * Circuit events
  */
-enum isis_circuit_event {
-	ISIS_ENABLE = 1,
-	IF_UP_FROM_Z,
-	ISIS_DISABLE,
-	IF_DOWN_FROM_Z,
+enum isis_circuit_event
+{
+  ISIS_ENABLE = 1,
+  IF_UP_FROM_Z,
+  ISIS_DISABLE,
+  IF_DOWN_FROM_Z,
 };
 
-struct isis_circuit *isis_csm_state_change(enum isis_circuit_event event,
-					   struct isis_circuit *circuit,
-					   void *arg);
+struct isis_circuit *isis_csm_state_change (enum isis_circuit_event event,
+                                            struct isis_circuit *circuit,
+                                            void *arg);
 
 #endif /* _ZEBRA_ISIS_CSM_H */

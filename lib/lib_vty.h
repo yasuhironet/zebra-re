@@ -9,14 +9,15 @@
 #include "memory.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-extern void lib_cmd_init(void);
+  extern void lib_cmd_init (void);
 
 /* Human friendly string for given byte count */
 #define MTYPE_MEMSTR_LEN 20
-extern const char *mtype_memstr(char *, size_t, unsigned long);
+  extern const char *mtype_memstr (char *, size_t, unsigned long);
 
 #ifdef __cplusplus
 }

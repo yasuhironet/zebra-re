@@ -14,54 +14,59 @@
  * Not helpful for us if we want to put the MLD struct after it.
  */
 
-struct icmp6_plain_hdr {
-	uint8_t icmp6_type;
-	uint8_t icmp6_code;
-	uint16_t icmp6_cksum;
+struct icmp6_plain_hdr
+{
+  uint8_t icmp6_type;
+  uint8_t icmp6_code;
+  uint16_t icmp6_cksum;
 };
-static_assert(sizeof(struct icmp6_plain_hdr) == 4, "struct mismatch");
-static_assert(alignof(struct icmp6_plain_hdr) <= 4, "struct mismatch");
+static_assert (sizeof (struct icmp6_plain_hdr) == 4, "struct mismatch");
+static_assert (alignof (struct icmp6_plain_hdr) <= 4, "struct mismatch");
 
 /* for MLDv1 query, report and leave all use the same packet format */
-struct mld_v1_pkt {
-	uint16_t max_resp_code;
-	uint16_t rsvd0;
-	struct in6_addr grp;
+struct mld_v1_pkt
+{
+  uint16_t max_resp_code;
+  uint16_t rsvd0;
+  struct in6_addr grp;
 };
-static_assert(sizeof(struct mld_v1_pkt) == 20, "struct mismatch");
-static_assert(alignof(struct mld_v1_pkt) <= 4, "struct mismatch");
+static_assert (sizeof (struct mld_v1_pkt) == 20, "struct mismatch");
+static_assert (alignof (struct mld_v1_pkt) <= 4, "struct mismatch");
 
 
-struct mld_v2_query_hdr {
-	uint16_t max_resp_code;
-	uint16_t rsvd0;
-	struct in6_addr grp;
-	uint8_t flags;
-	uint8_t qqic;
-	uint16_t n_src;
-	struct in6_addr srcs[0];
+struct mld_v2_query_hdr
+{
+  uint16_t max_resp_code;
+  uint16_t rsvd0;
+  struct in6_addr grp;
+  uint8_t flags;
+  uint8_t qqic;
+  uint16_t n_src;
+  struct in6_addr srcs[0];
 };
-static_assert(sizeof(struct mld_v2_query_hdr) == 24, "struct mismatch");
-static_assert(alignof(struct mld_v2_query_hdr) <= 4, "struct mismatch");
+static_assert (sizeof (struct mld_v2_query_hdr) == 24, "struct mismatch");
+static_assert (alignof (struct mld_v2_query_hdr) <= 4, "struct mismatch");
 
 
-struct mld_v2_report_hdr {
-	uint16_t rsvd;
-	uint16_t n_records;
+struct mld_v2_report_hdr
+{
+  uint16_t rsvd;
+  uint16_t n_records;
 };
-static_assert(sizeof(struct mld_v2_report_hdr) == 4, "struct mismatch");
-static_assert(alignof(struct mld_v2_report_hdr) <= 4, "struct mismatch");
+static_assert (sizeof (struct mld_v2_report_hdr) == 4, "struct mismatch");
+static_assert (alignof (struct mld_v2_report_hdr) <= 4, "struct mismatch");
 
 
-struct mld_v2_rec_hdr {
-	uint8_t type;
-	uint8_t aux_len;
-	uint16_t n_src;
-	struct in6_addr grp;
-	struct in6_addr srcs[0];
+struct mld_v2_rec_hdr
+{
+  uint8_t type;
+  uint8_t aux_len;
+  uint16_t n_src;
+  struct in6_addr grp;
+  struct in6_addr srcs[0];
 };
-static_assert(sizeof(struct mld_v2_rec_hdr) == 20, "struct mismatch");
-static_assert(alignof(struct mld_v2_rec_hdr) <= 4, "struct mismatch");
+static_assert (sizeof (struct mld_v2_rec_hdr) == 20, "struct mismatch");
+static_assert (alignof (struct mld_v2_rec_hdr) <= 4, "struct mismatch");
 
 /* clang-format off */
 enum icmp6_mld_type {
@@ -83,30 +88,33 @@ enum mld_v2_rec_type {
 
 /* helper functions */
 
-static inline unsigned int mld_max_resp_decode(uint16_t wire)
+static inline unsigned int
+mld_max_resp_decode (uint16_t wire)
 {
-	uint16_t code = ntohs(wire);
-	uint8_t exp;
+  uint16_t code = ntohs (wire);
+  uint8_t exp;
 
-	if (code < 0x8000)
-		return code;
-	exp = (code >> 12) & 0x7;
-	return ((code & 0xfff) | 0x1000) << (exp + 3);
+  if (code < 0x8000)
+    return code;
+  exp = (code >> 12) & 0x7;
+  return ((code & 0xfff) | 0x1000) << (exp + 3);
 }
 
-static inline uint16_t mld_max_resp_encode(uint32_t value)
+static inline uint16_t
+mld_max_resp_encode (uint32_t value)
 {
-	uint16_t code;
-	uint8_t exp;
+  uint16_t code;
+  uint8_t exp;
 
-	if (value < 0x8000)
-		code = value;
-	else {
-		exp = 16 - __builtin_clz(value);
-		code = (value >> (exp + 3)) & 0xfff;
-		code |= 0x8000 | (exp << 12);
-	}
-	return htons(code);
+  if (value < 0x8000)
+    code = value;
+  else
+    {
+      exp = 16 - __builtin_clz (value);
+      code = (value >> (exp + 3)) & 0xfff;
+      code |= 0x8000 | (exp << 12);
+    }
+  return htons (code);
 }
 
 #endif /* _PIM6_MLD_PROTOCOL_H */

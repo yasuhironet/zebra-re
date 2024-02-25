@@ -27,7 +27,7 @@
  * If the peer is already registered for keepalives via this function, nothing
  * happens.
  */
-extern void bgp_keepalives_on(struct peer *);
+extern void bgp_keepalives_on (struct peer *);
 
 /**
  * Turns off keepalives for a peer.
@@ -36,7 +36,7 @@ extern void bgp_keepalives_on(struct peer *);
  *
  * If the peer is already unregistered for keepalives, nothing happens.
  */
-extern void bgp_keepalives_off(struct peer *);
+extern void bgp_keepalives_off (struct peer *);
 
 /**
  * Pre-run initialization function for keepalives pthread.
@@ -44,7 +44,7 @@ extern void bgp_keepalives_off(struct peer *);
  * Initializes synchronization primitives. This should be called before
  * anything else to avoid race conditions.
  */
-extern void bgp_keepalives_init(void);
+extern void bgp_keepalives_init (void);
 
 /**
  * Entry function for keepalives pthread.
@@ -56,11 +56,11 @@ extern void bgp_keepalives_init(void);
  *
  * @param arg pthread arg, not used
  */
-extern void *bgp_keepalives_start(void *arg);
+extern void *bgp_keepalives_start (void *arg);
 
 /**
  * Stops the thread and blocks until it terminates.
  */
-int bgp_keepalives_stop(struct frr_pthread *fpt, void **result);
+int bgp_keepalives_stop (struct frr_pthread *fpt, void **result);
 
 #endif /* _FRR_BGP_KEEPALIVES_H */

@@ -25,7 +25,7 @@ extern struct debug vrrp_dbg_zebra;
  *
  * Installs VTY commands and registers callbacks.
  */
-void vrrp_debug_init(void);
+void vrrp_debug_init (void);
 
 /*
  * Print VRRP debugging configuration.
@@ -33,7 +33,7 @@ void vrrp_debug_init(void);
  * vty
  *    VTY to print debugging configuration to.
  */
-int vrrp_config_write_debug(struct vty *vty);
+int vrrp_config_write_debug (struct vty *vty);
 
 /*
  * Print VRRP debugging configuration, human readable form.
@@ -41,7 +41,7 @@ int vrrp_config_write_debug(struct vty *vty);
  * vty
  *    VTY to print debugging configuration to.
  */
-int vrrp_debug_status_write(struct vty *vty);
+int vrrp_debug_status_write (struct vty *vty);
 
 /*
  * Set debugging status.
@@ -67,8 +67,8 @@ int vrrp_debug_status_write(struct vty *vty);
  * pkt
  *    Turn packet debugging on or off
  */
-void vrrp_debug_set(struct interface *ifp, uint8_t vrid, int vtynode,
-		    bool onoff, bool proto, bool autoconf, bool pkt, bool sock,
-		    bool ndisc, bool arp, bool zebra);
+void vrrp_debug_set (struct interface *ifp, uint8_t vrid, int vtynode,
+                     bool onoff, bool proto, bool autoconf, bool pkt,
+                     bool sock, bool ndisc, bool arp, bool zebra);
 
 #endif /* __VRRP_DEBUG_H__ */

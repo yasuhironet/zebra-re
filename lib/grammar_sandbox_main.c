@@ -16,38 +16,40 @@
 #include "command.h"
 #include "lib_vty.h"
 
-static void vty_do_exit(int isexit)
+static void
+vty_do_exit (int isexit)
 {
-	printf("\nend.\n");
-	if (!isexit)
-		exit(0);
+  printf ("\nend.\n");
+  if (! isexit)
+    exit (0);
 }
 
 struct event_loop *master;
 
-int main(int argc, char **argv)
+int
+main (int argc, char **argv)
 {
-	struct event event;
+  struct event event;
 
-	master = event_master_create(NULL);
+  master = event_master_create (NULL);
 
-	zlog_aux_init("NONE: ", LOG_DEBUG);
+  zlog_aux_init ("NONE: ", LOG_DEBUG);
 
-	/* Library inits. */
-	cmd_init(1);
-	cmd_hostname_set("test");
-	cmd_domainname_set("testdomainname");
+  /* Library inits. */
+  cmd_init (1);
+  cmd_hostname_set ("test");
+  cmd_domainname_set ("testdomainname");
 
-	vty_init(master, true);
-	lib_cmd_init();
-	nb_init(master, NULL, 0, false);
+  vty_init (master, true);
+  lib_cmd_init ();
+  nb_init (master, NULL, 0, false);
 
-	vty_stdio(vty_do_exit);
+  vty_stdio (vty_do_exit);
 
-	/* Fetch next active thread. */
-	while (event_fetch(master, &event))
-		event_call(&event);
+  /* Fetch next active thread. */
+  while (event_fetch (master, &event))
+    event_call (&event);
 
-	/* Not reached. */
-	exit(0);
+  /* Not reached. */
+  exit (0);
 }

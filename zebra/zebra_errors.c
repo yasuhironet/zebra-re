@@ -794,7 +794,8 @@ static struct log_ref ferr_zebra_err[] = {
 /* clang-format on */
 
 
-void zebra_error_init(void)
+void
+zebra_error_init (void)
 {
-	log_ref_add(ferr_zebra_err);
+  log_ref_add (ferr_zebra_err);
 }

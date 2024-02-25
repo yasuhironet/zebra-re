@@ -30,24 +30,25 @@
 #include "bgpd/bgp_snmp_bgp4v2.h"
 #include "bgpd/bgp_mplsvpn_snmp.h"
 
-static int bgp_snmp_init(struct event_loop *tm)
+static int
+bgp_snmp_init (struct event_loop *tm)
 {
-	smux_init(tm);
-	bgp_snmp_bgp4_init(tm);
-	bgp_snmp_bgp4v2_init(tm);
-	bgp_mpls_l3vpn_module_init();
-	return 0;
+  smux_init (tm);
+  bgp_snmp_bgp4_init (tm);
+  bgp_snmp_bgp4v2_init (tm);
+  bgp_mpls_l3vpn_module_init ();
+  return 0;
 }
 
-static int bgp_snmp_module_init(void)
+static int
+bgp_snmp_module_init (void)
 {
-	hook_register(peer_status_changed, bgpTrapEstablished);
-	hook_register(peer_backward_transition, bgpTrapBackwardTransition);
-	hook_register(frr_late_init, bgp_snmp_init);
-	return 0;
+  hook_register (peer_status_changed, bgpTrapEstablished);
+  hook_register (peer_backward_transition, bgpTrapBackwardTransition);
+  hook_register (frr_late_init, bgp_snmp_init);
+  return 0;
 }
 
-FRR_MODULE_SETUP(.name = "bgpd_snmp", .version = FRR_VERSION,
-		 .description = "bgpd AgentX SNMP module",
-		 .init = bgp_snmp_module_init,
-);
+FRR_MODULE_SETUP (.name = "bgpd_snmp", .version = FRR_VERSION,
+                  .description = "bgpd AgentX SNMP module",
+                  .init = bgp_snmp_module_init, );

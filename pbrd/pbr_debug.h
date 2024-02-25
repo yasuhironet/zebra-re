@@ -22,7 +22,7 @@ extern struct debug pbr_dbg_event;
  *
  * Installs VTY commands and registers callbacks.
  */
-void pbr_debug_init(void);
+void pbr_debug_init (void);
 
 /*
  * Set or unset flags on all debugs for pbrd.
@@ -33,7 +33,7 @@ void pbr_debug_init(void);
  * set
  *    Whether to set or unset the specified flags
  */
-void pbr_debug_set_all(uint32_t flags, bool set);
+void pbr_debug_set_all (uint32_t flags, bool set);
 
 /*
  * Config write helper.
@@ -47,7 +47,7 @@ void pbr_debug_set_all(uint32_t flags, bool set);
  * Returns:
  *    0 for convenience
  */
-int pbr_debug_config_write_helper(struct vty *vty, bool config);
+int pbr_debug_config_write_helper (struct vty *vty, bool config);
 
 /*
  * Print PBR debugging configuration.
@@ -55,6 +55,6 @@ int pbr_debug_config_write_helper(struct vty *vty, bool config);
  * vty
  *    VTY to print debugging configuration to.
  */
-int pbr_debug_config_write(struct vty *vty);
+int pbr_debug_config_write (struct vty *vty);
 
 #endif /* __PBR_DEBUG_H__ */

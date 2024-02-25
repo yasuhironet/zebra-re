@@ -93,20 +93,20 @@ struct format_length_info
 
 struct kernel_ext_fmt
 {
-	const char *suffix;
+  const char *suffix;
 
-	/* RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE, or NULL for typedef */
-	tree_code type_code;
-	int ptrlevel;
-	bool t_const;
-	bool t_unsigned;
-	bool t_signed;
-	bool warned;
+  /* RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE, or NULL for typedef */
+  tree_code type_code;
+  int ptrlevel;
+  bool t_const;
+  bool t_unsigned;
+  bool t_signed;
+  bool warned;
 
-	const char *type_str;
-	GTY(()) tree type;
+  const char *type_str;
+  GTY (()) tree type;
 
-	location_t origin_loc;
+  location_t origin_loc;
 };
 
 
@@ -127,9 +127,18 @@ struct format_type_detail
 
 
 /* Macros to fill out tables of these.  */
-#define NOARGUMENTS	{ T89_V, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN }
-#define BADLEN	{ STD_C89, NULL, NULL }
-#define NOLENGTHS	{ BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN }
+#define NOARGUMENTS                                                           \
+  {                                                                           \
+    T89_V, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN     \
+  }
+#define BADLEN                                                                \
+  {                                                                           \
+    STD_C89, NULL, NULL                                                       \
+  }
+#define NOLENGTHS                                                             \
+  {                                                                           \
+    BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN    \
+  }
 
 
 /* Structure describing a format conversion specifier (or a set of specifiers
@@ -271,71 +280,182 @@ struct format_kind_info
   tree *precision_type;
 };
 
-#define T_I	&integer_type_node
-#define T89_I	{ STD_C89, NULL, T_I }
-#define T_L	&long_integer_type_node
-#define T89_L	{ STD_C89, NULL, T_L }
-#define T_LL	&long_long_integer_type_node
-#define T9L_LL	{ STD_C9L, NULL, T_LL }
-#define TEX_LL	{ STD_EXT, NULL, T_LL }
-#define T_U64	&local_uint64_t_node
-#define TEX_U64	{ STD_EXT, "uint64_t", T_U64 }
-#define T_S64	&local_int64_t_node
-#define TEX_S64	{ STD_EXT, "int64_t", T_S64 }
-#define T_S	&short_integer_type_node
-#define T89_S	{ STD_C89, NULL, T_S }
-#define T_UI	&unsigned_type_node
-#define T89_UI	{ STD_C89, NULL, T_UI }
-#define T_UL	&long_unsigned_type_node
-#define T89_UL	{ STD_C89, NULL, T_UL }
-#define T_ULL	&long_long_unsigned_type_node
-#define T9L_ULL	{ STD_C9L, NULL, T_ULL }
-#define TEX_ULL	{ STD_EXT, NULL, T_ULL }
-#define T_US	&short_unsigned_type_node
-#define T89_US	{ STD_C89, NULL, T_US }
-#define T_F	&float_type_node
-#define T89_F	{ STD_C89, NULL, T_F }
-#define T99_F	{ STD_C99, NULL, T_F }
-#define T_D	&double_type_node
-#define T89_D	{ STD_C89, NULL, T_D }
-#define T99_D	{ STD_C99, NULL, T_D }
-#define T_LD	&long_double_type_node
-#define T89_LD	{ STD_C89, NULL, T_LD }
-#define T99_LD	{ STD_C99, NULL, T_LD }
-#define T_C	&char_type_node
-#define T89_C	{ STD_C89, NULL, T_C }
-#define T_SC	&signed_char_type_node
-#define T99_SC	{ STD_C99, NULL, T_SC }
-#define T_UC	&unsigned_char_type_node
-#define T99_UC	{ STD_C99, NULL, T_UC }
-#define T_V	&void_type_node
-#define T89_G   { STD_C89, NULL, &local_gimple_ptr_node }
-#define T89_T   { STD_C89, NULL, &local_tree_type_node }
-#define T89_V	{ STD_C89, NULL, T_V }
-#define T_W	&wchar_type_node
-#define T94_W	{ STD_C94, "wchar_t", T_W }
-#define TEX_W	{ STD_EXT, "wchar_t", T_W }
-#define T_WI	&wint_type_node
-#define T94_WI	{ STD_C94, "wint_t", T_WI }
-#define TEX_WI	{ STD_EXT, "wint_t", T_WI }
-#define T_ST    &local_size_t_node
-#define T99_ST	{ STD_C99, "size_t", T_ST }
-#define T_SST   &local_ssize_t_node
-#define T99_SST	{ STD_C99, "ssize_t", T_SST }
-#define T_PD    &ptrdiff_type_node
-#define T99_PD	{ STD_C99, "ptrdiff_t", T_PD }
-#define T_UPD   &unsigned_ptrdiff_type_node
-#define T99_UPD	{ STD_C99, "unsigned ptrdiff_t", T_UPD }
-#define T_IM    &intmax_type_node
-#define T99_IM	{ STD_C99, "intmax_t", T_IM }
-#define T_UIM   &uintmax_type_node
-#define T99_UIM	{ STD_C99, "uintmax_t", T_UIM }
-#define T_D32   &dfloat32_type_node
-#define TEX_D32 { STD_EXT, "_Decimal32", T_D32 }
-#define T_D64   &dfloat64_type_node
-#define TEX_D64 { STD_EXT, "_Decimal64", T_D64 }
-#define T_D128  &dfloat128_type_node
-#define TEX_D128 { STD_EXT, "_Decimal128", T_D128 }
+#define T_I &integer_type_node
+#define T89_I                                                                 \
+  {                                                                           \
+    STD_C89, NULL, T_I                                                        \
+  }
+#define T_L &long_integer_type_node
+#define T89_L                                                                 \
+  {                                                                           \
+    STD_C89, NULL, T_L                                                        \
+  }
+#define T_LL &long_long_integer_type_node
+#define T9L_LL                                                                \
+  {                                                                           \
+    STD_C9L, NULL, T_LL                                                       \
+  }
+#define TEX_LL                                                                \
+  {                                                                           \
+    STD_EXT, NULL, T_LL                                                       \
+  }
+#define T_U64 &local_uint64_t_node
+#define TEX_U64                                                               \
+  {                                                                           \
+    STD_EXT, "uint64_t", T_U64                                                \
+  }
+#define T_S64 &local_int64_t_node
+#define TEX_S64                                                               \
+  {                                                                           \
+    STD_EXT, "int64_t", T_S64                                                 \
+  }
+#define T_S &short_integer_type_node
+#define T89_S                                                                 \
+  {                                                                           \
+    STD_C89, NULL, T_S                                                        \
+  }
+#define T_UI &unsigned_type_node
+#define T89_UI                                                                \
+  {                                                                           \
+    STD_C89, NULL, T_UI                                                       \
+  }
+#define T_UL &long_unsigned_type_node
+#define T89_UL                                                                \
+  {                                                                           \
+    STD_C89, NULL, T_UL                                                       \
+  }
+#define T_ULL &long_long_unsigned_type_node
+#define T9L_ULL                                                               \
+  {                                                                           \
+    STD_C9L, NULL, T_ULL                                                      \
+  }
+#define TEX_ULL                                                               \
+  {                                                                           \
+    STD_EXT, NULL, T_ULL                                                      \
+  }
+#define T_US &short_unsigned_type_node
+#define T89_US                                                                \
+  {                                                                           \
+    STD_C89, NULL, T_US                                                       \
+  }
+#define T_F &float_type_node
+#define T89_F                                                                 \
+  {                                                                           \
+    STD_C89, NULL, T_F                                                        \
+  }
+#define T99_F                                                                 \
+  {                                                                           \
+    STD_C99, NULL, T_F                                                        \
+  }
+#define T_D &double_type_node
+#define T89_D                                                                 \
+  {                                                                           \
+    STD_C89, NULL, T_D                                                        \
+  }
+#define T99_D                                                                 \
+  {                                                                           \
+    STD_C99, NULL, T_D                                                        \
+  }
+#define T_LD &long_double_type_node
+#define T89_LD                                                                \
+  {                                                                           \
+    STD_C89, NULL, T_LD                                                       \
+  }
+#define T99_LD                                                                \
+  {                                                                           \
+    STD_C99, NULL, T_LD                                                       \
+  }
+#define T_C &char_type_node
+#define T89_C                                                                 \
+  {                                                                           \
+    STD_C89, NULL, T_C                                                        \
+  }
+#define T_SC &signed_char_type_node
+#define T99_SC                                                                \
+  {                                                                           \
+    STD_C99, NULL, T_SC                                                       \
+  }
+#define T_UC &unsigned_char_type_node
+#define T99_UC                                                                \
+  {                                                                           \
+    STD_C99, NULL, T_UC                                                       \
+  }
+#define T_V &void_type_node
+#define T89_G                                                                 \
+  {                                                                           \
+    STD_C89, NULL, &local_gimple_ptr_node                                     \
+  }
+#define T89_T                                                                 \
+  {                                                                           \
+    STD_C89, NULL, &local_tree_type_node                                      \
+  }
+#define T89_V                                                                 \
+  {                                                                           \
+    STD_C89, NULL, T_V                                                        \
+  }
+#define T_W &wchar_type_node
+#define T94_W                                                                 \
+  {                                                                           \
+    STD_C94, "wchar_t", T_W                                                   \
+  }
+#define TEX_W                                                                 \
+  {                                                                           \
+    STD_EXT, "wchar_t", T_W                                                   \
+  }
+#define T_WI &wint_type_node
+#define T94_WI                                                                \
+  {                                                                           \
+    STD_C94, "wint_t", T_WI                                                   \
+  }
+#define TEX_WI                                                                \
+  {                                                                           \
+    STD_EXT, "wint_t", T_WI                                                   \
+  }
+#define T_ST &local_size_t_node
+#define T99_ST                                                                \
+  {                                                                           \
+    STD_C99, "size_t", T_ST                                                   \
+  }
+#define T_SST &local_ssize_t_node
+#define T99_SST                                                               \
+  {                                                                           \
+    STD_C99, "ssize_t", T_SST                                                 \
+  }
+#define T_PD &ptrdiff_type_node
+#define T99_PD                                                                \
+  {                                                                           \
+    STD_C99, "ptrdiff_t", T_PD                                                \
+  }
+#define T_UPD &unsigned_ptrdiff_type_node
+#define T99_UPD                                                               \
+  {                                                                           \
+    STD_C99, "unsigned ptrdiff_t", T_UPD                                      \
+  }
+#define T_IM &intmax_type_node
+#define T99_IM                                                                \
+  {                                                                           \
+    STD_C99, "intmax_t", T_IM                                                 \
+  }
+#define T_UIM &uintmax_type_node
+#define T99_UIM                                                               \
+  {                                                                           \
+    STD_C99, "uintmax_t", T_UIM                                               \
+  }
+#define T_D32 &dfloat32_type_node
+#define TEX_D32                                                               \
+  {                                                                           \
+    STD_EXT, "_Decimal32", T_D32                                              \
+  }
+#define T_D64 &dfloat64_type_node
+#define TEX_D64                                                               \
+  {                                                                           \
+    STD_EXT, "_Decimal64", T_D64                                              \
+  }
+#define T_D128 &dfloat128_type_node
+#define TEX_D128                                                              \
+  {                                                                           \
+    STD_EXT, "_Decimal128", T_D128                                            \
+  }
 
 /* Structure describing how format attributes such as "printf" are
    interpreted as "gnu_printf" or "ms_printf" on a particular system.

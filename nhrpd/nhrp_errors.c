@@ -24,7 +24,8 @@ static struct log_ref ferr_nhrp_err[] = {
 };
 /* clang-format on */
 
-void nhrp_error_init(void)
+void
+nhrp_error_init (void)
 {
-	log_ref_add(ferr_nhrp_err);
+  log_ref_add (ferr_nhrp_err);
 }

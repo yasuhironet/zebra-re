@@ -11,10 +11,11 @@
 #ifndef FABRICD
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-extern void isis_affinity_map_init(void);
+  extern void isis_affinity_map_init (void);
 
 #ifdef __cplusplus
 }

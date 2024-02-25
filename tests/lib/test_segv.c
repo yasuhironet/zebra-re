@@ -19,49 +19,54 @@ struct frr_signal_t sigs[] = {};
 
 struct event_loop *master;
 
-void func1(int *arg);
-void func3(void);
+void func1 (int *arg);
+void func3 (void);
 
-void func1(int *arg)
+void
+func1 (int *arg)
 {
-	int *null = NULL;
-	*null += 1;
-	*arg = 1;
+  int *null = NULL;
+  *null += 1;
+  *arg = 1;
 }
 
-static void func2(size_t depth, int *arg)
+static void
+func2 (size_t depth, int *arg)
 {
-	/* variable stack frame size */
-	int buf[depth];
-	for (size_t i = 0; i < depth; i++)
-		buf[i] = arg[i] + 1;
-	if (depth > 0)
-		func2(depth - 1, buf);
-	else
-		func1(&buf[0]);
-	for (size_t i = 0; i < depth; i++)
-		buf[i] = arg[i] + 2;
+  /* variable stack frame size */
+  int buf[depth];
+  for (size_t i = 0; i < depth; i++)
+    buf[i] = arg[i] + 1;
+  if (depth > 0)
+    func2 (depth - 1, buf);
+  else
+    func1 (&buf[0]);
+  for (size_t i = 0; i < depth; i++)
+    buf[i] = arg[i] + 2;
 }
 
-void func3(void)
+void
+func3 (void)
 {
-	int buf[6];
-	func2(6, buf);
+  int buf[6];
+  func2 (6, buf);
 }
 
-static void threadfunc(struct event *thread)
+static void
+threadfunc (struct event *thread)
 {
-	func3();
+  func3 ();
 }
 
-int main(void)
+int
+main (void)
 {
-	master = event_master_create(NULL);
-	signal_init(master, array_size(sigs), sigs);
+  master = event_master_create (NULL);
+  signal_init (master, array_size (sigs), sigs);
 
-	zlog_aux_init("NONE: ", LOG_DEBUG);
+  zlog_aux_init ("NONE: ", LOG_DEBUG);
 
-	event_execute(master, threadfunc, 0, 0);
+  event_execute (master, threadfunc, 0, 0);
 
-	exit(0);
+  exit (0);
 }

@@ -30,7 +30,8 @@ static struct log_ref ferr_eigrp_err[] = {
 };
 /* clang-format on */
 
-void eigrp_error_init(void)
+void
+eigrp_error_init (void)
 {
-	log_ref_add(ferr_eigrp_err);
+  log_ref_add (ferr_eigrp_err);
 }

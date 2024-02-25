@@ -7,15 +7,16 @@
 #include <llvm-c/Core.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-struct dbginfo;
+  struct dbginfo;
 
-extern struct dbginfo *dbginfo_load(LLVMModuleRef mod);
-extern bool dbginfo_struct_member(struct dbginfo *di, LLVMTypeRef typ,
-				  unsigned long long idx, char **struct_name,
-				  char **member_name);
+  extern struct dbginfo *dbginfo_load (LLVMModuleRef mod);
+  extern bool dbginfo_struct_member (struct dbginfo *di, LLVMTypeRef typ,
+                                     unsigned long long idx,
+                                     char **struct_name, char **member_name);
 
 #ifdef __cplusplus
 }

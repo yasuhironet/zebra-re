@@ -15,13 +15,13 @@
 #ifndef PCEP_UTILS_ORDERED_LIST_TEST_H_
 #define PCEP_UTILS_ORDERED_LIST_TEST_H_
 
-void test_empty_list(void);
-void test_null_list_handle(void);
-void test_add_to_list(void);
-void test_find(void);
-void test_remove_first_node(void);
-void test_remove_first_node_equals(void);
-void test_remove_node(void);
-int node_data_compare(void *list_entry, void *new_entry);
+void test_empty_list (void);
+void test_null_list_handle (void);
+void test_add_to_list (void);
+void test_find (void);
+void test_remove_first_node (void);
+void test_remove_first_node_equals (void);
+void test_remove_node (void);
+int node_data_compare (void *list_entry, void *new_entry);
 
 #endif /* PCEPTIMERINTERNALS_H_ */

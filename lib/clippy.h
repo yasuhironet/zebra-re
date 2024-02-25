@@ -11,12 +11,13 @@
 #include <Python.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-extern PyObject *clippy_parse(PyObject *self, PyObject *args);
-extern PyMODINIT_FUNC command_py_init(void);
-extern bool elf_py_init(PyObject *pymod);
+  extern PyObject *clippy_parse (PyObject *self, PyObject *args);
+  extern PyMODINIT_FUNC command_py_init (void);
+  extern bool elf_py_init (PyObject *pymod);
 
 #ifdef __cplusplus
 }

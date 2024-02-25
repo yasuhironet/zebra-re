@@ -16,7 +16,7 @@
 /*
  * Initialize VRRP neighbor discovery.
  */
-extern void vrrp_ndisc_init(void);
+extern void vrrp_ndisc_init (void);
 
 /*
  * Check whether VRRP Neighbor Discovery is initialized.
@@ -24,12 +24,12 @@ extern void vrrp_ndisc_init(void);
  * Returns:
  *    True if initialized, false otherwise
  */
-extern bool vrrp_ndisc_is_init(void);
+extern bool vrrp_ndisc_is_init (void);
 
 /*
  * Finish VRRP Neighbor Discovery.
  */
-extern void vrrp_ndisc_fini(void);
+extern void vrrp_ndisc_fini (void);
 
 /*
  * Send VRRP Neighbor Advertisement.
@@ -44,7 +44,7 @@ extern void vrrp_ndisc_fini(void);
  *    -1 on failure
  *     0 otherwise
  */
-extern int vrrp_ndisc_una_send(struct vrrp_router *r, struct ipaddr *ip);
+extern int vrrp_ndisc_una_send (struct vrrp_router *r, struct ipaddr *ip);
 
 /*
  * Send VRRP Neighbor Advertisements for all virtual IPs.
@@ -56,6 +56,6 @@ extern int vrrp_ndisc_una_send(struct vrrp_router *r, struct ipaddr *ip);
  *    -1 on failure
  *     0 otherwise
  */
-extern int vrrp_ndisc_una_send_all(struct vrrp_router *r);
+extern int vrrp_ndisc_una_send_all (struct vrrp_router *r);
 
 #endif /* __VRRP_NDISC_H__ */

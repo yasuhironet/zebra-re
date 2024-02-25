@@ -11,7 +11,7 @@
 
 #include <netinet/in.h>
 
-int routeget(struct in_addr dst, struct in_addr *src, struct in_addr *gw);
+int routeget (struct in_addr dst, struct in_addr *src, struct in_addr *gw);
 
 #endif /* ROUTEGET */
 

@@ -120,8 +120,9 @@ static struct log_ref ferr_path_warn[] = {
 };
 /* clang-format on */
 
-void path_error_init(void)
+void
+path_error_init (void)
 {
-	log_ref_add(ferr_path_err);
-	log_ref_add(ferr_path_warn);
+  log_ref_add (ferr_path_err);
+  log_ref_add (ferr_path_warn);
 }

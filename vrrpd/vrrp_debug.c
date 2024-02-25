@@ -51,68 +51,75 @@ const char *vrrp_debugs_conflines[] = {
  * set
  *    Whether to set or unset the specified flags
  */
-static void vrrp_debug_set_all(uint32_t flags, bool set)
+static void
+vrrp_debug_set_all (uint32_t flags, bool set)
 {
-	for (unsigned int i = 0; i < array_size(vrrp_debugs); i++) {
-		DEBUG_FLAGS_SET(vrrp_debugs[i], flags, set);
+  for (unsigned int i = 0; i < array_size (vrrp_debugs); i++)
+    {
+      DEBUG_FLAGS_SET (vrrp_debugs[i], flags, set);
 
-		/* if all modes have been turned off, don't preserve options */
-		if (!DEBUG_MODE_CHECK(vrrp_debugs[i], DEBUG_MODE_ALL))
-			DEBUG_CLEAR(vrrp_debugs[i]);
-	}
+      /* if all modes have been turned off, don't preserve options */
+      if (! DEBUG_MODE_CHECK (vrrp_debugs[i], DEBUG_MODE_ALL))
+        DEBUG_CLEAR (vrrp_debugs[i]);
+    }
 }
 
-static int vrrp_debug_config_write_helper(struct vty *vty, bool config)
+static int
+vrrp_debug_config_write_helper (struct vty *vty, bool config)
 {
-	uint32_t mode = DEBUG_MODE_ALL;
+  uint32_t mode = DEBUG_MODE_ALL;
 
-	if (config)
-		mode = DEBUG_MODE_CONF;
+  if (config)
+    mode = DEBUG_MODE_CONF;
 
-	for (unsigned int i = 0; i < array_size(vrrp_debugs); i++)
-		if (DEBUG_MODE_CHECK(vrrp_debugs[i], mode))
-			vty_out(vty, "%s\n", vrrp_debugs_conflines[i]);
+  for (unsigned int i = 0; i < array_size (vrrp_debugs); i++)
+    if (DEBUG_MODE_CHECK (vrrp_debugs[i], mode))
+      vty_out (vty, "%s\n", vrrp_debugs_conflines[i]);
 
-	return 0;
+  return 0;
 }
 
-int vrrp_config_write_debug(struct vty *vty)
+int
+vrrp_config_write_debug (struct vty *vty)
 {
-	return vrrp_debug_config_write_helper(vty, true);
+  return vrrp_debug_config_write_helper (vty, true);
 }
 
-int vrrp_debug_status_write(struct vty *vty)
+int
+vrrp_debug_status_write (struct vty *vty)
 {
-	return vrrp_debug_config_write_helper(vty, false);
+  return vrrp_debug_config_write_helper (vty, false);
 }
 
-void vrrp_debug_set(struct interface *ifp, uint8_t vrid, int vtynode,
-		    bool onoff, bool proto, bool autoconf, bool pkt, bool sock,
-		    bool ndisc, bool arp, bool zebra)
+void
+vrrp_debug_set (struct interface *ifp, uint8_t vrid, int vtynode, bool onoff,
+                bool proto, bool autoconf, bool pkt, bool sock, bool ndisc,
+                bool arp, bool zebra)
 {
-	uint32_t mode = DEBUG_NODE2MODE(vtynode);
+  uint32_t mode = DEBUG_NODE2MODE (vtynode);
 
-	if (proto)
-		DEBUG_MODE_SET(&vrrp_dbg_proto, mode, onoff);
-	if (autoconf)
-		DEBUG_MODE_SET(&vrrp_dbg_auto, mode, onoff);
-	if (pkt)
-		DEBUG_MODE_SET(&vrrp_dbg_pkt, mode, onoff);
-	if (sock)
-		DEBUG_MODE_SET(&vrrp_dbg_sock, mode, onoff);
-	if (ndisc)
-		DEBUG_MODE_SET(&vrrp_dbg_ndisc, mode, onoff);
-	if (arp)
-		DEBUG_MODE_SET(&vrrp_dbg_arp, mode, onoff);
-	if (zebra)
-		DEBUG_MODE_SET(&vrrp_dbg_zebra, mode, onoff);
+  if (proto)
+    DEBUG_MODE_SET (&vrrp_dbg_proto, mode, onoff);
+  if (autoconf)
+    DEBUG_MODE_SET (&vrrp_dbg_auto, mode, onoff);
+  if (pkt)
+    DEBUG_MODE_SET (&vrrp_dbg_pkt, mode, onoff);
+  if (sock)
+    DEBUG_MODE_SET (&vrrp_dbg_sock, mode, onoff);
+  if (ndisc)
+    DEBUG_MODE_SET (&vrrp_dbg_ndisc, mode, onoff);
+  if (arp)
+    DEBUG_MODE_SET (&vrrp_dbg_arp, mode, onoff);
+  if (zebra)
+    DEBUG_MODE_SET (&vrrp_dbg_zebra, mode, onoff);
 }
 
 /* ------------------------------------------------------------------------- */
 
-struct debug_callbacks vrrp_dbg_cbs = {.debug_set_all = vrrp_debug_set_all};
+struct debug_callbacks vrrp_dbg_cbs = { .debug_set_all = vrrp_debug_set_all };
 
-void vrrp_debug_init(void)
+void
+vrrp_debug_init (void)
 {
-	debug_init(&vrrp_dbg_cbs);
+  debug_init (&vrrp_dbg_cbs);
 }

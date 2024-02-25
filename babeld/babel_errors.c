@@ -42,7 +42,8 @@ static struct log_ref ferr_babel_err[] = {
 };
 /* clang-format on */
 
-void babel_error_init(void)
+void
+babel_error_init (void)
 {
-	log_ref_add(ferr_babel_err);
+  log_ref_add (ferr_babel_err);
 }

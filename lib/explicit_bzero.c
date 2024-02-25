@@ -14,12 +14,11 @@
 #undef explicit_bzero
 
 
-void explicit_bzero(void *buf, size_t len);
-__attribute__((__weak__)) void
-__explicit_bzero_hook(void *buf, size_t len);
+void explicit_bzero (void *buf, size_t len);
+__attribute__ ((__weak__)) void __explicit_bzero_hook (void *buf, size_t len);
 
-__attribute__((__weak__)) void
-__explicit_bzero_hook(void *buf, size_t len)
+__attribute__ ((__weak__)) void
+__explicit_bzero_hook (void *buf, size_t len)
 {
 }
 
@@ -30,10 +29,10 @@ __explicit_bzero_hook(void *buf, size_t len)
 #endif
 
 void
-explicit_bzero(void *buf, size_t len)
+explicit_bzero (void *buf, size_t len)
 {
-	memset(buf, 0, len);
-	__explicit_bzero_hook(buf, len);
+  memset (buf, 0, len);
+  __explicit_bzero_hook (buf, len);
 }
 
 #endif

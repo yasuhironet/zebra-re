@@ -28,18 +28,20 @@
 
 extern struct event_loop *master;
 
-static void resolver_result(struct resolver_query *resq, const char *errstr,
-			    int numaddrs, union sockunion *addr)
+static void
+resolver_result (struct resolver_query *resq, const char *errstr, int numaddrs,
+                 union sockunion *addr)
 {
-	int i;
+  int i;
 
-	if (numaddrs <= 0) {
-		zlog_warn("hostname resolution failed: %s", errstr);
-		return;
-	}
+  if (numaddrs <= 0)
+    {
+      zlog_warn ("hostname resolution failed: %s", errstr);
+      return;
+    }
 
-	for (i = 0; i < numaddrs; i++)
-		zlog_info("resolver result: %pSU", &addr[i]);
+  for (i = 0; i < numaddrs; i++)
+    zlog_info ("resolver result: %pSU", &addr[i]);
 }
 
 struct resolver_query query;
@@ -50,19 +52,20 @@ DEFUN (test_resolve,
        "DNS resolver\n"
        "Name to resolve\n")
 {
-	resolver_resolve(&query, AF_UNSPEC, 0, argv[1]->arg, resolver_result);
-	return CMD_SUCCESS;
+  resolver_resolve (&query, AF_UNSPEC, 0, argv[1]->arg, resolver_result);
+  return CMD_SUCCESS;
 }
 
-__attribute__((_CONSTRUCTOR(2000)))
-static void test_setup(void)
+__attribute__ ((_CONSTRUCTOR (2000))) static void
+test_setup (void)
 {
-	test_log_prio = LOG_DEBUG;
+  test_log_prio = LOG_DEBUG;
 }
 
-void test_init(int argc, char **argv)
+void
+test_init (int argc, char **argv)
 {
-	resolver_init(master);
+  resolver_init (master);
 
-	install_element(VIEW_NODE, &test_resolve_cmd);
+  install_element (VIEW_NODE, &test_resolve_cmd);
 }

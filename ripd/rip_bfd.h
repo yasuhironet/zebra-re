@@ -9,15 +9,15 @@
 
 #include "frrevent.h"
 
-DECLARE_MTYPE(RIP_BFD_PROFILE);
+DECLARE_MTYPE (RIP_BFD_PROFILE);
 
 struct rip;
 struct rip_interface;
 struct rip_peer;
 
-void rip_bfd_session_update(struct rip_peer *rp);
-void rip_bfd_interface_update(struct rip_interface *ri);
-void rip_bfd_instance_update(struct rip *rip);
-void rip_bfd_init(struct event_loop *tm);
+void rip_bfd_session_update (struct rip_peer *rp);
+void rip_bfd_interface_update (struct rip_interface *ri);
+void rip_bfd_instance_update (struct rip *rip);
+void rip_bfd_init (struct event_loop *tm);
 
 #endif /* _RIP_BFD_ */

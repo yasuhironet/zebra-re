@@ -15,10 +15,10 @@
 #ifndef PCEP_UTILS_QUEUE_TEST_H_
 #define PCEP_UTILS_QUEUE_TEST_H_
 
-void test_empty_queue(void);
-void test_null_queue_handle(void);
-void test_enqueue(void);
-void test_enqueue_with_limit(void);
-void test_dequeue(void);
+void test_empty_queue (void);
+void test_null_queue_handle (void);
+void test_enqueue (void);
+void test_enqueue_with_limit (void);
+void test_dequeue (void);
 
 #endif /* PCEPTIMERINTERNALS_H_ */

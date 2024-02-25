@@ -30,45 +30,47 @@ struct event_loop *master = NULL;
 static struct bgp *bgp;
 static as_t asn = 100;
 
-extern int bgp_read_packet(struct peer *peer);
+extern int bgp_read_packet (struct peer *peer);
 
 /*
  * This file is intended to be used as input for some sort of
  * fuzzer.  Specifically I had afl in mind when I wrote
  * this code.
  */
-int main(int argc, char *argv[])
+int
+main (int argc, char *argv[])
 {
-	struct peer *peer;
-	int i, j;
-	struct event t;
+  struct peer *peer;
+  int i, j;
+  struct event t;
 
-	qobj_init();
-	bgp_attr_init();
-	master = event_master_create(NULL);
-	bgp_master_init(master, BGP_SOCKET_SNDBUF_SIZE, list_new());
-	vrf_init(NULL, NULL, NULL, NULL);
-	bgp_option_set(BGP_OPT_NO_LISTEN);
+  qobj_init ();
+  bgp_attr_init ();
+  master = event_master_create (NULL);
+  bgp_master_init (master, BGP_SOCKET_SNDBUF_SIZE, list_new ());
+  vrf_init (NULL, NULL, NULL, NULL);
+  bgp_option_set (BGP_OPT_NO_LISTEN);
 
-	if (bgp_get(&bgp, &asn, NULL, BGP_INSTANCE_TYPE_DEFAULT, NULL,
-		    ASNOTATION_PLAIN) < 0)
-		return -1;
+  if (bgp_get (&bgp, &asn, NULL, BGP_INSTANCE_TYPE_DEFAULT, NULL,
+               ASNOTATION_PLAIN) < 0)
+    return -1;
 
-	peer = peer_create_accept(bgp);
-	peer->host = (char *)"foo";
+  peer = peer_create_accept (bgp);
+  peer->host = (char *) "foo";
 
-	for (i = AFI_IP; i < AFI_MAX; i++)
-		for (j = SAFI_UNICAST; j < SAFI_MAX; j++) {
-			peer->afc[i][j] = 1;
-			peer->afc_adv[i][j] = 1;
-		}
+  for (i = AFI_IP; i < AFI_MAX; i++)
+    for (j = SAFI_UNICAST; j < SAFI_MAX; j++)
+      {
+        peer->afc[i][j] = 1;
+        peer->afc_adv[i][j] = 1;
+      }
 
-	SET_FLAG(peer->cap, PEER_CAP_DYNAMIC_ADV);
-	peer->status = Established;
+  SET_FLAG (peer->cap, PEER_CAP_DYNAMIC_ADV);
+  peer->status = Established;
 
-        peer->fd = open(argv[1], O_RDONLY|O_NONBLOCK);
-	t.arg = peer;
-	peer->t_read = &t;
+  peer->fd = open (argv[1], O_RDONLY | O_NONBLOCK);
+  t.arg = peer;
+  peer->t_read = &t;
 
-	// printf("bgp_read_packet returns: %d\n", bgp_read(&t));
+  // printf("bgp_read_packet returns: %d\n", bgp_read(&t));
 }

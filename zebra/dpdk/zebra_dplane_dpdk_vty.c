@@ -12,16 +12,20 @@
 
 #include "zebra/dpdk/zebra_dplane_dpdk_vty_clippy.c"
 
-#define ZD_STR "Zebra dataplane information\n"
+#define ZD_STR      "Zebra dataplane information\n"
 #define ZD_DPDK_STR "DPDK offload information\n"
 
-DEFPY(zd_dpdk_show_counters, zd_dpdk_show_counters_cmd,
-      "show dplane dpdk counters",
-      SHOW_STR ZD_STR ZD_DPDK_STR "show counters\n")
+DEFPY (zd_dpdk_show_counters,
+       zd_dpdk_show_counters_cmd,
+       "show dplane dpdk counters",
+       SHOW_STR
+       ZD_STR
+       ZD_DPDK_STR
+       "show counters\n")
 {
-	zd_dpdk_stat_show(vty);
+  zd_dpdk_stat_show (vty);
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 
@@ -36,14 +40,14 @@ DEFPY (zd_dpdk_show_ports,
        "Detailed information\n"
        JSON_STR)
 {
-	bool uj = !!json;
-	bool ud = !!detail;
+  bool uj = ! ! json;
+  bool ud = ! ! detail;
 
-	if (!port_id)
-		port_id = ZD_DPDK_INVALID_PORT;
-	zd_dpdk_port_show(vty, port_id, uj, ud);
+  if (! port_id)
+    port_id = ZD_DPDK_INVALID_PORT;
+  zd_dpdk_port_show (vty, port_id, uj, ud);
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 
@@ -56,15 +60,16 @@ DEFPY (zd_dpdk_show_pbr_flows,
        "show pbr info\n"
        "DPDK flows\n")
 {
-	zd_dpdk_pbr_flows_show(vty);
+  zd_dpdk_pbr_flows_show (vty);
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 
-void zd_dpdk_vty_init(void)
+void
+zd_dpdk_vty_init (void)
 {
-	install_element(VIEW_NODE, &zd_dpdk_show_counters_cmd);
-	install_element(VIEW_NODE, &zd_dpdk_show_ports_cmd);
-	install_element(VIEW_NODE, &zd_dpdk_show_pbr_flows_cmd);
+  install_element (VIEW_NODE, &zd_dpdk_show_counters_cmd);
+  install_element (VIEW_NODE, &zd_dpdk_show_ports_cmd);
+  install_element (VIEW_NODE, &zd_dpdk_show_pbr_flows_cmd);
 }

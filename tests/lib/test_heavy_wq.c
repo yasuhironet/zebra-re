@@ -23,81 +23,88 @@
 
 #include "tests.h"
 
-DEFINE_MGROUP(TEST_HEAVYWQ, "heavy-wq test");
-DEFINE_MTYPE_STATIC(TEST_HEAVYWQ, WQ_NODE, "heavy_wq_node");
-DEFINE_MTYPE_STATIC(TEST_HEAVYWQ, WQ_NODE_STR, "heavy_wq_node->str");
+DEFINE_MGROUP (TEST_HEAVYWQ, "heavy-wq test");
+DEFINE_MTYPE_STATIC (TEST_HEAVYWQ, WQ_NODE, "heavy_wq_node");
+DEFINE_MTYPE_STATIC (TEST_HEAVYWQ, WQ_NODE_STR, "heavy_wq_node->str");
 
 extern struct event_loop *master;
 static struct work_queue *heavy_wq;
 
-struct heavy_wq_node {
-	char *str;
-	int i;
+struct heavy_wq_node
+{
+  char *str;
+  int i;
 };
 
-enum { ITERS_FIRST = 0,
-       ITERS_ERR = 100,
-       ITERS_LATER = 400,
-       ITERS_PRINT = 10,
-       ITERS_MAX = 1000,
+enum
+{
+  ITERS_FIRST = 0,
+  ITERS_ERR = 100,
+  ITERS_LATER = 400,
+  ITERS_PRINT = 10,
+  ITERS_MAX = 1000,
 };
 
-static void heavy_wq_add(struct vty *vty, const char *str, int i)
+static void
+heavy_wq_add (struct vty *vty, const char *str, int i)
 {
-	struct heavy_wq_node *hn;
+  struct heavy_wq_node *hn;
 
-	hn = XCALLOC(MTYPE_WQ_NODE, sizeof(struct heavy_wq_node));
+  hn = XCALLOC (MTYPE_WQ_NODE, sizeof (struct heavy_wq_node));
 
-	hn->i = i;
-	hn->str = XSTRDUP(MTYPE_WQ_NODE_STR, str);
+  hn->i = i;
+  hn->str = XSTRDUP (MTYPE_WQ_NODE_STR, str);
 
-	work_queue_add(heavy_wq, hn);
+  work_queue_add (heavy_wq, hn);
 
-	return;
+  return;
 }
 
-static void slow_func_del(struct work_queue *wq, void *data)
+static void
+slow_func_del (struct work_queue *wq, void *data)
 {
-	struct heavy_wq_node *hn = data;
-	assert(hn && hn->str);
-	printf("%s: %s\n", __func__, hn->str);
-	XFREE(MTYPE_WQ_NODE_STR, hn->str);
-	XFREE(MTYPE_WQ_NODE, hn);
+  struct heavy_wq_node *hn = data;
+  assert (hn && hn->str);
+  printf ("%s: %s\n", __func__, hn->str);
+  XFREE (MTYPE_WQ_NODE_STR, hn->str);
+  XFREE (MTYPE_WQ_NODE, hn);
 }
 
-static wq_item_status slow_func(struct work_queue *wq, void *data)
+static wq_item_status
+slow_func (struct work_queue *wq, void *data)
 {
-	struct heavy_wq_node *hn = data;
-	double x = 1;
-	int j;
+  struct heavy_wq_node *hn = data;
+  double x = 1;
+  int j;
 
-	assert(hn && hn->str);
+  assert (hn && hn->str);
 
-	for (j = 0; j < 300; j++)
-		x += sin(x) * j;
+  for (j = 0; j < 300; j++)
+    x += sin (x) * j;
 
-	if ((hn->i % ITERS_LATER) == 0)
-		return WQ_RETRY_LATER;
+  if ((hn->i % ITERS_LATER) == 0)
+    return WQ_RETRY_LATER;
 
-	if ((hn->i % ITERS_ERR) == 0)
-		return WQ_RETRY_NOW;
+  if ((hn->i % ITERS_ERR) == 0)
+    return WQ_RETRY_NOW;
 
-	if ((hn->i % ITERS_PRINT) == 0)
-		printf("%s did %d, x = %g\n", hn->str, hn->i, x);
+  if ((hn->i % ITERS_PRINT) == 0)
+    printf ("%s did %d, x = %g\n", hn->str, hn->i, x);
 
-	return WQ_SUCCESS;
+  return WQ_SUCCESS;
 }
 
-static void clear_something(struct vty *vty, const char *str)
+static void
+clear_something (struct vty *vty, const char *str)
 {
-	int i;
+  int i;
 
-	/* this could be like iterating through 150k of route_table
-	 * or worse, iterating through a list of peers, to bgp_stop them with
-	 * each having 150k route tables to process...
-	 */
-	for (i = ITERS_FIRST; i < ITERS_MAX; i++)
-		heavy_wq_add(vty, str, i);
+  /* this could be like iterating through 150k of route_table
+   * or worse, iterating through a list of peers, to bgp_stop them with
+   * each having 150k route tables to process...
+   */
+  for (i = ITERS_FIRST; i < ITERS_MAX; i++)
+    heavy_wq_add (vty, str, i);
 }
 
 DEFUN (clear_foo,
@@ -106,33 +113,36 @@ DEFUN (clear_foo,
        "clear command\n"
        "arbitrary string\n")
 {
-	char *str;
-	if (!argc) {
-		vty_out(vty, "%% string argument required\n");
-		return CMD_WARNING;
-	}
+  char *str;
+  if (! argc)
+    {
+      vty_out (vty, "%% string argument required\n");
+      return CMD_WARNING;
+    }
 
-	str = argv_concat(argv, argc, 0);
+  str = argv_concat (argv, argc, 0);
 
-	clear_something(vty, str);
-	XFREE(MTYPE_TMP, str);
-	return CMD_SUCCESS;
+  clear_something (vty, str);
+  XFREE (MTYPE_TMP, str);
+  return CMD_SUCCESS;
 }
 
-static int heavy_wq_init(void)
+static int
+heavy_wq_init (void)
 {
-	heavy_wq = work_queue_new(master, "heavy_work_queue");
+  heavy_wq = work_queue_new (master, "heavy_work_queue");
 
-	heavy_wq->spec.workfunc = &slow_func;
-	heavy_wq->spec.del_item_data = &slow_func_del;
-	heavy_wq->spec.max_retries = 3;
-	heavy_wq->spec.hold = 1000;
+  heavy_wq->spec.workfunc = &slow_func;
+  heavy_wq->spec.del_item_data = &slow_func_del;
+  heavy_wq->spec.max_retries = 3;
+  heavy_wq->spec.hold = 1000;
 
-	return 0;
+  return 0;
 }
 
-void test_init(void)
+void
+test_init (void)
 {
-	install_element(VIEW_NODE, &clear_foo_cmd);
-	heavy_wq_init();
+  install_element (VIEW_NODE, &clear_foo_cmd);
+  heavy_wq_init ();
 }

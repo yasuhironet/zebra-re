@@ -30,7 +30,8 @@ static struct log_ref ferr_watchfrr_err[] = {
 };
 /* clang-format on */
 
-void watchfrr_error_init(void)
+void
+watchfrr_error_init (void)
 {
-	log_ref_add(ferr_watchfrr_err);
+  log_ref_add (ferr_watchfrr_err);
 }

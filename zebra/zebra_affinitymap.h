@@ -26,10 +26,11 @@
 #include "lib/affinitymap.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-extern void zebra_affinity_map_init(void);
+  extern void zebra_affinity_map_init (void);
 
 #ifdef __cplusplus
 }

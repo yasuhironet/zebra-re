@@ -12,7 +12,7 @@
 #include "memory.h"
 #include "asn.h"
 
-DEFINE_MTYPE_STATIC(LIB, CMD_MATCHSTACK, "Command Match Stack");
+DEFINE_MTYPE_STATIC (LIB, CMD_MATCHSTACK, "Command Match Stack");
 
 #ifdef TRACE_MATCHER
 #define TM 1
@@ -20,111 +20,120 @@ DEFINE_MTYPE_STATIC(LIB, CMD_MATCHSTACK, "Command Match Stack");
 #define TM 0
 #endif
 
-#define trace_matcher(...)                                                     \
-	do {                                                                   \
-		if (TM)                                                        \
-			fprintf(stderr, __VA_ARGS__);                          \
-	} while (0);
+#define trace_matcher(...)                                                    \
+  do                                                                          \
+    {                                                                         \
+      if (TM)                                                                 \
+        fprintf (stderr, __VA_ARGS__);                                        \
+    }                                                                         \
+  while (0);
 
 /* matcher helper prototypes */
-static int add_nexthops(struct list *, struct graph_node *,
-			struct graph_node **, size_t, bool);
+static int add_nexthops (struct list *, struct graph_node *,
+                         struct graph_node **, size_t, bool);
 
-static enum matcher_rv command_match_r(struct graph_node *, vector,
-				       unsigned int, struct graph_node **,
-				       struct list **);
+static enum matcher_rv command_match_r (struct graph_node *, vector,
+                                        unsigned int, struct graph_node **,
+                                        struct list **);
 
-static int score_precedence(enum cmd_token_type);
+static int score_precedence (enum cmd_token_type);
 
-static enum match_type min_match_level(enum cmd_token_type);
+static enum match_type min_match_level (enum cmd_token_type);
 
-static void del_arglist(struct list *);
+static void del_arglist (struct list *);
 
-static struct cmd_token *disambiguate_tokens(struct cmd_token *,
-					     struct cmd_token *, char *);
+static struct cmd_token *disambiguate_tokens (struct cmd_token *,
+                                              struct cmd_token *, char *);
 
-static struct list *disambiguate(struct list *, struct list *, vector,
-				 unsigned int);
+static struct list *disambiguate (struct list *, struct list *, vector,
+                                  unsigned int);
 
-int compare_completions(const void *, const void *);
+int compare_completions (const void *, const void *);
 
 /* token matcher prototypes */
-static enum match_type match_token(struct cmd_token *, char *);
+static enum match_type match_token (struct cmd_token *, char *);
 
-static enum match_type match_ipv4(const char *);
+static enum match_type match_ipv4 (const char *);
 
-static enum match_type match_ipv4_prefix(const char *);
+static enum match_type match_ipv4_prefix (const char *);
 
-static enum match_type match_ipv6_prefix(const char *, bool);
+static enum match_type match_ipv6_prefix (const char *, bool);
 
-static enum match_type match_range(struct cmd_token *, const char *);
+static enum match_type match_range (struct cmd_token *, const char *);
 
-static enum match_type match_word(struct cmd_token *, const char *);
+static enum match_type match_word (struct cmd_token *, const char *);
 
-static enum match_type match_variable(struct cmd_token *, const char *);
+static enum match_type match_variable (struct cmd_token *, const char *);
 
-static enum match_type match_mac(const char *, bool);
+static enum match_type match_mac (const char *, bool);
 
-static bool is_neg(vector vline, size_t idx)
+static bool
+is_neg (vector vline, size_t idx)
 {
-	if (idx >= vector_active(vline) || !vector_slot(vline, idx))
-		return false;
-	return !strcmp(vector_slot(vline, idx), "no");
+  if (idx >= vector_active (vline) || ! vector_slot (vline, idx))
+    return false;
+  return ! strcmp (vector_slot (vline, idx), "no");
 }
 
-enum matcher_rv command_match(struct graph *cmdgraph, vector vline,
-			      struct list **argv, const struct cmd_element **el)
+enum matcher_rv
+command_match (struct graph *cmdgraph, vector vline, struct list **argv,
+               const struct cmd_element **el)
 {
-	struct graph_node *stack[CMD_ARGC_MAX];
-	enum matcher_rv status;
-	*argv = NULL;
+  struct graph_node *stack[CMD_ARGC_MAX];
+  enum matcher_rv status;
+  *argv = NULL;
 
-	// prepend a dummy token to match that pesky start node
-	vector vvline = vector_init(vline->alloced + 1);
-	vector_set_index(vvline, 0, XSTRDUP(MTYPE_TMP, "dummy"));
-	memcpy(vvline->index + 1, vline->index,
-	       sizeof(void *) * vline->alloced);
-	vvline->active = vline->active + 1;
+  // prepend a dummy token to match that pesky start node
+  vector vvline = vector_init (vline->alloced + 1);
+  vector_set_index (vvline, 0, XSTRDUP (MTYPE_TMP, "dummy"));
+  memcpy (vvline->index + 1, vline->index, sizeof (void *) * vline->alloced);
+  vvline->active = vline->active + 1;
 
-	struct graph_node *start = vector_slot(cmdgraph->nodes, 0);
-	status = command_match_r(start, vvline, 0, stack, argv);
-	if (status == MATCHER_OK) { // successful match
-		struct listnode *head = listhead(*argv);
-		struct listnode *tail = listtail(*argv);
+  struct graph_node *start = vector_slot (cmdgraph->nodes, 0);
+  status = command_match_r (start, vvline, 0, stack, argv);
+  if (status == MATCHER_OK)
+    { // successful match
+      struct listnode *head = listhead (*argv);
+      struct listnode *tail = listtail (*argv);
 
-		assert(head);
-		assert(tail);
+      assert (head);
+      assert (tail);
 
-		// delete dummy start node
-		cmd_token_del((struct cmd_token *)head->data);
-		list_delete_node(*argv, head);
+      // delete dummy start node
+      cmd_token_del ((struct cmd_token *) head->data);
+      list_delete_node (*argv, head);
 
-		// get cmd_element out of list tail
-		*el = listgetdata(tail);
-		list_delete_node(*argv, tail);
+      // get cmd_element out of list tail
+      *el = listgetdata (tail);
+      list_delete_node (*argv, tail);
 
-		// now argv is an ordered list of cmd_token matching the user
-		// input, with each cmd_token->arg holding the corresponding
-		// input
-		assert(*el);
-	} else if (*argv) {
-		del_arglist(*argv);
-		*argv = NULL;
-	}
+      // now argv is an ordered list of cmd_token matching the user
+      // input, with each cmd_token->arg holding the corresponding
+      // input
+      assert (*el);
+    }
+  else if (*argv)
+    {
+      del_arglist (*argv);
+      *argv = NULL;
+    }
 
-	if (!*el) {
-		trace_matcher("No match\n");
-	} else {
-		trace_matcher("Matched command\n->string %s\n->desc %s\n",
-			      (*el)->string, (*el)->doc);
-	}
+  if (! *el)
+    {
+      trace_matcher ("No match\n");
+    }
+  else
+    {
+      trace_matcher ("Matched command\n->string %s\n->desc %s\n",
+                     (*el)->string, (*el)->doc);
+    }
 
-	// free the leader token we alloc'd
-	XFREE(MTYPE_TMP, vector_slot(vvline, 0));
-	// free vector
-	vector_free(vvline);
+  // free the leader token we alloc'd
+  XFREE (MTYPE_TMP, vector_slot (vvline, 0));
+  // free vector
+  vector_free (vvline);
 
-	return status;
+  return status;
 }
 
 /**
@@ -178,283 +187,291 @@ enum matcher_rv command_match(struct graph *cmdgraph, vector vline,
  *
  * If no match was found, the return value is NULL.
  */
-static enum matcher_rv command_match_r(struct graph_node *start, vector vline,
-				       unsigned int n,
-				       struct graph_node **stack,
-				       struct list **currbest)
+static enum matcher_rv
+command_match_r (struct graph_node *start, vector vline, unsigned int n,
+                 struct graph_node **stack, struct list **currbest)
 {
-	assert(n < vector_active(vline));
+  assert (n < vector_active (vline));
 
-	enum matcher_rv status = MATCHER_NO_MATCH;
+  enum matcher_rv status = MATCHER_NO_MATCH;
 
-	// get the minimum match level that can count as a full match
-	struct cmd_token *copy, *token = start->data;
-	enum match_type minmatch = min_match_level(token->type);
+  // get the minimum match level that can count as a full match
+  struct cmd_token *copy, *token = start->data;
+  enum match_type minmatch = min_match_level (token->type);
 
-	/* check history/stack of tokens
-	 * this disallows matching the same one more than once if there is a
-	 * circle in the graph (used for keyword arguments) */
-	if (n == CMD_ARGC_MAX)
-		return MATCHER_NO_MATCH;
-	if (!token->allowrepeat)
-		for (size_t s = 0; s < n; s++)
-			if (stack[s] == start)
-				return MATCHER_NO_MATCH;
+  /* check history/stack of tokens
+   * this disallows matching the same one more than once if there is a
+   * circle in the graph (used for keyword arguments) */
+  if (n == CMD_ARGC_MAX)
+    return MATCHER_NO_MATCH;
+  if (! token->allowrepeat)
+    for (size_t s = 0; s < n; s++)
+      if (stack[s] == start)
+        return MATCHER_NO_MATCH;
 
-	// get the current operating input token
-	char *input_token = vector_slot(vline, n);
+  // get the current operating input token
+  char *input_token = vector_slot (vline, n);
 
 #ifdef TRACE_MATCHER
-	fprintf(stdout, "\"%-20s\" matches \"%-30s\" ? ", input_token,
-		token->text);
-	enum match_type mt = match_token(token, input_token);
-	fprintf(stdout, "type: %d ", token->type);
-	fprintf(stdout, "min: %d - ", minmatch);
-	switch (mt) {
-	case trivial_match:
-		fprintf(stdout, "trivial_match ");
-		break;
-	case no_match:
-		fprintf(stdout, "no_match ");
-		break;
-	case partly_match:
-		fprintf(stdout, "partly_match ");
-		break;
-	case exact_match:
-		fprintf(stdout, "exact_match ");
-		break;
-	}
-	if (mt >= minmatch)
-		fprintf(stdout, " MATCH");
-	fprintf(stdout, "\n");
+  fprintf (stdout, "\"%-20s\" matches \"%-30s\" ? ", input_token, token->text);
+  enum match_type mt = match_token (token, input_token);
+  fprintf (stdout, "type: %d ", token->type);
+  fprintf (stdout, "min: %d - ", minmatch);
+  switch (mt)
+    {
+    case trivial_match:
+      fprintf (stdout, "trivial_match ");
+      break;
+    case no_match:
+      fprintf (stdout, "no_match ");
+      break;
+    case partly_match:
+      fprintf (stdout, "partly_match ");
+      break;
+    case exact_match:
+      fprintf (stdout, "exact_match ");
+      break;
+    }
+  if (mt >= minmatch)
+    fprintf (stdout, " MATCH");
+  fprintf (stdout, "\n");
 #endif
 
-	// if we don't match this node, die
-	if (match_token(token, input_token) < minmatch)
-		return MATCHER_NO_MATCH;
+  // if we don't match this node, die
+  if (match_token (token, input_token) < minmatch)
+    return MATCHER_NO_MATCH;
 
-	stack[n] = start;
+  stack[n] = start;
 
-	// pointers for iterating linklist
-	struct listnode *ln;
-	struct graph_node *gn;
+  // pointers for iterating linklist
+  struct listnode *ln;
+  struct graph_node *gn;
 
-	// get all possible nexthops
-	struct list *next = list_new();
-	add_nexthops(next, start, NULL, 0, is_neg(vline, 1));
+  // get all possible nexthops
+  struct list *next = list_new ();
+  add_nexthops (next, start, NULL, 0, is_neg (vline, 1));
 
-	// determine the best match
-	for (ALL_LIST_ELEMENTS_RO(next, ln, gn)) {
-		// if we've matched all input we're looking for END_TKN
-		if (n + 1 == vector_active(vline)) {
-			struct cmd_token *tok = gn->data;
-			if (tok->type == END_TKN) {
-				// if more than one END_TKN in the follow set
-				if (*currbest) {
-					status = MATCHER_AMBIGUOUS;
-					break;
-				} else {
-					status = MATCHER_OK;
-				}
-				*currbest = list_new();
-				// node should have one child node with the
-				// element
-				struct graph_node *leaf =
-					vector_slot(gn->to, 0);
-				// last node in the list will hold the
-				// cmd_element; this is important because
-				// list_delete() expects that all nodes have
-				// the same data type, so when deleting this
-				// list the last node must be manually deleted
-				struct cmd_element *el = leaf->data;
-				listnode_add(*currbest, el);
-				(*currbest)->del =
-					(void (*)(void *)) & cmd_token_del;
-				// do not break immediately; continue walking
-				// through the follow set to ensure that there
-				// is exactly one END_TKN
-			}
-			continue;
-		}
+  // determine the best match
+  for (ALL_LIST_ELEMENTS_RO (next, ln, gn))
+    {
+      // if we've matched all input we're looking for END_TKN
+      if (n + 1 == vector_active (vline))
+        {
+          struct cmd_token *tok = gn->data;
+          if (tok->type == END_TKN)
+            {
+              // if more than one END_TKN in the follow set
+              if (*currbest)
+                {
+                  status = MATCHER_AMBIGUOUS;
+                  break;
+                }
+              else
+                {
+                  status = MATCHER_OK;
+                }
+              *currbest = list_new ();
+              // node should have one child node with the
+              // element
+              struct graph_node *leaf = vector_slot (gn->to, 0);
+              // last node in the list will hold the
+              // cmd_element; this is important because
+              // list_delete() expects that all nodes have
+              // the same data type, so when deleting this
+              // list the last node must be manually deleted
+              struct cmd_element *el = leaf->data;
+              listnode_add (*currbest, el);
+              (*currbest)->del = (void (*) (void *)) & cmd_token_del;
+              // do not break immediately; continue walking
+              // through the follow set to ensure that there
+              // is exactly one END_TKN
+            }
+          continue;
+        }
 
-		// else recurse on candidate child node
-		struct list *result = NULL;
-		enum matcher_rv rstat =
-			command_match_r(gn, vline, n + 1, stack, &result);
+      // else recurse on candidate child node
+      struct list *result = NULL;
+      enum matcher_rv rstat =
+          command_match_r (gn, vline, n + 1, stack, &result);
 
-		// save the best match
-		if (result && *currbest) {
-			// pick the best of two matches
-			struct list *newbest =
-				disambiguate(*currbest, result, vline, n + 1);
+      // save the best match
+      if (result && *currbest)
+        {
+          // pick the best of two matches
+          struct list *newbest =
+              disambiguate (*currbest, result, vline, n + 1);
 
-			// current best and result are ambiguous
-			if (!newbest)
-				status = MATCHER_AMBIGUOUS;
-			// current best is still the best, but ambiguous
-			else if (newbest == *currbest
-				 && status == MATCHER_AMBIGUOUS)
-				status = MATCHER_AMBIGUOUS;
-			// result is better, but also ambiguous
-			else if (newbest == result
-				 && rstat == MATCHER_AMBIGUOUS)
-				status = MATCHER_AMBIGUOUS;
-			// one or the other is superior and not ambiguous
-			else
-				status = MATCHER_OK;
+          // current best and result are ambiguous
+          if (! newbest)
+            status = MATCHER_AMBIGUOUS;
+          // current best is still the best, but ambiguous
+          else if (newbest == *currbest && status == MATCHER_AMBIGUOUS)
+            status = MATCHER_AMBIGUOUS;
+          // result is better, but also ambiguous
+          else if (newbest == result && rstat == MATCHER_AMBIGUOUS)
+            status = MATCHER_AMBIGUOUS;
+          // one or the other is superior and not ambiguous
+          else
+            status = MATCHER_OK;
 
-			// delete the unnecessary result
-			struct list *todelete =
-				((newbest && newbest == result) ? *currbest
-								: result);
-			del_arglist(todelete);
+          // delete the unnecessary result
+          struct list *todelete =
+              ((newbest && newbest == result) ? *currbest : result);
+          del_arglist (todelete);
 
-			*currbest = newbest ? newbest : *currbest;
-		} else if (result) {
-			status = rstat;
-			*currbest = result;
-		} else if (!*currbest) {
-			status = MAX(rstat, status);
-		}
-	}
-	if (*currbest) {
-		// copy token, set arg and prepend to currbest
-		token = start->data;
-		copy = cmd_token_dup(token);
-		copy->arg = XSTRDUP(MTYPE_CMD_ARG, input_token);
-		listnode_add_before(*currbest, (*currbest)->head, copy);
-	} else if (n + 1 == vector_active(vline) && status == MATCHER_NO_MATCH)
-		status = MATCHER_INCOMPLETE;
+          *currbest = newbest ? newbest : *currbest;
+        }
+      else if (result)
+        {
+          status = rstat;
+          *currbest = result;
+        }
+      else if (! *currbest)
+        {
+          status = MAX (rstat, status);
+        }
+    }
+  if (*currbest)
+    {
+      // copy token, set arg and prepend to currbest
+      token = start->data;
+      copy = cmd_token_dup (token);
+      copy->arg = XSTRDUP (MTYPE_CMD_ARG, input_token);
+      listnode_add_before (*currbest, (*currbest)->head, copy);
+    }
+  else if (n + 1 == vector_active (vline) && status == MATCHER_NO_MATCH)
+    status = MATCHER_INCOMPLETE;
 
-	// cleanup
-	list_delete(&next);
+  // cleanup
+  list_delete (&next);
 
-	return status;
+  return status;
 }
 
-static void stack_del(void *val)
+static void
+stack_del (void *val)
 {
-	XFREE(MTYPE_CMD_MATCHSTACK, val);
+  XFREE (MTYPE_CMD_MATCHSTACK, val);
 }
 
-enum matcher_rv command_complete(struct graph *graph, vector vline,
-				 struct list **completions)
+enum matcher_rv
+command_complete (struct graph *graph, vector vline, struct list **completions)
 {
-	// pointer to next input token to match
-	char *input_token;
-	bool neg = is_neg(vline, 0);
+  // pointer to next input token to match
+  char *input_token;
+  bool neg = is_neg (vline, 0);
 
-	struct list *
-		current =
-		       list_new(), // current nodes to match input token against
-		*next = list_new(); // possible next hops after current input
-				    // token
-	current->del = next->del = stack_del;
+  struct list *current =
+                  list_new (), // current nodes to match input token against
+      *next = list_new ();     // possible next hops after current input
+                               // token
+  current->del = next->del = stack_del;
 
-	// pointers used for iterating lists
-	struct graph_node **gstack, **newstack;
-	struct listnode *node;
+  // pointers used for iterating lists
+  struct graph_node **gstack, **newstack;
+  struct listnode *node;
 
-	// add all children of start node to list
-	struct graph_node *start = vector_slot(graph->nodes, 0);
-	add_nexthops(next, start, &start, 0, neg);
+  // add all children of start node to list
+  struct graph_node *start = vector_slot (graph->nodes, 0);
+  add_nexthops (next, start, &start, 0, neg);
 
-	unsigned int idx;
-	for (idx = 0; idx < vector_active(vline) && next->count > 0; idx++) {
-		list_delete(&current);
-		current = next;
-		next = list_new();
-		next->del = stack_del;
+  unsigned int idx;
+  for (idx = 0; idx < vector_active (vline) && next->count > 0; idx++)
+    {
+      list_delete (&current);
+      current = next;
+      next = list_new ();
+      next->del = stack_del;
 
-		input_token = vector_slot(vline, idx);
+      input_token = vector_slot (vline, idx);
 
-		int exact_match_exists = 0;
-		for (ALL_LIST_ELEMENTS_RO(current, node, gstack))
-			if (!exact_match_exists)
-				exact_match_exists =
-					(match_token(gstack[0]->data,
-						     input_token)
-					 == exact_match);
-			else
-				break;
+      int exact_match_exists = 0;
+      for (ALL_LIST_ELEMENTS_RO (current, node, gstack))
+        if (! exact_match_exists)
+          exact_match_exists =
+              (match_token (gstack[0]->data, input_token) == exact_match);
+        else
+          break;
 
-		for (ALL_LIST_ELEMENTS_RO(current, node, gstack)) {
-			struct cmd_token *token = gstack[0]->data;
+      for (ALL_LIST_ELEMENTS_RO (current, node, gstack))
+        {
+          struct cmd_token *token = gstack[0]->data;
 
-			if (token->attr & CMD_ATTR_HIDDEN)
-				continue;
+          if (token->attr & CMD_ATTR_HIDDEN)
+            continue;
 
-			enum match_type minmatch = min_match_level(token->type);
-			trace_matcher("\"%s\" matches \"%s\" (%d) ? ",
-				      input_token, token->text, token->type);
+          enum match_type minmatch = min_match_level (token->type);
+          trace_matcher ("\"%s\" matches \"%s\" (%d) ? ", input_token,
+                         token->text, token->type);
 
-			unsigned int last_token =
-				(vector_active(vline) - 1 == idx);
-			enum match_type matchtype =
-				match_token(token, input_token);
-			switch (matchtype) {
-			// occurs when last token is whitespace
-			case trivial_match:
-				trace_matcher("trivial_match\n");
-				assert(last_token);
-				newstack = XMALLOC(MTYPE_CMD_MATCHSTACK,
-						   sizeof(struct graph_node *));
-				/* we're not recursing here, just the first
-				 * element is OK */
-				newstack[0] = gstack[0];
-				listnode_add(next, newstack);
-				break;
-			case partly_match:
-				trace_matcher("trivial_match\n");
-				if (exact_match_exists && !last_token)
-					break;
-			/* fallthru */
-			case exact_match:
-				trace_matcher("exact_match\n");
-				if (last_token) {
-					newstack = XMALLOC(
-						MTYPE_CMD_MATCHSTACK,
-						sizeof(struct graph_node *));
-					/* same as above, not recursing on this
-					 */
-					newstack[0] = gstack[0];
-					listnode_add(next, newstack);
-				} else if (matchtype >= minmatch)
-					add_nexthops(next, gstack[0], gstack,
-						     idx + 1, neg);
-				break;
-			case no_match:
-				trace_matcher("no_match\n");
-				break;
-			}
-		}
-	}
+          unsigned int last_token = (vector_active (vline) - 1 == idx);
+          enum match_type matchtype = match_token (token, input_token);
+          switch (matchtype)
+            {
+            // occurs when last token is whitespace
+            case trivial_match:
+              trace_matcher ("trivial_match\n");
+              assert (last_token);
+              newstack =
+                  XMALLOC (MTYPE_CMD_MATCHSTACK, sizeof (struct graph_node *));
+              /* we're not recursing here, just the first
+               * element is OK */
+              newstack[0] = gstack[0];
+              listnode_add (next, newstack);
+              break;
+            case partly_match:
+              trace_matcher ("trivial_match\n");
+              if (exact_match_exists && ! last_token)
+                break;
+            /* fallthru */
+            case exact_match:
+              trace_matcher ("exact_match\n");
+              if (last_token)
+                {
+                  newstack = XMALLOC (MTYPE_CMD_MATCHSTACK,
+                                      sizeof (struct graph_node *));
+                  /* same as above, not recursing on this
+                   */
+                  newstack[0] = gstack[0];
+                  listnode_add (next, newstack);
+                }
+              else if (matchtype >= minmatch)
+                add_nexthops (next, gstack[0], gstack, idx + 1, neg);
+              break;
+            case no_match:
+              trace_matcher ("no_match\n");
+              break;
+            }
+        }
+    }
 
-	/* Variable summary
-	 * -----------------------------------------------------------------
-	 * token    = last input token processed
-	 * idx      = index in `command` of last token processed
-	 * current  = set of all transitions from the previous input token
-	 * next     = set of all nodes reachable from all nodes in `matched`
-	 */
+  /* Variable summary
+   * -----------------------------------------------------------------
+   * token    = last input token processed
+   * idx      = index in `command` of last token processed
+   * current  = set of all transitions from the previous input token
+   * next     = set of all nodes reachable from all nodes in `matched`
+   */
 
-	enum matcher_rv mrv = idx == vector_active(vline) && next->count
-				      ? MATCHER_OK
-				      : MATCHER_NO_MATCH;
+  enum matcher_rv mrv = idx == vector_active (vline) && next->count
+                            ? MATCHER_OK
+                            : MATCHER_NO_MATCH;
 
-	*completions = NULL;
-	if (!MATCHER_ERROR(mrv)) {
-		// extract cmd_token into list
-		*completions = list_new();
-		for (ALL_LIST_ELEMENTS_RO(next, node, gstack)) {
-			listnode_add(*completions, gstack[0]->data);
-		}
-	}
+  *completions = NULL;
+  if (! MATCHER_ERROR (mrv))
+    {
+      // extract cmd_token into list
+      *completions = list_new ();
+      for (ALL_LIST_ELEMENTS_RO (next, node, gstack))
+        {
+          listnode_add (*completions, gstack[0]->data);
+        }
+    }
 
-	list_delete(&current);
-	list_delete(&next);
+  list_delete (&current);
+  list_delete (&next);
 
-	return mrv;
+  return mrv;
 }
 
 /**
@@ -470,48 +487,54 @@ enum matcher_rv command_complete(struct graph *graph, vector vline,
  * NB: non-null "stack" means that new stacks will be added to "list" as
  * output, instead of direct node pointers!
  */
-static int add_nexthops(struct list *list, struct graph_node *node,
-			struct graph_node **stack, size_t stackpos, bool neg)
+static int
+add_nexthops (struct list *list, struct graph_node *node,
+              struct graph_node **stack, size_t stackpos, bool neg)
 {
-	int added = 0;
-	struct graph_node *child;
-	struct graph_node **nextstack;
-	for (unsigned int i = 0; i < vector_active(node->to); i++) {
-		child = vector_slot(node->to, i);
-		size_t j;
-		struct cmd_token *token = child->data;
-		if (!token->allowrepeat && stack) {
-			for (j = 0; j < stackpos; j++)
-				if (child == stack[j])
-					break;
-			if (j != stackpos)
-				continue;
-		}
+  int added = 0;
+  struct graph_node *child;
+  struct graph_node **nextstack;
+  for (unsigned int i = 0; i < vector_active (node->to); i++)
+    {
+      child = vector_slot (node->to, i);
+      size_t j;
+      struct cmd_token *token = child->data;
+      if (! token->allowrepeat && stack)
+        {
+          for (j = 0; j < stackpos; j++)
+            if (child == stack[j])
+              break;
+          if (j != stackpos)
+            continue;
+        }
 
-		if (token->type == NEG_ONLY_TKN && !neg)
-			continue;
+      if (token->type == NEG_ONLY_TKN && ! neg)
+        continue;
 
-		if (token->type >= SPECIAL_TKN && token->type != END_TKN) {
-			added +=
-				add_nexthops(list, child, stack, stackpos, neg);
-		} else {
-			if (stack) {
-				nextstack = XMALLOC(
-					MTYPE_CMD_MATCHSTACK,
-					(stackpos + 1)
-						* sizeof(struct graph_node *));
-				nextstack[0] = child;
-				memcpy(nextstack + 1, stack,
-				       stackpos * sizeof(struct graph_node *));
+      if (token->type >= SPECIAL_TKN && token->type != END_TKN)
+        {
+          added += add_nexthops (list, child, stack, stackpos, neg);
+        }
+      else
+        {
+          if (stack)
+            {
+              nextstack =
+                  XMALLOC (MTYPE_CMD_MATCHSTACK,
+                           (stackpos + 1) * sizeof (struct graph_node *));
+              nextstack[0] = child;
+              memcpy (nextstack + 1, stack,
+                      stackpos * sizeof (struct graph_node *));
 
-				listnode_add(list, nextstack);
-			} else
-				listnode_add(list, child);
-			added++;
-		}
-	}
+              listnode_add (list, nextstack);
+            }
+          else
+            listnode_add (list, child);
+          added++;
+        }
+    }
 
-	return added;
+  return added;
 }
 
 /**
@@ -521,32 +544,34 @@ static int add_nexthops(struct list *list, struct graph_node *node,
  * @param[in] type node type
  * @return minimum match level needed to for a token to fully match
  */
-static enum match_type min_match_level(enum cmd_token_type type)
+static enum match_type
+min_match_level (enum cmd_token_type type)
 {
-	switch (type) {
-	// anything matches a start node, for the sake of recursion
-	case START_TKN:
-		return no_match;
-	// allowing words to partly match enables command abbreviation
-	case WORD_TKN:
-		return partly_match;
-	case RANGE_TKN:
-	case IPV4_TKN:
-	case IPV4_PREFIX_TKN:
-	case IPV6_TKN:
-	case IPV6_PREFIX_TKN:
-	case MAC_TKN:
-	case MAC_PREFIX_TKN:
-	case FORK_TKN:
-	case JOIN_TKN:
-	case END_TKN:
-	case NEG_ONLY_TKN:
-	case VARIABLE_TKN:
-	case ASNUM_TKN:
-		return exact_match;
-	}
+  switch (type)
+    {
+    // anything matches a start node, for the sake of recursion
+    case START_TKN:
+      return no_match;
+    // allowing words to partly match enables command abbreviation
+    case WORD_TKN:
+      return partly_match;
+    case RANGE_TKN:
+    case IPV4_TKN:
+    case IPV4_PREFIX_TKN:
+    case IPV6_TKN:
+    case IPV6_PREFIX_TKN:
+    case MAC_TKN:
+    case MAC_PREFIX_TKN:
+    case FORK_TKN:
+    case JOIN_TKN:
+    case END_TKN:
+    case NEG_ONLY_TKN:
+    case VARIABLE_TKN:
+    case ASNUM_TKN:
+      return exact_match;
+    }
 
-	assert(!"Reached end of function we should never hit");
+  assert (! "Reached end of function we should never hit");
 }
 
 /**
@@ -555,33 +580,35 @@ static enum match_type min_match_level(enum cmd_token_type type)
  * @param[in] type node type to score
  * @return precedence score
  */
-static int score_precedence(enum cmd_token_type type)
+static int
+score_precedence (enum cmd_token_type type)
 {
-	switch (type) {
-	// some of these are mutually exclusive, so they share
-	// the same precedence value
-	case IPV4_TKN:
-	case IPV4_PREFIX_TKN:
-	case IPV6_TKN:
-	case IPV6_PREFIX_TKN:
-	case MAC_TKN:
-	case MAC_PREFIX_TKN:
-	case RANGE_TKN:
-		return 2;
-	case ASNUM_TKN:
-	case WORD_TKN:
-		return 3;
-	case VARIABLE_TKN:
-		return 4;
-	case JOIN_TKN:
-	case START_TKN:
-	case END_TKN:
-	case NEG_ONLY_TKN:
-	case SPECIAL_TKN:
-		return 10;
-	}
+  switch (type)
+    {
+    // some of these are mutually exclusive, so they share
+    // the same precedence value
+    case IPV4_TKN:
+    case IPV4_PREFIX_TKN:
+    case IPV6_TKN:
+    case IPV6_PREFIX_TKN:
+    case MAC_TKN:
+    case MAC_PREFIX_TKN:
+    case RANGE_TKN:
+      return 2;
+    case ASNUM_TKN:
+    case WORD_TKN:
+      return 3;
+    case VARIABLE_TKN:
+      return 4;
+    case JOIN_TKN:
+    case START_TKN:
+    case END_TKN:
+    case NEG_ONLY_TKN:
+    case SPECIAL_TKN:
+      return 10;
+    }
 
-	assert(!"Reached end of function we should never hit");
+  assert (! "Reached end of function we should never hit");
 }
 
 /**
@@ -592,27 +619,28 @@ static int score_precedence(enum cmd_token_type type)
  * @param[in] token the token being matched
  * @return the best-matching node, or NULL if the two are entirely ambiguous
  */
-static struct cmd_token *disambiguate_tokens(struct cmd_token *first,
-					     struct cmd_token *second,
-					     char *input_token)
+static struct cmd_token *
+disambiguate_tokens (struct cmd_token *first, struct cmd_token *second,
+                     char *input_token)
 {
-	// if the types are different, simply go off of type precedence
-	if (first->type != second->type) {
-		int firstprec = score_precedence(first->type);
-		int secndprec = score_precedence(second->type);
-		if (firstprec != secndprec)
-			return firstprec < secndprec ? first : second;
-		else
-			return NULL;
-	}
+  // if the types are different, simply go off of type precedence
+  if (first->type != second->type)
+    {
+      int firstprec = score_precedence (first->type);
+      int secndprec = score_precedence (second->type);
+      if (firstprec != secndprec)
+        return firstprec < secndprec ? first : second;
+      else
+        return NULL;
+    }
 
-	// if they're the same, return the more exact match
-	enum match_type fmtype = match_token(first, input_token);
-	enum match_type smtype = match_token(second, input_token);
-	if (fmtype != smtype)
-		return fmtype > smtype ? first : second;
+  // if they're the same, return the more exact match
+  enum match_type fmtype = match_token (first, input_token);
+  enum match_type smtype = match_token (second, input_token);
+  if (fmtype != smtype)
+    return fmtype > smtype ? first : second;
 
-	return NULL;
+  return NULL;
 }
 
 /**
@@ -624,32 +652,34 @@ static struct cmd_token *disambiguate_tokens(struct cmd_token *first,
  * @param[in] n index into vline to start comparing at
  * @return the best-matching list, or NULL if the two are entirely ambiguous
  */
-static struct list *disambiguate(struct list *first, struct list *second,
-				 vector vline, unsigned int n)
+static struct list *
+disambiguate (struct list *first, struct list *second, vector vline,
+              unsigned int n)
 {
-	assert(first != NULL);
-	assert(second != NULL);
-	// doesn't make sense for these to be inequal length
-	assert(first->count == second->count);
-	assert(first->count == vector_active(vline) - n + 1);
+  assert (first != NULL);
+  assert (second != NULL);
+  // doesn't make sense for these to be inequal length
+  assert (first->count == second->count);
+  assert (first->count == vector_active (vline) - n + 1);
 
-	struct listnode *fnode = listhead_unchecked(first),
-			*snode = listhead_unchecked(second);
-	struct cmd_token *ftok = listgetdata(fnode), *stok = listgetdata(snode),
-			 *best = NULL;
+  struct listnode *fnode = listhead_unchecked (first),
+                  *snode = listhead_unchecked (second);
+  struct cmd_token *ftok = listgetdata (fnode), *stok = listgetdata (snode),
+                   *best = NULL;
 
-	// compare each token, if one matches better use that one
-	for (unsigned int i = n; i < vector_active(vline); i++) {
-		char *token = vector_slot(vline, i);
-		if ((best = disambiguate_tokens(ftok, stok, token)))
-			return best == ftok ? first : second;
-		fnode = listnextnode(fnode);
-		snode = listnextnode(snode);
-		ftok = listgetdata(fnode);
-		stok = listgetdata(snode);
-	}
+  // compare each token, if one matches better use that one
+  for (unsigned int i = n; i < vector_active (vline); i++)
+    {
+      char *token = vector_slot (vline, i);
+      if ((best = disambiguate_tokens (ftok, stok, token)))
+        return best == ftok ? first : second;
+      fnode = listnextnode (fnode);
+      snode = listnextnode (snode);
+      ftok = listgetdata (fnode);
+      stok = listgetdata (snode);
+    }
 
-	return NULL;
+  return NULL;
 }
 
 /*
@@ -663,186 +693,201 @@ static struct list *disambiguate(struct list *first, struct list *second,
  *
  * @param list the arglist to delete
  */
-static void del_arglist(struct list *list)
+static void
+del_arglist (struct list *list)
 {
-	// manually delete last node
-	struct listnode *tail = listtail(list);
-	tail->data = NULL;
-	list_delete_node(list, tail);
+  // manually delete last node
+  struct listnode *tail = listtail (list);
+  tail->data = NULL;
+  list_delete_node (list, tail);
 
-	// delete the rest of the list as usual
-	list_delete(&list);
+  // delete the rest of the list as usual
+  list_delete (&list);
 }
 
 /*---------- token level matching functions ----------*/
 
-static enum match_type match_token(struct cmd_token *token, char *input_token)
+static enum match_type
+match_token (struct cmd_token *token, char *input_token)
 {
-	// nothing trivially matches everything
-	if (!input_token)
-		return trivial_match;
+  // nothing trivially matches everything
+  if (! input_token)
+    return trivial_match;
 
-	switch (token->type) {
-	case WORD_TKN:
-		return match_word(token, input_token);
-	case IPV4_TKN:
-		return match_ipv4(input_token);
-	case IPV4_PREFIX_TKN:
-		return match_ipv4_prefix(input_token);
-	case IPV6_TKN:
-		return match_ipv6_prefix(input_token, false);
-	case IPV6_PREFIX_TKN:
-		return match_ipv6_prefix(input_token, true);
-	case RANGE_TKN:
-		return match_range(token, input_token);
-	case VARIABLE_TKN:
-		return match_variable(token, input_token);
-	case MAC_TKN:
-		return match_mac(input_token, false);
-	case MAC_PREFIX_TKN:
-		return match_mac(input_token, true);
-	case ASNUM_TKN:
-		return asn_str2asn_match(input_token);
-	case END_TKN:
-	case FORK_TKN:
-	case JOIN_TKN:
-	case START_TKN:
-	case NEG_ONLY_TKN:
-		return no_match;
-	}
+  switch (token->type)
+    {
+    case WORD_TKN:
+      return match_word (token, input_token);
+    case IPV4_TKN:
+      return match_ipv4 (input_token);
+    case IPV4_PREFIX_TKN:
+      return match_ipv4_prefix (input_token);
+    case IPV6_TKN:
+      return match_ipv6_prefix (input_token, false);
+    case IPV6_PREFIX_TKN:
+      return match_ipv6_prefix (input_token, true);
+    case RANGE_TKN:
+      return match_range (token, input_token);
+    case VARIABLE_TKN:
+      return match_variable (token, input_token);
+    case MAC_TKN:
+      return match_mac (input_token, false);
+    case MAC_PREFIX_TKN:
+      return match_mac (input_token, true);
+    case ASNUM_TKN:
+      return asn_str2asn_match (input_token);
+    case END_TKN:
+    case FORK_TKN:
+    case JOIN_TKN:
+    case START_TKN:
+    case NEG_ONLY_TKN:
+      return no_match;
+    }
 
-	assert(!"Reached end of function we should never hit");
+  assert (! "Reached end of function we should never hit");
 }
 
 #define IPV4_ADDR_STR   "0123456789."
 #define IPV4_PREFIX_STR "0123456789./"
 
-static enum match_type match_ipv4(const char *str)
+static enum match_type
+match_ipv4 (const char *str)
 {
-	const char *sp;
-	int dots = 0, nums = 0;
-	char buf[4];
+  const char *sp;
+  int dots = 0, nums = 0;
+  char buf[4];
 
-	for (;;) {
-		memset(buf, 0, sizeof(buf));
-		sp = str;
-		while (*str != '\0') {
-			if (*str == '.') {
-				if (dots >= 3)
-					return no_match;
+  for (;;)
+    {
+      memset (buf, 0, sizeof (buf));
+      sp = str;
+      while (*str != '\0')
+        {
+          if (*str == '.')
+            {
+              if (dots >= 3)
+                return no_match;
 
-				if (*(str + 1) == '.')
-					return no_match;
+              if (*(str + 1) == '.')
+                return no_match;
 
-				if (*(str + 1) == '\0')
-					return partly_match;
+              if (*(str + 1) == '\0')
+                return partly_match;
 
-				dots++;
-				break;
-			}
-			if (!isdigit((unsigned char)*str))
-				return no_match;
+              dots++;
+              break;
+            }
+          if (! isdigit ((unsigned char) *str))
+            return no_match;
 
-			str++;
-		}
+          str++;
+        }
 
-		if (str - sp > 3)
-			return no_match;
+      if (str - sp > 3)
+        return no_match;
 
-		memcpy(buf, sp, str - sp);
+      memcpy (buf, sp, str - sp);
 
-		int v = atoi(buf);
+      int v = atoi (buf);
 
-		if (v > 255)
-			return no_match;
-		if (v > 0 && buf[0] == '0')
-			return no_match;
+      if (v > 255)
+        return no_match;
+      if (v > 0 && buf[0] == '0')
+        return no_match;
 
-		nums++;
+      nums++;
 
-		if (*str == '\0')
-			break;
+      if (*str == '\0')
+        break;
 
-		str++;
-	}
+      str++;
+    }
 
-	if (nums < 4)
-		return partly_match;
+  if (nums < 4)
+    return partly_match;
 
-	return exact_match;
+  return exact_match;
 }
 
-static enum match_type match_ipv4_prefix(const char *str)
+static enum match_type
+match_ipv4_prefix (const char *str)
 {
-	const char *sp;
-	int dots = 0;
-	char buf[4];
+  const char *sp;
+  int dots = 0;
+  char buf[4];
 
-	for (;;) {
-		memset(buf, 0, sizeof(buf));
-		sp = str;
-		while (*str != '\0' && *str != '/') {
-			if (*str == '.') {
-				if (dots == 3)
-					return no_match;
+  for (;;)
+    {
+      memset (buf, 0, sizeof (buf));
+      sp = str;
+      while (*str != '\0' && *str != '/')
+        {
+          if (*str == '.')
+            {
+              if (dots == 3)
+                return no_match;
 
-				if (*(str + 1) == '.' || *(str + 1) == '/')
-					return no_match;
+              if (*(str + 1) == '.' || *(str + 1) == '/')
+                return no_match;
 
-				if (*(str + 1) == '\0')
-					return partly_match;
+              if (*(str + 1) == '\0')
+                return partly_match;
 
-				dots++;
-				break;
-			}
+              dots++;
+              break;
+            }
 
-			if (!isdigit((unsigned char)*str))
-				return no_match;
+          if (! isdigit ((unsigned char) *str))
+            return no_match;
 
-			str++;
-		}
+          str++;
+        }
 
-		if (str - sp > 3)
-			return no_match;
+      if (str - sp > 3)
+        return no_match;
 
-		memcpy(buf, sp, str - sp);
+      memcpy (buf, sp, str - sp);
 
-		int v = atoi(buf);
+      int v = atoi (buf);
 
-		if (v > 255)
-			return no_match;
-		if (v > 0 && buf[0] == '0')
-			return no_match;
+      if (v > 255)
+        return no_match;
+      if (v > 0 && buf[0] == '0')
+        return no_match;
 
-		if (dots == 3) {
-			if (*str == '/') {
-				if (*(str + 1) == '\0')
-					return partly_match;
+      if (dots == 3)
+        {
+          if (*str == '/')
+            {
+              if (*(str + 1) == '\0')
+                return partly_match;
 
-				str++;
-				break;
-			} else if (*str == '\0')
-				return partly_match;
-		}
+              str++;
+              break;
+            }
+          else if (*str == '\0')
+            return partly_match;
+        }
 
-		if (*str == '\0')
-			return partly_match;
+      if (*str == '\0')
+        return partly_match;
 
-		str++;
-	}
+      str++;
+    }
 
-	sp = str;
-	while (*str != '\0') {
-		if (!isdigit((unsigned char)*str))
-			return no_match;
+  sp = str;
+  while (*str != '\0')
+    {
+      if (! isdigit ((unsigned char) *str))
+        return no_match;
 
-		str++;
-	}
+      str++;
+    }
 
-	if (atoi(sp) > IPV4_MAX_BITLEN)
-		return no_match;
+  if (atoi (sp) > IPV4_MAX_BITLEN)
+    return no_match;
 
-	return exact_match;
+  return exact_match;
 }
 
 #define IPV6_ADDR_STR   "0123456789abcdefABCDEF:."
@@ -855,218 +900,239 @@ static enum match_type match_ipv4_prefix(const char *str)
 #define STATE_SLASH     6
 #define STATE_MASK      7
 
-static enum match_type match_ipv6_prefix(const char *str, bool prefix)
+static enum match_type
+match_ipv6_prefix (const char *str, bool prefix)
 {
-	int state = STATE_START;
-	int colons = 0, nums = 0, double_colon = 0;
-	int mask;
-	const char *sp = NULL, *start = str;
-	char *endptr = NULL;
+  int state = STATE_START;
+  int colons = 0, nums = 0, double_colon = 0;
+  int mask;
+  const char *sp = NULL, *start = str;
+  char *endptr = NULL;
 
-	if (str == NULL)
-		return partly_match;
+  if (str == NULL)
+    return partly_match;
 
-	if (strspn(str, prefix ? IPV6_PREFIX_STR : IPV6_ADDR_STR)
-	    != strlen(str))
-		return no_match;
+  if (strspn (str, prefix ? IPV6_PREFIX_STR : IPV6_ADDR_STR) != strlen (str))
+    return no_match;
 
-	while (*str != '\0' && state != STATE_MASK) {
-		switch (state) {
-		case STATE_START:
-			if (*str == ':') {
-				if (*(str + 1) != ':' && *(str + 1) != '\0')
-					return no_match;
-				colons--;
-				state = STATE_COLON;
-			} else {
-				sp = str;
-				state = STATE_ADDR;
-			}
+  while (*str != '\0' && state != STATE_MASK)
+    {
+      switch (state)
+        {
+        case STATE_START:
+          if (*str == ':')
+            {
+              if (*(str + 1) != ':' && *(str + 1) != '\0')
+                return no_match;
+              colons--;
+              state = STATE_COLON;
+            }
+          else
+            {
+              sp = str;
+              state = STATE_ADDR;
+            }
 
-			continue;
-		case STATE_COLON:
-			colons++;
-			if (*(str + 1) == '/')
-				return no_match;
-			else if (*(str + 1) == ':')
-				state = STATE_DOUBLE;
-			else {
-				sp = str + 1;
-				state = STATE_ADDR;
-			}
-			break;
-		case STATE_DOUBLE:
-			if (double_colon)
-				return no_match;
+          continue;
+        case STATE_COLON:
+          colons++;
+          if (*(str + 1) == '/')
+            return no_match;
+          else if (*(str + 1) == ':')
+            state = STATE_DOUBLE;
+          else
+            {
+              sp = str + 1;
+              state = STATE_ADDR;
+            }
+          break;
+        case STATE_DOUBLE:
+          if (double_colon)
+            return no_match;
 
-			if (*(str + 1) == ':')
-				return no_match;
-			else {
-				if (*(str + 1) != '\0' && *(str + 1) != '/')
-					colons++;
-				sp = str + 1;
+          if (*(str + 1) == ':')
+            return no_match;
+          else
+            {
+              if (*(str + 1) != '\0' && *(str + 1) != '/')
+                colons++;
+              sp = str + 1;
 
-				if (*(str + 1) == '/')
-					state = STATE_SLASH;
-				else
-					state = STATE_ADDR;
-			}
+              if (*(str + 1) == '/')
+                state = STATE_SLASH;
+              else
+                state = STATE_ADDR;
+            }
 
-			double_colon++;
-			nums += 1;
-			break;
-		case STATE_ADDR:
-			if (*(str + 1) == ':' || *(str + 1) == '.'
-			    || *(str + 1) == '\0' || *(str + 1) == '/') {
-				if (str - sp > 3)
-					return no_match;
+          double_colon++;
+          nums += 1;
+          break;
+        case STATE_ADDR:
+          if (*(str + 1) == ':' || *(str + 1) == '.' || *(str + 1) == '\0' ||
+              *(str + 1) == '/')
+            {
+              if (str - sp > 3)
+                return no_match;
 
-				for (; sp <= str; sp++)
-					if (*sp == '/')
-						return no_match;
+              for (; sp <= str; sp++)
+                if (*sp == '/')
+                  return no_match;
 
-				nums++;
+              nums++;
 
-				if (*(str + 1) == ':')
-					state = STATE_COLON;
-				else if (*(str + 1) == '.') {
-					if (colons || double_colon)
-						state = STATE_DOT;
-					else
-						return no_match;
-				} else if (*(str + 1) == '/')
-					state = STATE_SLASH;
-			}
-			break;
-		case STATE_DOT:
-			state = STATE_ADDR;
-			break;
-		case STATE_SLASH:
-			if (*(str + 1) == '\0')
-				return partly_match;
+              if (*(str + 1) == ':')
+                state = STATE_COLON;
+              else if (*(str + 1) == '.')
+                {
+                  if (colons || double_colon)
+                    state = STATE_DOT;
+                  else
+                    return no_match;
+                }
+              else if (*(str + 1) == '/')
+                state = STATE_SLASH;
+            }
+          break;
+        case STATE_DOT:
+          state = STATE_ADDR;
+          break;
+        case STATE_SLASH:
+          if (*(str + 1) == '\0')
+            return partly_match;
 
-			state = STATE_MASK;
-			break;
-		default:
-			break;
-		}
+          state = STATE_MASK;
+          break;
+        default:
+          break;
+        }
 
-		if (nums > 11)
-			return no_match;
+      if (nums > 11)
+        return no_match;
 
-		if (colons > 7)
-			return no_match;
+      if (colons > 7)
+        return no_match;
 
-		str++;
-	}
+      str++;
+    }
 
-	if (!prefix) {
-		struct sockaddr_in6 sin6_dummy;
-		int ret = inet_pton(AF_INET6, start, &sin6_dummy.sin6_addr);
-		return ret == 1 ? exact_match : partly_match;
-	}
+  if (! prefix)
+    {
+      struct sockaddr_in6 sin6_dummy;
+      int ret = inet_pton (AF_INET6, start, &sin6_dummy.sin6_addr);
+      return ret == 1 ? exact_match : partly_match;
+    }
 
-	if (state < STATE_MASK)
-		return partly_match;
+  if (state < STATE_MASK)
+    return partly_match;
 
-	mask = strtol(str, &endptr, 10);
-	if (*endptr != '\0')
-		return no_match;
+  mask = strtol (str, &endptr, 10);
+  if (*endptr != '\0')
+    return no_match;
 
-	if (mask < 0 || mask > IPV6_MAX_BITLEN)
-		return no_match;
+  if (mask < 0 || mask > IPV6_MAX_BITLEN)
+    return no_match;
 
-	return exact_match;
+  return exact_match;
 }
 
-static enum match_type match_range(struct cmd_token *token, const char *str)
+static enum match_type
+match_range (struct cmd_token *token, const char *str)
 {
-	assert(token->type == RANGE_TKN);
+  assert (token->type == RANGE_TKN);
 
-	char *endptr = NULL;
-	long long val;
+  char *endptr = NULL;
+  long long val;
 
-	val = strtoll(str, &endptr, 10);
-	if (*endptr != '\0')
-		return no_match;
+  val = strtoll (str, &endptr, 10);
+  if (*endptr != '\0')
+    return no_match;
 
-	if (val < token->min || val > token->max)
-		return no_match;
-	else
-		return exact_match;
+  if (val < token->min || val > token->max)
+    return no_match;
+  else
+    return exact_match;
 }
 
-static enum match_type match_word(struct cmd_token *token, const char *word)
+static enum match_type
+match_word (struct cmd_token *token, const char *word)
 {
-	assert(token->type == WORD_TKN);
+  assert (token->type == WORD_TKN);
 
-	// if the passed token is 0 length, partly match
-	if (!strlen(word))
-		return partly_match;
+  // if the passed token is 0 length, partly match
+  if (! strlen (word))
+    return partly_match;
 
-	// if the passed token is strictly a prefix of the full word, partly
-	// match
-	if (strlen(word) < strlen(token->text))
-		return !strncmp(token->text, word, strlen(word)) ? partly_match
-								 : no_match;
+  // if the passed token is strictly a prefix of the full word, partly
+  // match
+  if (strlen (word) < strlen (token->text))
+    return ! strncmp (token->text, word, strlen (word)) ? partly_match
+                                                        : no_match;
 
-	// if they are the same length and exactly equal, exact match
-	else if (strlen(word) == strlen(token->text))
-		return !strncmp(token->text, word, strlen(word)) ? exact_match
-								 : no_match;
+  // if they are the same length and exactly equal, exact match
+  else if (strlen (word) == strlen (token->text))
+    return ! strncmp (token->text, word, strlen (word)) ? exact_match
+                                                        : no_match;
 
-	return no_match;
+  return no_match;
 }
 
-static enum match_type match_variable(struct cmd_token *token, const char *word)
+static enum match_type
+match_variable (struct cmd_token *token, const char *word)
 {
-	assert(token->type == VARIABLE_TKN);
-	return exact_match;
+  assert (token->type == VARIABLE_TKN);
+  return exact_match;
 }
 
 #define MAC_CHARS "ABCDEFabcdef0123456789:"
 
-static enum match_type match_mac(const char *word, bool prefix)
+static enum match_type
+match_mac (const char *word, bool prefix)
 {
-	/* 6 2-digit hex numbers separated by 5 colons */
-	size_t mac_explen = 6 * 2 + 5;
-	/* '/' + 2-digit integer */
-	size_t mask_len = 1 + 2;
-	unsigned int i;
-	char *eptr;
-	unsigned int maskval;
+  /* 6 2-digit hex numbers separated by 5 colons */
+  size_t mac_explen = 6 * 2 + 5;
+  /* '/' + 2-digit integer */
+  size_t mask_len = 1 + 2;
+  unsigned int i;
+  char *eptr;
+  unsigned int maskval;
 
-	/* length check */
-	if (strlen(word) > mac_explen + (prefix ? mask_len : 0))
-		return no_match;
+  /* length check */
+  if (strlen (word) > mac_explen + (prefix ? mask_len : 0))
+    return no_match;
 
-	/* address check */
-	for (i = 0; i < mac_explen; i++) {
-		if (word[i] == '\0' || !strchr(MAC_CHARS, word[i]))
-			break;
-		if (((i + 1) % 3 == 0) != (word[i] == ':'))
-			return no_match;
-	}
+  /* address check */
+  for (i = 0; i < mac_explen; i++)
+    {
+      if (word[i] == '\0' || ! strchr (MAC_CHARS, word[i]))
+        break;
+      if (((i + 1) % 3 == 0) != (word[i] == ':'))
+        return no_match;
+    }
 
-	/* incomplete address */
-	if (i < mac_explen && word[i] == '\0')
-		return partly_match;
-	else if (i < mac_explen)
-		return no_match;
+  /* incomplete address */
+  if (i < mac_explen && word[i] == '\0')
+    return partly_match;
+  else if (i < mac_explen)
+    return no_match;
 
-	/* mask check */
-	if (prefix && word[i] == '/') {
-		if (word[++i] == '\0')
-			return partly_match;
+  /* mask check */
+  if (prefix && word[i] == '/')
+    {
+      if (word[++i] == '\0')
+        return partly_match;
 
-		maskval = strtoul(&word[i], &eptr, 10);
-		if (*eptr != '\0' || maskval > 48)
-			return no_match;
-	} else if (prefix && word[i] == '\0') {
-		return partly_match;
-	} else if (prefix) {
-		return no_match;
-	}
+      maskval = strtoul (&word[i], &eptr, 10);
+      if (*eptr != '\0' || maskval > 48)
+        return no_match;
+    }
+  else if (prefix && word[i] == '\0')
+    {
+      return partly_match;
+    }
+  else if (prefix)
+    {
+      return no_match;
+    }
 
-	return exact_match;
+  return exact_match;
 }

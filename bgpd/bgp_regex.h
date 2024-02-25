@@ -19,8 +19,8 @@
 #include <regex.h>
 #endif /* HAVE_LIBPCRE2_POSIX */
 
-extern void bgp_regex_free(regex_t *regex);
-extern regex_t *bgp_regcomp(const char *str);
-extern int bgp_regexec(regex_t *regex, struct aspath *aspath);
+extern void bgp_regex_free (regex_t *regex);
+extern regex_t *bgp_regcomp (const char *str);
+extern int bgp_regexec (regex_t *regex, struct aspath *aspath);
 
 #endif /* _FRR_BGP_REGEX_H */

@@ -35,147 +35,155 @@
 #include "sharp_globals.h"
 #include "sharp_nht.h"
 
-DEFINE_MGROUP(SHARPD, "sharpd");
+DEFINE_MGROUP (SHARPD, "sharpd");
 
-zebra_capabilities_t _caps_p[] = {
-};
+zebra_capabilities_t _caps_p[] = {};
 
 struct zebra_privs_t sharp_privs = {
 #if defined(FRR_USER) && defined(FRR_GROUP)
-	.user = FRR_USER,
-	.group = FRR_GROUP,
+  .user = FRR_USER,
+  .group = FRR_GROUP,
 #endif
 #if defined(VTY_GROUP)
-	.vty_group = VTY_GROUP,
+  .vty_group = VTY_GROUP,
 #endif
-	.caps_p = _caps_p,
-	.cap_num_p = array_size(_caps_p),
-	.cap_num_i = 0};
+  .caps_p = _caps_p,
+  .cap_num_p = array_size (_caps_p),
+  .cap_num_i = 0
+};
 
-struct option longopts[] = {{0}};
+struct option longopts[] = { { 0 } };
 
 /* Master of threads. */
 struct event_loop *master;
 
 /* SIGHUP handler. */
-static void sighup(void)
+static void
+sighup (void)
 {
-	zlog_info("SIGHUP received");
+  zlog_info ("SIGHUP received");
 }
 
 /* SIGINT / SIGTERM handler. */
-static void sigint(void)
+static void
+sigint (void)
 {
-	zlog_notice("Terminating on signal");
+  zlog_notice ("Terminating on signal");
 
-	frr_fini();
+  frr_fini ();
 
-	exit(0);
+  exit (0);
 }
 
 /* SIGUSR1 handler. */
-static void sigusr1(void)
+static void
+sigusr1 (void)
 {
-	zlog_rotate();
+  zlog_rotate ();
 }
 
 struct frr_signal_t sharp_signals[] = {
-	{
-		.signal = SIGHUP,
-		.handler = &sighup,
-	},
-	{
-		.signal = SIGUSR1,
-		.handler = &sigusr1,
-	},
-	{
-		.signal = SIGINT,
-		.handler = &sigint,
-	},
-	{
-		.signal = SIGTERM,
-		.handler = &sigint,
-	},
+  {
+      .signal = SIGHUP,
+      .handler = &sighup,
+  },
+  {
+      .signal = SIGUSR1,
+      .handler = &sigusr1,
+  },
+  {
+      .signal = SIGINT,
+      .handler = &sigint,
+  },
+  {
+      .signal = SIGTERM,
+      .handler = &sigint,
+  },
 };
 
 #define SHARP_VTY_PORT 2614
 
 static const struct frr_yang_module_info *const sharpd_yang_modules[] = {
-	&frr_filter_info,
-	&frr_interface_info,
-	&frr_route_map_info,
-	&frr_vrf_info,
+  &frr_filter_info,
+  &frr_interface_info,
+  &frr_route_map_info,
+  &frr_vrf_info,
 };
 
-FRR_DAEMON_INFO(sharpd, SHARP, .vty_port = SHARP_VTY_PORT,
+FRR_DAEMON_INFO (sharpd, SHARP, .vty_port = SHARP_VTY_PORT,
 
-		.proghelp = "Implementation of a Sharp of routes daemon.",
+                 .proghelp = "Implementation of a Sharp of routes daemon.",
 
-		.signals = sharp_signals,
-		.n_signals = array_size(sharp_signals),
+                 .signals = sharp_signals,
+                 .n_signals = array_size (sharp_signals),
 
-		.privs = &sharp_privs, .yang_modules = sharpd_yang_modules,
-		.n_yang_modules = array_size(sharpd_yang_modules),
-);
+                 .privs = &sharp_privs, .yang_modules = sharpd_yang_modules,
+                 .n_yang_modules = array_size (sharpd_yang_modules), );
 
 struct sharp_global sg;
 
-static void sharp_global_init(void)
+static void
+sharp_global_init (void)
 {
-	memset(&sg, 0, sizeof(sg));
-	sg.nhs = list_new();
-	sg.ted = NULL;
-	sg.srv6_locators = list_new();
+  memset (&sg, 0, sizeof (sg));
+  sg.nhs = list_new ();
+  sg.ted = NULL;
+  sg.srv6_locators = list_new ();
 }
 
-static void sharp_start_configuration(void)
+static void
+sharp_start_configuration (void)
 {
-	zlog_debug("Configuration has started to be read");
+  zlog_debug ("Configuration has started to be read");
 }
 
-static void sharp_end_configuration(void)
+static void
+sharp_end_configuration (void)
 {
-	zlog_debug("Configuration has finished being read");
+  zlog_debug ("Configuration has finished being read");
 }
 
-int main(int argc, char **argv, char **envp)
+int
+main (int argc, char **argv, char **envp)
 {
-	frr_preinit(&sharpd_di, argc, argv);
-	frr_opt_add("", longopts, "");
+  frr_preinit (&sharpd_di, argc, argv);
+  frr_opt_add ("", longopts, "");
 
-	while (1) {
-		int opt;
+  while (1)
+    {
+      int opt;
 
-		opt = frr_getopt(argc, argv, NULL);
+      opt = frr_getopt (argc, argv, NULL);
 
-		if (opt == EOF)
-			break;
+      if (opt == EOF)
+        break;
 
-		switch (opt) {
-		case 0:
-			break;
-		default:
-			frr_help_exit(1);
-		}
-	}
+      switch (opt)
+        {
+        case 0:
+          break;
+        default:
+          frr_help_exit (1);
+        }
+    }
 
-	master = frr_init();
+  master = frr_init ();
 
-	cmd_init_config_callbacks(sharp_start_configuration,
-				  sharp_end_configuration);
-	sharp_global_init();
+  cmd_init_config_callbacks (sharp_start_configuration,
+                             sharp_end_configuration);
+  sharp_global_init ();
 
-	sharp_nhgroup_init();
-	vrf_init(NULL, NULL, NULL, NULL);
+  sharp_nhgroup_init ();
+  vrf_init (NULL, NULL, NULL, NULL);
 
-	sharp_zebra_init();
+  sharp_zebra_init ();
 
-	/* Get configuration file. */
-	sharp_vty_init();
+  /* Get configuration file. */
+  sharp_vty_init ();
 
-	frr_config_fork();
-	frr_run(master);
+  frr_config_fork ();
+  frr_run (master);
 
-	/* Not reached. */
-	return 0;
+  /* Not reached. */
+  return 0;
 }

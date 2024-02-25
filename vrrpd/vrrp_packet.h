@@ -18,66 +18,72 @@
 /*
  * Shared header for VRRPv2/v3 packets.
  */
-struct vrrp_hdr {
-	/*
-	 * H  L H  L
-	 * 0000 0000
-	 * ver  type
-	 */
-	uint8_t vertype;
-	uint8_t vrid;
-	uint8_t priority;
-	uint8_t naddr;
-	union {
-		struct {
-			uint8_t auth_type;
-			/* advertisement interval (in sec) */
-			uint8_t adver_int;
-		} v2;
-		struct {
-			/*
-			 * advertisement interval (in centiseconds)
-			 * H  L H          L
-			 * 0000 000000000000
-			 * rsvd adver_int
-			 */
-			uint16_t adver_int;
-		} v3;
-	};
-	uint16_t chksum;
-} __attribute__((packed));
+struct vrrp_hdr
+{
+  /*
+   * H  L H  L
+   * 0000 0000
+   * ver  type
+   */
+  uint8_t vertype;
+  uint8_t vrid;
+  uint8_t priority;
+  uint8_t naddr;
+  union
+  {
+    struct
+    {
+      uint8_t auth_type;
+      /* advertisement interval (in sec) */
+      uint8_t adver_int;
+    } v2;
+    struct
+    {
+      /*
+       * advertisement interval (in centiseconds)
+       * H  L H          L
+       * 0000 000000000000
+       * rsvd adver_int
+       */
+      uint16_t adver_int;
+    } v3;
+  };
+  uint16_t chksum;
+} __attribute__ ((packed));
 
-#define VRRP_HDR_SIZE sizeof(struct vrrp_hdr)
+#define VRRP_HDR_SIZE sizeof (struct vrrp_hdr)
 
-struct vrrp_pkt {
-	struct vrrp_hdr hdr;
-	/*
-	 * When used, this is actually an array of one or the other, not an
-	 * array of union. If N v4 addresses are stored then
-	 * sizeof(addrs) == N * sizeof(struct in_addr).
-	 *
-	 * Under v2, the last 2 entries in this array are the authentication
-	 * data fields. We don't support auth in v2 so these are always just 8
-	 * bytes of 0x00.
-	 */
-	union {
-		struct in_addr v4;
-		struct in6_addr v6;
-	} addrs[];
-} __attribute__((packed));
+struct vrrp_pkt
+{
+  struct vrrp_hdr hdr;
+  /*
+   * When used, this is actually an array of one or the other, not an
+   * array of union. If N v4 addresses are stored then
+   * sizeof(addrs) == N * sizeof(struct in_addr).
+   *
+   * Under v2, the last 2 entries in this array are the authentication
+   * data fields. We don't support auth in v2 so these are always just 8
+   * bytes of 0x00.
+   */
+  union
+  {
+    struct in_addr v4;
+    struct in6_addr v6;
+  } addrs[];
+} __attribute__ ((packed));
 
-#define VRRP_PKT_SIZE(_f, _ver, _naddr)                                        \
-	({                                                                     \
-		size_t _asz = ((_f) == AF_INET) ? sizeof(struct in_addr)       \
-						: sizeof(struct in6_addr);     \
-		size_t _auth = 2 * sizeof(uint32_t) * (3 - (_ver));            \
-		sizeof(struct vrrp_hdr) + (_asz * (_naddr)) + _auth;           \
-	})
+#define VRRP_PKT_SIZE(_f, _ver, _naddr)                                       \
+  ({                                                                          \
+    size_t _asz = ((_f) == AF_INET) ? sizeof (struct in_addr)                 \
+                                    : sizeof (struct in6_addr);               \
+    size_t _auth = 2 * sizeof (uint32_t) * (3 - (_ver));                      \
+    sizeof (struct vrrp_hdr) + (_asz * (_naddr)) + _auth;                     \
+  })
 
-#define VRRP_MIN_PKT_SIZE_V4 VRRP_PKT_SIZE(AF_INET, 3, 1)
-#define VRRP_MAX_PKT_SIZE_V4 VRRP_PKT_SIZE(AF_INET, 2, 255)
-#define VRRP_MIN_PKT_SIZE_V6 VRRP_PKT_SIZE(AF_INET6, 3, 1)
-#define VRRP_MAX_PKT_SIZE_V6 VRRP_PKT_SIZE(AF_INET6, 3, 255)
+#define VRRP_MIN_PKT_SIZE_V4 VRRP_PKT_SIZE (AF_INET, 3, 1)
+#define VRRP_MAX_PKT_SIZE_V4 VRRP_PKT_SIZE (AF_INET, 2, 255)
+#define VRRP_MIN_PKT_SIZE_V6 VRRP_PKT_SIZE (AF_INET6, 3, 1)
+#define VRRP_MAX_PKT_SIZE_V6 VRRP_PKT_SIZE (AF_INET6, 3, 255)
 
 #define VRRP_MIN_PKT_SIZE VRRP_MIN_PKT_SIZE_V4
 #define VRRP_MAX_PKT_SIZE VRRP_MAX_PKT_SIZE_V6
@@ -90,8 +96,9 @@ struct vrrp_pkt {
  *
  * src
  *    Source address packet will be transmitted from. This is needed to compute
- *    the VRRP checksum. The returned packet must be sent in an IP datagram with
- *    the source address equal to this field, or the checksum will be invalid.
+ *    the VRRP checksum. The returned packet must be sent in an IP datagram
+ * with the source address equal to this field, or the checksum will be
+ * invalid.
  *
  * version
  *    VRRP version; must be 2 or 3
@@ -115,13 +122,13 @@ struct vrrp_pkt {
  *    array of pointer to either struct in_addr (v6 = false) or struct in6_addr
  *    (v6 = true)
  */
-ssize_t vrrp_pkt_adver_build(struct vrrp_pkt **pkt, struct ipaddr *src,
-			     uint8_t version, uint8_t vrid, uint8_t prio,
-			     uint16_t max_adver_int, uint8_t numip,
-			     struct ipaddr **ips, bool ipv4_ph);
+ssize_t vrrp_pkt_adver_build (struct vrrp_pkt **pkt, struct ipaddr *src,
+                              uint8_t version, uint8_t vrid, uint8_t prio,
+                              uint16_t max_adver_int, uint8_t numip,
+                              struct ipaddr **ips, bool ipv4_ph);
 
 /* free memory allocated by vrrp_pkt_adver_build's pkt arg */
-void vrrp_pkt_free(struct vrrp_pkt *pkt);
+void vrrp_pkt_free (struct vrrp_pkt *pkt);
 
 /*
  * Dumps a VRRP ADVERTISEMENT packet to a string.
@@ -140,7 +147,7 @@ void vrrp_pkt_free(struct vrrp_pkt *pkt);
  * Returns:
  *    # bytes written to buf
  */
-size_t vrrp_pkt_adver_dump(char *buf, size_t buflen, struct vrrp_pkt *pkt);
+size_t vrrp_pkt_adver_dump (char *buf, size_t buflen, struct vrrp_pkt *pkt);
 
 
 /*
@@ -182,9 +189,9 @@ size_t vrrp_pkt_adver_dump(char *buf, size_t buflen, struct vrrp_pkt *pkt);
  * Returns:
  *    Size of VRRP packet, or -1 upon error
  */
-ssize_t vrrp_pkt_parse_datagram(int family, int version, bool ipv4_ph,
-				struct msghdr *m, size_t read,
-				struct ipaddr *src, struct vrrp_pkt **pkt,
-				char *errmsg, size_t errmsg_len);
+ssize_t vrrp_pkt_parse_datagram (int family, int version, bool ipv4_ph,
+                                 struct msghdr *m, size_t read,
+                                 struct ipaddr *src, struct vrrp_pkt **pkt,
+                                 char *errmsg, size_t errmsg_len);
 
 #endif /* __VRRP_PACKET_H__ */

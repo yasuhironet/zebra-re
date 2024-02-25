@@ -20,127 +20,140 @@
 
 /* probably ought to have a field-specific define in config.h */
 #ifndef s6_addr32 /* for solaris/bsd */
-#   define	s6_addr32	__u6_addr.__u6_addr32
+#define s6_addr32 __u6_addr.__u6_addr32
 #endif
 
-#define RFAPI_V4_ADDR 0x04
-#define RFAPI_V6_ADDR 0x06
+#define RFAPI_V4_ADDR  0x04
+#define RFAPI_V6_ADDR  0x06
 #define RFAPI_SHOW_STR "VNC information\n"
 
-struct rfapi_ip_addr {
-	uint8_t addr_family; /* AF_INET | AF_INET6 */
-	union {
-		struct in_addr v4;  /* in network order */
-		struct in6_addr v6; /* in network order */
-	} addr;
+struct rfapi_ip_addr
+{
+  uint8_t addr_family; /* AF_INET | AF_INET6 */
+  union
+  {
+    struct in_addr v4;  /* in network order */
+    struct in6_addr v6; /* in network order */
+  } addr;
 };
 
-struct rfapi_ip_prefix {
-	uint8_t length;
-	uint8_t cost; /* bgp local pref = 255 - cost */
-	struct rfapi_ip_addr prefix;
+struct rfapi_ip_prefix
+{
+  uint8_t length;
+  uint8_t cost; /* bgp local pref = 255 - cost */
+  struct rfapi_ip_addr prefix;
 };
 
-struct rfapi_nexthop {
-	struct prefix addr;
-	uint8_t cost;
+struct rfapi_nexthop
+{
+  struct prefix addr;
+  uint8_t cost;
 };
 
-struct rfapi_next_hop_entry {
-	struct rfapi_next_hop_entry *next;
-	struct rfapi_ip_prefix prefix;
-	uint32_t lifetime;
-	struct rfapi_ip_addr un_address;
-	struct rfapi_ip_addr vn_address;
-	struct rfapi_vn_option *vn_options;
-	struct rfapi_un_option *un_options;
+struct rfapi_next_hop_entry
+{
+  struct rfapi_next_hop_entry *next;
+  struct rfapi_ip_prefix prefix;
+  uint32_t lifetime;
+  struct rfapi_ip_addr un_address;
+  struct rfapi_ip_addr vn_address;
+  struct rfapi_vn_option *vn_options;
+  struct rfapi_un_option *un_options;
 };
 
-#define RFAPI_REMOVE_RESPONSE_LIFETIME  0
-#define RFAPI_INFINITE_LIFETIME         0xFFFFFFFF
+#define RFAPI_REMOVE_RESPONSE_LIFETIME 0
+#define RFAPI_INFINITE_LIFETIME        0xFFFFFFFF
 
-struct rfapi_l2address_option {
-	struct ethaddr macaddr; /* use 0 to assign label to IP prefix */
-	uint32_t label;		/* 20bit label in low bits, no TC, S, or TTL  */
-	uint32_t logical_net_id; /* ~= EVPN Ethernet Segment Id,
-			    must not be zero for mac regis. */
-	uint8_t local_nve_id;
-	uint16_t tag_id; /* EVPN Ethernet Tag ID, 0 = none */
+struct rfapi_l2address_option
+{
+  struct ethaddr macaddr;  /* use 0 to assign label to IP prefix */
+  uint32_t label;          /* 20bit label in low bits, no TC, S, or TTL  */
+  uint32_t logical_net_id; /* ~= EVPN Ethernet Segment Id,
+                      must not be zero for mac regis. */
+  uint8_t local_nve_id;
+  uint16_t tag_id; /* EVPN Ethernet Tag ID, 0 = none */
 };
 
-typedef enum {
-	RFAPI_UN_OPTION_TYPE_PROVISIONAL, /* internal use only */
-	RFAPI_UN_OPTION_TYPE_TUNNELTYPE,
+typedef enum
+{
+  RFAPI_UN_OPTION_TYPE_PROVISIONAL, /* internal use only */
+  RFAPI_UN_OPTION_TYPE_TUNNELTYPE,
 } rfapi_un_option_type;
 
-struct rfapi_tunneltype_option {
-	bgp_encap_types type;
-	union {
-		struct bgp_encap_type_reserved reserved;
-		struct bgp_encap_type_l2tpv3_over_ip l2tpv3_ip;
-		struct bgp_encap_type_gre gre;
-		struct bgp_encap_type_transmit_tunnel_endpoint
-			transmit_tunnel_endpoint;
-		struct bgp_encap_type_ipsec_in_tunnel_mode ipsec_tunnel;
-		struct bgp_encap_type_ip_in_ip_tunnel_with_ipsec_transport_mode
-			ip_ipsec;
-		struct bgp_encap_type_mpls_in_ip_tunnel_with_ipsec_transport_mode
-			mpls_ipsec;
-		struct bgp_encap_type_ip_in_ip ip_ip;
-		struct bgp_encap_type_vxlan vxlan;
-		struct bgp_encap_type_nvgre nvgre;
-		struct bgp_encap_type_mpls mpls;
-		struct bgp_encap_type_mpls_in_gre mpls_gre;
-		struct bgp_encap_type_vxlan_gpe vxlan_gpe;
-		struct bgp_encap_type_mpls_in_udp mpls_udp;
-		struct bgp_encap_type_pbb pbb;
-	} bgpinfo;
+struct rfapi_tunneltype_option
+{
+  bgp_encap_types type;
+  union
+  {
+    struct bgp_encap_type_reserved reserved;
+    struct bgp_encap_type_l2tpv3_over_ip l2tpv3_ip;
+    struct bgp_encap_type_gre gre;
+    struct bgp_encap_type_transmit_tunnel_endpoint transmit_tunnel_endpoint;
+    struct bgp_encap_type_ipsec_in_tunnel_mode ipsec_tunnel;
+    struct bgp_encap_type_ip_in_ip_tunnel_with_ipsec_transport_mode ip_ipsec;
+    struct bgp_encap_type_mpls_in_ip_tunnel_with_ipsec_transport_mode
+        mpls_ipsec;
+    struct bgp_encap_type_ip_in_ip ip_ip;
+    struct bgp_encap_type_vxlan vxlan;
+    struct bgp_encap_type_nvgre nvgre;
+    struct bgp_encap_type_mpls mpls;
+    struct bgp_encap_type_mpls_in_gre mpls_gre;
+    struct bgp_encap_type_vxlan_gpe vxlan_gpe;
+    struct bgp_encap_type_mpls_in_udp mpls_udp;
+    struct bgp_encap_type_pbb pbb;
+  } bgpinfo;
 };
 
-struct rfapi_un_option {
-	struct rfapi_un_option *next;
-	rfapi_un_option_type type;
-	union {
-		struct rfapi_tunneltype_option tunnel;
-	} v;
+struct rfapi_un_option
+{
+  struct rfapi_un_option *next;
+  rfapi_un_option_type type;
+  union
+  {
+    struct rfapi_tunneltype_option tunnel;
+  } v;
 };
 
-typedef enum {
-	RFAPI_VN_OPTION_TYPE_L2ADDR =
-		3, /* Layer 2 address, 3 for legacy compatibility */
-	RFAPI_VN_OPTION_TYPE_LOCAL_NEXTHOP, /* for static routes */
-	RFAPI_VN_OPTION_TYPE_INTERNAL_RD,   /* internal use only */
+typedef enum
+{
+  RFAPI_VN_OPTION_TYPE_L2ADDR =
+      3, /* Layer 2 address, 3 for legacy compatibility */
+  RFAPI_VN_OPTION_TYPE_LOCAL_NEXTHOP, /* for static routes */
+  RFAPI_VN_OPTION_TYPE_INTERNAL_RD,   /* internal use only */
 } rfapi_vn_option_type;
 
-struct rfapi_vn_option {
-	struct rfapi_vn_option *next;
+struct rfapi_vn_option
+{
+  struct rfapi_vn_option *next;
 
-	rfapi_vn_option_type type;
+  rfapi_vn_option_type type;
 
-	union {
-		struct rfapi_l2address_option l2addr;
+  union
+  {
+    struct rfapi_l2address_option l2addr;
 
-		/*
-		 * If this option is present, the next hop is local to the
-		 * client NVE (i.e., not via a tunnel).
-		 */
-		struct rfapi_nexthop local_nexthop;
+    /*
+     * If this option is present, the next hop is local to the
+     * client NVE (i.e., not via a tunnel).
+     */
+    struct rfapi_nexthop local_nexthop;
 
-		/*
-		 * For rfapi internal use only
-		 */
-		struct prefix_rd internal_rd;
-	} v;
+    /*
+     * For rfapi internal use only
+     */
+    struct prefix_rd internal_rd;
+  } v;
 };
 
-struct rfapi_l2address_option_match {
-	struct rfapi_l2address_option o;
-	uint32_t flags;
+struct rfapi_l2address_option_match
+{
+  struct rfapi_l2address_option o;
+  uint32_t flags;
 
-#define RFAPI_L2O_MACADDR		0x00000001
-#define RFAPI_L2O_LABEL			0x00000002
-#define RFAPI_L2O_LNI			0x00000004
-#define RFAPI_L2O_LHI			0x00000008
+#define RFAPI_L2O_MACADDR 0x00000001
+#define RFAPI_L2O_LABEL   0x00000002
+#define RFAPI_L2O_LNI     0x00000004
+#define RFAPI_L2O_LHI     0x00000008
 };
 
 #define VNC_CONFIG_STR "VNC/RFP related configuration\n"
@@ -183,8 +196,8 @@ typedef void *rfapi_handle;
  *			rfapi_open()
  *
  *------------------------------------------*/
-typedef void(rfapi_response_cb_t)(struct rfapi_next_hop_entry *next_hops,
-				  void *userdata);
+typedef void (rfapi_response_cb_t) (struct rfapi_next_hop_entry *next_hops,
+                                    void *userdata);
 
 /*------------------------------------------
  * rfapi_nve_close_cb_t (callback typedef)
@@ -200,7 +213,7 @@ typedef void(rfapi_response_cb_t)(struct rfapi_next_hop_entry *next_hops,
  *			ESTALE	handle invalidated by configuration change
  *
  *------------------------------------------*/
-typedef void(rfapi_nve_close_cb_t)(rfapi_handle pHandle, int reason);
+typedef void (rfapi_nve_close_cb_t) (rfapi_handle pHandle, int reason);
 
 /*------------------------------------------
  * rfp_cfg_write_cb_t (callback typedef)
@@ -219,7 +232,7 @@ typedef void(rfapi_nve_close_cb_t)(rfapi_handle pHandle, int reason);
  * return value:
  *    lines written
 --------------------------------------------*/
-typedef int(rfp_cfg_write_cb_t)(struct vty *vty, void *rfp_start_val);
+typedef int (rfp_cfg_write_cb_t) (struct vty *vty, void *rfp_start_val);
 
 /*------------------------------------------
  * rfp_cfg_group_write_cb_t (callback typedef)
@@ -241,26 +254,28 @@ typedef int(rfp_cfg_write_cb_t)(struct vty *vty, void *rfp_start_val);
  * return value:
  *    lines written
 --------------------------------------------*/
-typedef enum {
-	RFAPI_RFP_CFG_GROUP_DEFAULT,
-	RFAPI_RFP_CFG_GROUP_NVE,
-	RFAPI_RFP_CFG_GROUP_L2
+typedef enum
+{
+  RFAPI_RFP_CFG_GROUP_DEFAULT,
+  RFAPI_RFP_CFG_GROUP_NVE,
+  RFAPI_RFP_CFG_GROUP_L2
 } rfapi_rfp_cfg_group_type;
 
-typedef int(rfp_cfg_group_write_cb_t)(struct vty *vty, void *rfp_start_val,
-				      rfapi_rfp_cfg_group_type type,
-				      const char *name, void *rfp_cfg_group);
+typedef int (rfp_cfg_group_write_cb_t) (struct vty *vty, void *rfp_start_val,
+                                        rfapi_rfp_cfg_group_type type,
+                                        const char *name, void *rfp_cfg_group);
 
 /***********************************************************************
  * Configuration related defines and structures
  ***********************************************************************/
 
-struct rfapi_rfp_cb_methods {
-	rfp_cfg_write_cb_t *cfg_cb;		/* show top level config */
-	rfp_cfg_group_write_cb_t *cfg_group_cb; /* show group level config */
-	rfapi_response_cb_t *response_cb;       /* unsolicited responses */
-	rfapi_response_cb_t *local_cb;		/* local route add/delete */
-	rfapi_nve_close_cb_t *close_cb;		/* handle closed */
+struct rfapi_rfp_cb_methods
+{
+  rfp_cfg_write_cb_t *cfg_cb;             /* show top level config */
+  rfp_cfg_group_write_cb_t *cfg_group_cb; /* show group level config */
+  rfapi_response_cb_t *response_cb;       /* unsolicited responses */
+  rfapi_response_cb_t *local_cb;          /* local route add/delete */
+  rfapi_nve_close_cb_t *close_cb;         /* handle closed */
 };
 
 /*
@@ -268,7 +283,7 @@ struct rfapi_rfp_cb_methods {
  * how long (in seconds) to wait before expiring it (because
  * RFAPI_LIFETIME_MULTIPLIER_PCT * infinity is too long to wait)
  */
-#define RFAPI_LIFETIME_INFINITE_WITHDRAW_DELAY (60*120)
+#define RFAPI_LIFETIME_INFINITE_WITHDRAW_DELAY (60 * 120)
 
 /*
  * the factor that should be applied to a prefix's <lifetime> value
@@ -276,7 +291,7 @@ struct rfapi_rfp_cb_methods {
  * Thus, a value of 100 means to use the exact value of <lifetime>,
  * a value of 200 means to use twice the value of <lifetime>, etc.
  */
-#define RFAPI_RFP_CFG_DEFAULT_HOLDDOWN_FACTOR	150
+#define RFAPI_RFP_CFG_DEFAULT_HOLDDOWN_FACTOR 150
 
 /*
  * This is used by rfapi to determine if RFP is using/supports
@@ -286,33 +301,35 @@ struct rfapi_rfp_cb_methods {
  * rfapi_query.  When partial table download is used, only
  * information matching a query is passed.
  */
-typedef enum {
-	RFAPI_RFP_DOWNLOAD_PARTIAL = 0,
-	RFAPI_RFP_DOWNLOAD_FULL
+typedef enum
+{
+  RFAPI_RFP_DOWNLOAD_PARTIAL = 0,
+  RFAPI_RFP_DOWNLOAD_FULL
 } rfapi_rfp_download_type;
 
 #define RFAPI_RFP_CFG_DEFAULT_FTD_ADVERTISEMENT_INTERVAL 1
 
-struct rfapi_rfp_cfg {
-	/* partial or full table download */
-	rfapi_rfp_download_type download_type; /* default=partial */
-	/*
-	 * When full-table-download is enabled, this is the minimum
-	 * number of seconds between times a non-queried prefix will
-	 * be updated to a particular NVE.
-	 * default: RFAPI_RFP_CFG_DEFAULT_FTD_ADVERTISEMENT_INTERVAL
-	 */
-	uint32_t ftd_advertisement_interval;
-	/*
-	 * percentage of registration lifetime to continue to use information
-	 * post soft-state refresh timeout
-	 default: RFAPI_RFP_CFG_DEFAULT_HOLDDOWN_FACTOR
-	 */
-	uint32_t holddown_factor;
-	/* Control generation of updated RFP responses */
-	uint8_t use_updated_response; /* default=0/no */
-	/* when use_updated_response, also generate remove responses */
-	uint8_t use_removes; /* default=0/no */
+struct rfapi_rfp_cfg
+{
+  /* partial or full table download */
+  rfapi_rfp_download_type download_type; /* default=partial */
+  /*
+   * When full-table-download is enabled, this is the minimum
+   * number of seconds between times a non-queried prefix will
+   * be updated to a particular NVE.
+   * default: RFAPI_RFP_CFG_DEFAULT_FTD_ADVERTISEMENT_INTERVAL
+   */
+  uint32_t ftd_advertisement_interval;
+  /*
+   * percentage of registration lifetime to continue to use information
+   * post soft-state refresh timeout
+   default: RFAPI_RFP_CFG_DEFAULT_HOLDDOWN_FACTOR
+   */
+  uint32_t holddown_factor;
+  /* Control generation of updated RFP responses */
+  uint8_t use_updated_response; /* default=0/no */
+  /* when use_updated_response, also generate remove responses */
+  uint8_t use_removes; /* default=0/no */
 };
 
 /***********************************************************************
@@ -335,8 +352,8 @@ struct rfapi_rfp_cfg {
  * return value:
  *    rfp_start_val rfp returned value passed on rfp_stop and other rfapi calls
 --------------------------------------------*/
-extern void *rfp_start(struct event_loop *master, struct rfapi_rfp_cfg **cfgp,
-		       struct rfapi_rfp_cb_methods **cbmp);
+extern void *rfp_start (struct event_loop *master, struct rfapi_rfp_cfg **cfgp,
+                        struct rfapi_rfp_cb_methods **cbmp);
 
 /*------------------------------------------
  * rfp_stop
@@ -351,7 +368,7 @@ extern void *rfp_start(struct event_loop *master, struct rfapi_rfp_cfg **cfgp,
  *
  * return value:
 --------------------------------------------*/
-extern void rfp_stop(void *rfp_start_val);
+extern void rfp_stop (void *rfp_start_val);
 
 /***********************************************************************
  *		 RFP processing behavior configuration
@@ -374,8 +391,8 @@ extern void rfp_stop(void *rfp_start_val);
  *	0		Success
  *	ENXIO		Unabled to locate configured BGP/VNC
 --------------------------------------------*/
-extern int rfapi_rfp_set_configuration(void *rfp_start_val,
-				       struct rfapi_rfp_cfg *rfp_cfg);
+extern int rfapi_rfp_set_configuration (void *rfp_start_val,
+                                        struct rfapi_rfp_cfg *rfp_cfg);
 
 /*------------------------------------------
  * rfapi_rfp_set_cb_methods
@@ -392,8 +409,8 @@ extern int rfapi_rfp_set_configuration(void *rfp_start_val,
  *	0		Success
  *	ENXIO		BGP or VNC not configured
  *------------------------------------------*/
-extern int rfapi_rfp_set_cb_methods(void *rfp_start_val,
-				    struct rfapi_rfp_cb_methods *methods);
+extern int rfapi_rfp_set_cb_methods (void *rfp_start_val,
+                                     struct rfapi_rfp_cb_methods *methods);
 
 /***********************************************************************
  *		 RFP group specific configuration
@@ -420,10 +437,10 @@ extern int rfapi_rfp_set_cb_methods(void *rfp_start_val,
  * return value:
  *    rfp_cfg_group     NULL or Pointer to configuration structure
 --------------------------------------------*/
-extern void *rfapi_rfp_init_group_config_ptr_vty(void *rfp_start_val,
-						 rfapi_rfp_cfg_group_type type,
-						 struct vty *vty,
-						 uint32_t size);
+extern void *
+rfapi_rfp_init_group_config_ptr_vty (void *rfp_start_val,
+                                     rfapi_rfp_cfg_group_type type,
+                                     struct vty *vty, uint32_t size);
 
 /*------------------------------------------
  * rfapi_rfp_get_group_config_ptr_vty
@@ -444,9 +461,9 @@ extern void *rfapi_rfp_init_group_config_ptr_vty(void *rfp_start_val,
  * return value:
  *    rfp_cfg_group     Pointer to configuration structure
 --------------------------------------------*/
-extern void *rfapi_rfp_get_group_config_ptr_vty(void *rfp_start_val,
-						rfapi_rfp_cfg_group_type type,
-						struct vty *vty);
+extern void *rfapi_rfp_get_group_config_ptr_vty (void *rfp_start_val,
+                                                 rfapi_rfp_cfg_group_type type,
+                                                 struct vty *vty);
 
 /*------------------------------------------
  * rfp_group_config_search_cb_t (callback typedef)
@@ -465,7 +482,8 @@ extern void *rfapi_rfp_get_group_config_ptr_vty(void *rfp_start_val,
  *      0               Match/Success
  *	ENOENT		No matching
 --------------------------------------------*/
-typedef int(rfp_group_config_search_cb_t)(void *criteria, void *rfp_cfg_group);
+typedef int (rfp_group_config_search_cb_t) (void *criteria,
+                                            void *rfp_cfg_group);
 
 /*------------------------------------------
  * rfapi_rfp_get_group_config_ptr_name
@@ -488,9 +506,9 @@ typedef int(rfp_group_config_search_cb_t)(void *criteria, void *rfp_cfg_group);
  * return value:
  *    rfp_cfg_group     Pointer to configuration structure
 --------------------------------------------*/
-extern void *rfapi_rfp_get_group_config_ptr_name(
-	void *rfp_start_val, rfapi_rfp_cfg_group_type type, const char *name,
-	void *criteria, rfp_group_config_search_cb_t *search_cb);
+extern void *rfapi_rfp_get_group_config_ptr_name (
+    void *rfp_start_val, rfapi_rfp_cfg_group_type type, const char *name,
+    void *criteria, rfp_group_config_search_cb_t *search_cb);
 
 /*------------------------------------------
  * rfapi_rfp_get_l2_group_config_ptr_lni
@@ -512,10 +530,9 @@ extern void *rfapi_rfp_get_group_config_ptr_name(
  * return value:
  *    rfp_cfg_group     Pointer to configuration structure
 --------------------------------------------*/
-extern void *
-rfapi_rfp_get_l2_group_config_ptr_lni(void *rfp_start_val,
-				      uint32_t logical_net_id, void *criteria,
-				      rfp_group_config_search_cb_t *search_cb);
+extern void *rfapi_rfp_get_l2_group_config_ptr_lni (
+    void *rfp_start_val, uint32_t logical_net_id, void *criteria,
+    rfp_group_config_search_cb_t *search_cb);
 
 /***********************************************************************
  *			NVE Sessions
@@ -561,11 +578,11 @@ rfapi_rfp_get_l2_group_config_ptr_lni(void *rfp_start_val,
  *			but underlay network address is not IPv4
  *	EDEADLK		Called from within a callback procedure
  *------------------------------------------*/
-extern int rfapi_open(void *rfp_start_val, struct rfapi_ip_addr *vn,
-		      struct rfapi_ip_addr *un,
-		      struct rfapi_un_option *default_options,
-		      uint32_t *response_lifetime, void *userdata,
-		      rfapi_handle *pHandle);
+extern int rfapi_open (void *rfp_start_val, struct rfapi_ip_addr *vn,
+                       struct rfapi_ip_addr *un,
+                       struct rfapi_un_option *default_options,
+                       uint32_t *response_lifetime, void *userdata,
+                       rfapi_handle *pHandle);
 
 
 /*------------------------------------------
@@ -585,7 +602,7 @@ extern int rfapi_open(void *rfp_start_val, struct rfapi_ip_addr *vn,
  *	EBADF		invalid handle
  *	ENXIO		BGP or VNC not configured
  *------------------------------------------*/
-extern int rfapi_close(rfapi_handle rfd);
+extern int rfapi_close (rfapi_handle rfd);
 
 /*------------------------------------------
  * rfapi_check
@@ -600,12 +617,11 @@ extern int rfapi_close(rfapi_handle rfd);
  * return value:
  *	0		Success: handle is valid and usable
  *	EINVAL		null argument
- *	ESTALE		formerly valid handle invalidated by config, needs close
- *	EBADF		invalid handle
- *	ENXIO		BGP or VNC not configured
- *	EAFNOSUPPORT	Internal addressing error
+ *	ESTALE		formerly valid handle invalidated by config, needs
+ *close EBADF		invalid handle ENXIO		BGP or VNC not
+ *configured EAFNOSUPPORT	Internal addressing error
  *------------------------------------------*/
-extern int rfapi_check(rfapi_handle rfd);
+extern int rfapi_check (rfapi_handle rfd);
 
 /***********************************************************************
  *			NVE Routes
@@ -641,9 +657,9 @@ extern int rfapi_check(rfapi_handle rfd);
  *	ESTALE		descriptor is no longer usable; should be closed
  *	EDEADLK		Called from within a callback procedure
 --------------------------------------------*/
-extern int rfapi_query(rfapi_handle rfd, struct rfapi_ip_addr *target,
-		       struct rfapi_l2address_option *l2o,
-		       struct rfapi_next_hop_entry **ppNextHopEntry);
+extern int rfapi_query (rfapi_handle rfd, struct rfapi_ip_addr *target,
+                        struct rfapi_l2address_option *l2o,
+                        struct rfapi_next_hop_entry **ppNextHopEntry);
 
 /*------------------------------------------
  * rfapi_query_done
@@ -665,7 +681,7 @@ extern int rfapi_query(rfapi_handle rfd, struct rfapi_ip_addr *target,
  *	ESTALE		descriptor is no longer usable; should be closed
  *	EDEADLK		Called from within a callback procedure
 --------------------------------------------*/
-extern int rfapi_query_done(rfapi_handle rfd, struct rfapi_ip_addr *target);
+extern int rfapi_query_done (rfapi_handle rfd, struct rfapi_ip_addr *target);
 
 /*------------------------------------------
  * rfapi_query_done_all
@@ -686,7 +702,7 @@ extern int rfapi_query_done(rfapi_handle rfd, struct rfapi_ip_addr *target);
  *	ESTALE		descriptor is no longer usable; should be closed
  *	EDEADLK		Called from within a callback procedure
 --------------------------------------------*/
-extern int rfapi_query_done_all(rfapi_handle rfd, int *count);
+extern int rfapi_query_done_all (rfapi_handle rfd, int *count);
 
 /*------------------------------------------
  * rfapi_register
@@ -720,16 +736,18 @@ extern int rfapi_query_done_all(rfapi_handle rfd, int *count);
  *	EDEADLK		Called from within a callback procedure
  --------------------------------------------*/
 
-typedef enum {
-	RFAPI_REGISTER_ADD,
-	RFAPI_REGISTER_WITHDRAW,
-	RFAPI_REGISTER_KILL
+typedef enum
+{
+  RFAPI_REGISTER_ADD,
+  RFAPI_REGISTER_WITHDRAW,
+  RFAPI_REGISTER_KILL
 } rfapi_register_action;
 
-extern int rfapi_register(rfapi_handle rfd, struct rfapi_ip_prefix *prefix,
-			  uint32_t lifetime, struct rfapi_un_option *options_un,
-			  struct rfapi_vn_option *options_vn,
-			  rfapi_register_action action);
+extern int rfapi_register (rfapi_handle rfd, struct rfapi_ip_prefix *prefix,
+                           uint32_t lifetime,
+                           struct rfapi_un_option *options_un,
+                           struct rfapi_vn_option *options_vn,
+                           rfapi_register_action action);
 
 /***********************************************************************
  *			Helper / Utility functions
@@ -748,7 +766,7 @@ extern int rfapi_register(rfapi_handle rfd, struct rfapi_ip_prefix *prefix,
  * return value:
  *	vn		NVE virtual network address
  *------------------------------------------*/
-extern struct rfapi_ip_addr *rfapi_get_vn_addr(void *);
+extern struct rfapi_ip_addr *rfapi_get_vn_addr (void *);
 
 /*------------------------------------------
  * rfapi_get_un_addr
@@ -763,7 +781,7 @@ extern struct rfapi_ip_addr *rfapi_get_vn_addr(void *);
  * return value:
  *	un		NVE underlay network address
  *------------------------------------------*/
-extern struct rfapi_ip_addr *rfapi_get_un_addr(void *);
+extern struct rfapi_ip_addr *rfapi_get_un_addr (void *);
 
 /*------------------------------------------
  * rfapi_error_str
@@ -778,7 +796,7 @@ extern struct rfapi_ip_addr *rfapi_get_un_addr(void *);
  *
  *	const char *	String
  *------------------------------------------*/
-extern const char *rfapi_error_str(int code);
+extern const char *rfapi_error_str (int code);
 
 /*------------------------------------------
  * rfapi_get_rfp_start_val
@@ -791,7 +809,7 @@ extern const char *rfapi_error_str(int code);
  * returns:
  *	void *
  *------------------------------------------*/
-extern void *rfapi_get_rfp_start_val(void *bgpv);
+extern void *rfapi_get_rfp_start_val (void *bgpv);
 
 /*------------------------------------------
  * rfapi_compare_rfds
@@ -808,7 +826,7 @@ extern void *rfapi_get_rfp_start_val(void *bgpv);
  *	0		Mismatch
  *	1		Match
  *------------------------------------------*/
-extern int rfapi_compare_rfds(void *rfd1, void *rfd2);
+extern int rfapi_compare_rfds (void *rfd1, void *rfd2);
 
 /*------------------------------------------
  * rfapi_free_next_hop_list
@@ -823,7 +841,7 @@ extern int rfapi_compare_rfds(void *rfd1, void *rfd2);
  *
  * return value: None
  --------------------------------------------*/
-extern void rfapi_free_next_hop_list(struct rfapi_next_hop_entry *list);
+extern void rfapi_free_next_hop_list (struct rfapi_next_hop_entry *list);
 
 /*------------------------------------------
  * rfapi_get_response_lifetime_default
@@ -839,7 +857,7 @@ extern void rfapi_free_next_hop_list(struct rfapi_next_hop_entry *list);
  *
  * return value: The bgp instance default lifetime for a response.
  --------------------------------------------*/
-extern int rfapi_get_response_lifetime_default(void *rfp_start_val);
+extern int rfapi_get_response_lifetime_default (void *rfp_start_val);
 
 /*------------------------------------------
  * rfapi_is_vnc_configured
@@ -856,7 +874,7 @@ extern int rfapi_get_response_lifetime_default(void *rfp_start_val);
  *	0		Success
  *	ENXIO		VNC not configured
  --------------------------------------------*/
-extern int rfapi_is_vnc_configured(void *rfp_start_val);
+extern int rfapi_is_vnc_configured (void *rfp_start_val);
 
 /*------------------------------------------
  * rfapi_bgp_lookup_by_rfp
@@ -875,7 +893,7 @@ extern int rfapi_is_vnc_configured(void *rfp_start_val);
  *      NULL = not found
  *
  --------------------------------------------*/
-extern struct bgp *rfapi_bgp_lookup_by_rfp(void *rfp_start_val);
+extern struct bgp *rfapi_bgp_lookup_by_rfp (void *rfp_start_val);
 
 /*------------------------------------------
  * rfapi_get_rfp_start_val_by_bgp
@@ -893,7 +911,7 @@ extern struct bgp *rfapi_bgp_lookup_by_rfp(void *rfp_start_val);
  *      NULL = not found
  *
  --------------------------------------------*/
-extern void *rfapi_get_rfp_start_val_by_bgp(struct bgp *bgp);
+extern void *rfapi_get_rfp_start_val_by_bgp (struct bgp *bgp);
 
 #endif /* ENABLE_BGP_VNC */
 

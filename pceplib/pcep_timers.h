@@ -28,21 +28,21 @@
  * The timer_expire_handler function pointer will be called each time a timer
  * expires. Return true for successful initialization, false otherwise.
  */
-bool initialize_timers(timer_expire_handler expire_handler);
+bool initialize_timers (timer_expire_handler expire_handler);
 
 /*
  * Initialize the timers module with an external back-end infrastructure, like
  * FRR.
  */
-bool initialize_timers_external_infra(
-	timer_expire_handler expire_handler, void *external_timer_infra_data,
-	ext_timer_create timer_create_func, ext_timer_cancel timer_cancel_func,
-	ext_pthread_create_callback thread_create_func);
+bool initialize_timers_external_infra (
+    timer_expire_handler expire_handler, void *external_timer_infra_data,
+    ext_timer_create timer_create_func, ext_timer_cancel timer_cancel_func,
+    ext_pthread_create_callback thread_create_func);
 
 /*
  * Teardown the timers module.
  */
-bool teardown_timers(void);
+bool teardown_timers (void);
 
 /*
  * Create a new timer for "sleep_seconds" seconds.
@@ -51,30 +51,30 @@ bool teardown_timers(void);
  * Returns a timer_id <= 0 that can be used to cancel_timer.
  * Returns < 0 on error.
  */
-int create_timer(uint16_t sleep_seconds, void *data);
+int create_timer (uint16_t sleep_seconds, void *data);
 
 /*
  * Cancel a timer created with create_timer().
  * Returns true if the timer was found and cancelled, false otherwise.
  */
-bool cancel_timer(int timer_id);
+bool cancel_timer (int timer_id);
 
 /*
  * Reset an previously created timer, maintaining the same timer_id.
  * Returns true if the timer was found and reset, false otherwise.
  */
-bool reset_timer(int timer_id);
+bool reset_timer (int timer_id);
 
 /*
  * If an external timer infra like FRR is used, then this function
  * will be called when the timers expire in the external infra.
  */
-void pceplib_external_timer_expire_handler(void *data);
+void pceplib_external_timer_expire_handler (void *data);
 
-int timer_list_node_compare(void *list_entry, void *new_entry);
-int timer_list_node_timer_id_compare(void *list_entry, void *new_entry);
-int timer_list_node_timer_ptr_compare(void *list_entry, void *new_entry);
-void free_all_timers(pcep_timers_context *timers_context);
-int get_next_timer_id(void);
+int timer_list_node_compare (void *list_entry, void *new_entry);
+int timer_list_node_timer_id_compare (void *list_entry, void *new_entry);
+int timer_list_node_timer_ptr_compare (void *list_entry, void *new_entry);
+void free_all_timers (pcep_timers_context *timers_context);
+int get_next_timer_id (void);
 
 #endif /* PCEPTIMERS_H_ */

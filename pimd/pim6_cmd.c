@@ -35,10 +35,10 @@
 #include "pimd/pim6_cmd_clippy.c"
 
 static struct cmd_node debug_node = {
-	.name = "debug",
-	.node = DEBUG_NODE,
-	.prompt = "",
-	.config_write = pim_debug_config_write,
+  .name = "debug",
+  .node = DEBUG_NODE,
+  .prompt = "",
+  .config_write = pim_debug_config_write,
 };
 
 DEFPY (ipv6_pim_joinprune_time,
@@ -49,7 +49,7 @@ DEFPY (ipv6_pim_joinprune_time,
        "Join Prune Send Interval\n"
        "Seconds\n")
 {
-	return pim_process_join_prune_cmd(vty, jpi_str);
+  return pim_process_join_prune_cmd (vty, jpi_str);
 }
 
 DEFPY (no_ipv6_pim_joinprune_time,
@@ -61,7 +61,7 @@ DEFPY (no_ipv6_pim_joinprune_time,
        "Join Prune Send Interval\n"
        IGNORED_IN_NO_STR)
 {
-	return pim_process_no_join_prune_cmd(vty);
+  return pim_process_no_join_prune_cmd (vty);
 }
 
 DEFPY (ipv6_pim_spt_switchover_infinity,
@@ -72,7 +72,7 @@ DEFPY (ipv6_pim_spt_switchover_infinity,
        "SPT-Switchover\n"
        "Never switch to SPT Tree\n")
 {
-	return pim_process_spt_switchover_infinity_cmd(vty);
+  return pim_process_spt_switchover_infinity_cmd (vty);
 }
 
 DEFPY (ipv6_pim_spt_switchover_infinity_plist,
@@ -85,7 +85,7 @@ DEFPY (ipv6_pim_spt_switchover_infinity_plist,
        "Prefix-List to control which groups to switch\n"
        "Prefix-List name\n")
 {
-	return pim_process_spt_switchover_prefixlist_cmd(vty, plist);
+  return pim_process_spt_switchover_prefixlist_cmd (vty, plist);
 }
 
 DEFPY (no_ipv6_pim_spt_switchover_infinity,
@@ -97,7 +97,7 @@ DEFPY (no_ipv6_pim_spt_switchover_infinity,
        "SPT_Switchover\n"
        "Never switch to SPT Tree\n")
 {
-	return pim_process_no_spt_switchover_cmd(vty);
+  return pim_process_no_spt_switchover_cmd (vty);
 }
 
 DEFPY (no_ipv6_pim_spt_switchover_infinity_plist,
@@ -111,7 +111,7 @@ DEFPY (no_ipv6_pim_spt_switchover_infinity_plist,
        "Prefix-List to control which groups to switch\n"
        "Prefix-List name\n")
 {
-	return pim_process_no_spt_switchover_cmd(vty);
+  return pim_process_no_spt_switchover_cmd (vty);
 }
 
 DEFPY (ipv6_pim_packets,
@@ -122,7 +122,7 @@ DEFPY (ipv6_pim_packets,
        "packets to process at one time per fd\n"
        "Number of packets\n")
 {
-	return pim_process_pim_packet_cmd(vty, packets_str);
+  return pim_process_pim_packet_cmd (vty, packets_str);
 }
 
 DEFPY (no_ipv6_pim_packets,
@@ -134,7 +134,7 @@ DEFPY (no_ipv6_pim_packets,
        "packets to process at one time per fd\n"
        IGNORED_IN_NO_STR)
 {
-	return pim_process_no_pim_packet_cmd(vty);
+  return pim_process_no_pim_packet_cmd (vty);
 }
 
 DEFPY (ipv6_pim_keep_alive,
@@ -145,7 +145,7 @@ DEFPY (ipv6_pim_keep_alive,
        "Keep alive Timer\n"
        "Seconds\n")
 {
-	return pim_process_keepalivetimer_cmd(vty, kat_str);
+  return pim_process_keepalivetimer_cmd (vty, kat_str);
 }
 
 DEFPY (no_ipv6_pim_keep_alive,
@@ -157,7 +157,7 @@ DEFPY (no_ipv6_pim_keep_alive,
        "Keep alive Timer\n"
        IGNORED_IN_NO_STR)
 {
-	return pim_process_no_keepalivetimer_cmd(vty);
+  return pim_process_no_keepalivetimer_cmd (vty);
 }
 
 DEFPY (ipv6_pim_rp_keep_alive,
@@ -169,7 +169,7 @@ DEFPY (ipv6_pim_rp_keep_alive,
        "Keep alive Timer\n"
        "Seconds\n")
 {
-	return pim_process_rp_kat_cmd(vty, kat_str);
+  return pim_process_rp_kat_cmd (vty, kat_str);
 }
 
 DEFPY (no_ipv6_pim_rp_keep_alive,
@@ -182,7 +182,7 @@ DEFPY (no_ipv6_pim_rp_keep_alive,
        "Keep alive Timer\n"
        IGNORED_IN_NO_STR)
 {
-	return pim_process_no_rp_kat_cmd(vty);
+  return pim_process_no_rp_kat_cmd (vty);
 }
 
 DEFPY (ipv6_pim_register_suppress,
@@ -193,7 +193,7 @@ DEFPY (ipv6_pim_register_suppress,
        "Register Suppress Timer\n"
        "Seconds\n")
 {
-	return pim_process_register_suppress_cmd(vty, rst_str);
+  return pim_process_register_suppress_cmd (vty, rst_str);
 }
 
 DEFPY (no_ipv6_pim_register_suppress,
@@ -205,7 +205,7 @@ DEFPY (no_ipv6_pim_register_suppress,
        "Register Suppress Timer\n"
        IGNORED_IN_NO_STR)
 {
-	return pim_process_no_register_suppress_cmd(vty);
+  return pim_process_no_register_suppress_cmd (vty);
 }
 
 DEFPY (interface_ipv6_pim,
@@ -215,17 +215,17 @@ DEFPY (interface_ipv6_pim,
        PIM_STR
        "Disable exchange of protocol packets\n")
 {
-	int ret;
+  int ret;
 
-	ret = pim_process_ip_pim_cmd(vty);
+  ret = pim_process_ip_pim_cmd (vty);
 
-	if (ret != NB_OK)
-		return ret;
+  if (ret != NB_OK)
+    return ret;
 
-	if (passive)
-		return pim_process_ip_pim_passive_cmd(vty, true);
+  if (passive)
+    return pim_process_ip_pim_passive_cmd (vty, true);
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (interface_no_ipv6_pim,
@@ -236,10 +236,10 @@ DEFPY (interface_no_ipv6_pim,
        PIM_STR
        "Disable exchange of protocol packets\n")
 {
-	if (passive)
-		return pim_process_ip_pim_passive_cmd(vty, false);
+  if (passive)
+    return pim_process_ip_pim_passive_cmd (vty, false);
 
-	return pim_process_no_ip_pim_cmd(vty);
+  return pim_process_no_ip_pim_cmd (vty);
 }
 
 DEFPY (interface_ipv6_pim_drprio,
@@ -250,7 +250,7 @@ DEFPY (interface_ipv6_pim_drprio,
        "Set the Designated Router Election Priority\n"
        "Value of the new DR Priority\n")
 {
-	return pim_process_ip_pim_drprio_cmd(vty, drpriority_str);
+  return pim_process_ip_pim_drprio_cmd (vty, drpriority_str);
 }
 
 DEFPY (interface_no_ipv6_pim_drprio,
@@ -262,7 +262,7 @@ DEFPY (interface_no_ipv6_pim_drprio,
        "Revert the Designated Router Priority to default\n"
        "Old Value of the Priority\n")
 {
-	return pim_process_no_ip_pim_drprio_cmd(vty);
+  return pim_process_no_ip_pim_drprio_cmd (vty);
 }
 
 DEFPY (interface_ipv6_pim_hello,
@@ -274,7 +274,7 @@ DEFPY (interface_ipv6_pim_hello,
        IFACE_PIM_HELLO_TIME_STR
        IFACE_PIM_HELLO_HOLD_STR)
 {
-	return pim_process_ip_pim_hello_cmd(vty, hello_str, hold_str);
+  return pim_process_ip_pim_hello_cmd (vty, hello_str, hold_str);
 }
 
 DEFPY (interface_no_ipv6_pim_hello,
@@ -287,7 +287,7 @@ DEFPY (interface_no_ipv6_pim_hello,
        IGNORED_IN_NO_STR
        IGNORED_IN_NO_STR)
 {
-	return pim_process_no_ip_pim_hello_cmd(vty);
+  return pim_process_no_ip_pim_hello_cmd (vty);
 }
 
 DEFPY (interface_ipv6_pim_activeactive,
@@ -298,7 +298,7 @@ DEFPY (interface_ipv6_pim_activeactive,
        PIM_STR
        "Mark interface as Active-Active for MLAG operations\n")
 {
-	return pim_process_ip_pim_activeactive_cmd(vty, no);
+  return pim_process_ip_pim_activeactive_cmd (vty, no);
 }
 
 DEFPY_HIDDEN (interface_ipv6_pim_ssm,
@@ -308,17 +308,17 @@ DEFPY_HIDDEN (interface_ipv6_pim_ssm,
               PIM_STR
               IFACE_PIM_STR)
 {
-	int ret;
+  int ret;
 
-	ret = pim_process_ip_pim_cmd(vty);
+  ret = pim_process_ip_pim_cmd (vty);
 
-	if (ret != NB_OK)
-		return ret;
+  if (ret != NB_OK)
+    return ret;
 
-	vty_out(vty,
-		"Enabled PIM SM on interface; configure PIM SSM range if needed\n");
+  vty_out (vty,
+           "Enabled PIM SM on interface; configure PIM SSM range if needed\n");
 
-	return NB_OK;
+  return NB_OK;
 }
 
 DEFPY_HIDDEN (interface_no_ipv6_pim_ssm,
@@ -329,54 +329,54 @@ DEFPY_HIDDEN (interface_no_ipv6_pim_ssm,
               PIM_STR
               IFACE_PIM_STR)
 {
-	return pim_process_no_ip_pim_cmd(vty);
+  return pim_process_no_ip_pim_cmd (vty);
 }
 
 DEFPY_HIDDEN (interface_ipv6_pim_sm,
-	      interface_ipv6_pim_sm_cmd,
-	      "ipv6 pim sm",
-	      IPV6_STR
-	      PIM_STR
-	      IFACE_PIM_SM_STR)
+              interface_ipv6_pim_sm_cmd,
+              "ipv6 pim sm",
+              IPV6_STR
+              PIM_STR
+              IFACE_PIM_SM_STR)
 {
-	return pim_process_ip_pim_cmd(vty);
+  return pim_process_ip_pim_cmd (vty);
 }
 
 DEFPY_HIDDEN (interface_no_ipv6_pim_sm,
-	      interface_no_ipv6_pim_sm_cmd,
-	      "no ipv6 pim sm",
-	      NO_STR
-	      IPV6_STR
-	      PIM_STR
-	      IFACE_PIM_SM_STR)
+              interface_no_ipv6_pim_sm_cmd,
+              "no ipv6 pim sm",
+              NO_STR
+              IPV6_STR
+              PIM_STR
+              IFACE_PIM_SM_STR)
 {
-	return pim_process_no_ip_pim_cmd(vty);
+  return pim_process_no_ip_pim_cmd (vty);
 }
 
 /* boundaries */
 DEFPY (interface_ipv6_pim_boundary_oil,
-      interface_ipv6_pim_boundary_oil_cmd,
-      "ipv6 multicast boundary oil WORD",
-      IPV6_STR
-      "Generic multicast configuration options\n"
-      "Define multicast boundary\n"
-      "Filter OIL by group using prefix list\n"
-      "Prefix list to filter OIL with\n")
+       interface_ipv6_pim_boundary_oil_cmd,
+       "ipv6 multicast boundary oil WORD",
+       IPV6_STR
+       "Generic multicast configuration options\n"
+       "Define multicast boundary\n"
+       "Filter OIL by group using prefix list\n"
+       "Prefix list to filter OIL with\n")
 {
-	return pim_process_ip_pim_boundary_oil_cmd(vty, oil);
+  return pim_process_ip_pim_boundary_oil_cmd (vty, oil);
 }
 
 DEFPY (interface_no_ipv6_pim_boundary_oil,
-      interface_no_ipv6_pim_boundary_oil_cmd,
-      "no ipv6 multicast boundary oil [WORD]",
-      NO_STR
-      IPV6_STR
-      "Generic multicast configuration options\n"
-      "Define multicast boundary\n"
-      "Filter OIL by group using prefix list\n"
-      "Prefix list to filter OIL with\n")
+       interface_no_ipv6_pim_boundary_oil_cmd,
+       "no ipv6 multicast boundary oil [WORD]",
+       NO_STR
+       IPV6_STR
+       "Generic multicast configuration options\n"
+       "Define multicast boundary\n"
+       "Filter OIL by group using prefix list\n"
+       "Prefix list to filter OIL with\n")
 {
-	return pim_process_no_ip_pim_boundary_oil_cmd(vty);
+  return pim_process_no_ip_pim_boundary_oil_cmd (vty);
 }
 
 DEFPY (interface_ipv6_mroute,
@@ -388,7 +388,7 @@ DEFPY (interface_ipv6_mroute,
        "Group address\n"
        "Source address\n")
 {
-	return pim_process_ip_mroute_cmd(vty, interface, group_str, source_str);
+  return pim_process_ip_mroute_cmd (vty, interface, group_str, source_str);
 }
 
 DEFPY (interface_no_ipv6_mroute,
@@ -401,8 +401,7 @@ DEFPY (interface_no_ipv6_mroute,
        "Group Address\n"
        "Source Address\n")
 {
-	return pim_process_no_ip_mroute_cmd(vty, interface, group_str,
-					    source_str);
+  return pim_process_no_ip_mroute_cmd (vty, interface, group_str, source_str);
 }
 
 DEFPY (ipv6_pim_rp,
@@ -414,9 +413,9 @@ DEFPY (ipv6_pim_rp,
        "ipv6 address of RP\n"
        "Group Address range to cover\n")
 {
-	const char *group_str = (gp_str) ? gp_str : "FF00::0/8";
+  const char *group_str = (gp_str) ? gp_str : "FF00::0/8";
 
-	return pim_process_rp_cmd(vty, rp_str, group_str);
+  return pim_process_rp_cmd (vty, rp_str, group_str);
 }
 
 DEFPY (no_ipv6_pim_rp,
@@ -429,9 +428,9 @@ DEFPY (no_ipv6_pim_rp,
        "ipv6 address of RP\n"
        "Group Address range to cover\n")
 {
-	const char *group_str = (gp_str) ? gp_str : "FF00::0/8";
+  const char *group_str = (gp_str) ? gp_str : "FF00::0/8";
 
-	return pim_process_no_rp_cmd(vty, rp_str, group_str);
+  return pim_process_no_rp_cmd (vty, rp_str, group_str);
 }
 
 DEFPY (ipv6_pim_rp_prefix_list,
@@ -444,7 +443,7 @@ DEFPY (ipv6_pim_rp_prefix_list,
        "group prefix-list filter\n"
        "Name of a prefix-list\n")
 {
-	return pim_process_rp_plist_cmd(vty, rp_str, plist);
+  return pim_process_rp_plist_cmd (vty, rp_str, plist);
 }
 
 DEFPY (no_ipv6_pim_rp_prefix_list,
@@ -458,7 +457,7 @@ DEFPY (no_ipv6_pim_rp_prefix_list,
        "group prefix-list filter\n"
        "Name of a prefix-list\n")
 {
-	return pim_process_no_rp_plist_cmd(vty, rp_str, plist);
+  return pim_process_no_rp_plist_cmd (vty, rp_str, plist);
 }
 
 DEFPY (ipv6_pim_bsm,
@@ -468,7 +467,7 @@ DEFPY (ipv6_pim_bsm,
        PIM_STR
        "Enable BSM support on the interface\n")
 {
-	return pim_process_bsm_cmd(vty);
+  return pim_process_bsm_cmd (vty);
 }
 
 DEFPY (no_ipv6_pim_bsm,
@@ -479,7 +478,7 @@ DEFPY (no_ipv6_pim_bsm,
        PIM_STR
        "Enable BSM support on the interface\n")
 {
-	return pim_process_no_bsm_cmd(vty);
+  return pim_process_no_bsm_cmd (vty);
 }
 
 DEFPY (ipv6_pim_ucast_bsm,
@@ -489,7 +488,7 @@ DEFPY (ipv6_pim_ucast_bsm,
        PIM_STR
        "Accept/Send unicast BSM on the interface\n")
 {
-	return pim_process_unicast_bsm_cmd(vty);
+  return pim_process_unicast_bsm_cmd (vty);
 }
 
 DEFPY (no_ipv6_pim_ucast_bsm,
@@ -500,33 +499,33 @@ DEFPY (no_ipv6_pim_ucast_bsm,
        PIM_STR
        "Accept/Send unicast BSM on the interface\n")
 {
-	return pim_process_no_unicast_bsm_cmd(vty);
+  return pim_process_no_unicast_bsm_cmd (vty);
 }
 
 DEFPY (ipv6_ssmpingd,
-      ipv6_ssmpingd_cmd,
-      "ipv6 ssmpingd [X:X::X:X]$source",
-      IPV6_STR
-      CONF_SSMPINGD_STR
-      "Source address\n")
+       ipv6_ssmpingd_cmd,
+       "ipv6 ssmpingd [X:X::X:X]$source",
+       IPV6_STR
+       CONF_SSMPINGD_STR
+       "Source address\n")
 {
-	const char *src_str = (source_str) ? source_str : "::";
+  const char *src_str = (source_str) ? source_str : "::";
 
-	return pim_process_ssmpingd_cmd(vty, NB_OP_CREATE, src_str);
+  return pim_process_ssmpingd_cmd (vty, NB_OP_CREATE, src_str);
 }
 
 
 DEFPY (no_ipv6_ssmpingd,
-      no_ipv6_ssmpingd_cmd,
-      "no ipv6 ssmpingd [X:X::X:X]$source",
-      NO_STR
-      IPV6_STR
-      CONF_SSMPINGD_STR
-      "Source address\n")
+       no_ipv6_ssmpingd_cmd,
+       "no ipv6 ssmpingd [X:X::X:X]$source",
+       NO_STR
+       IPV6_STR
+       CONF_SSMPINGD_STR
+       "Source address\n")
 {
-	const char *src_str = (source_str) ? source_str : "::";
+  const char *src_str = (source_str) ? source_str : "::";
 
-	return pim_process_ssmpingd_cmd(vty, NB_OP_DESTROY, src_str);
+  return pim_process_ssmpingd_cmd (vty, NB_OP_DESTROY, src_str);
 }
 
 DEFPY (interface_ipv6_mld_join,
@@ -538,27 +537,31 @@ DEFPY (interface_ipv6_mld_join,
        "Multicast group address\n"
        "Source address\n")
 {
-	char xpath[XPATH_MAXLEN];
+  char xpath[XPATH_MAXLEN];
 
-	if (!IN6_IS_ADDR_MULTICAST(&group)) {
-		vty_out(vty, "Invalid Multicast Address\n");
-		return CMD_WARNING_CONFIG_FAILED;
-	}
+  if (! IN6_IS_ADDR_MULTICAST (&group))
+    {
+      vty_out (vty, "Invalid Multicast Address\n");
+      return CMD_WARNING_CONFIG_FAILED;
+    }
 
-	if (source_str) {
-		if (IPV6_ADDR_SAME(&source, &in6addr_any)) {
-			vty_out(vty, "Bad source address %s\n", source_str);
-			return CMD_WARNING_CONFIG_FAILED;
-		}
-	} else
-		source_str = "::";
+  if (source_str)
+    {
+      if (IPV6_ADDR_SAME (&source, &in6addr_any))
+        {
+          vty_out (vty, "Bad source address %s\n", source_str);
+          return CMD_WARNING_CONFIG_FAILED;
+        }
+    }
+  else
+    source_str = "::";
 
-	snprintf(xpath, sizeof(xpath), FRR_GMP_JOIN_XPATH, "frr-routing:ipv6",
-		 group_str, source_str);
+  snprintf (xpath, sizeof (xpath), FRR_GMP_JOIN_XPATH, "frr-routing:ipv6",
+            group_str, source_str);
 
-	nb_cli_enqueue_change(vty, xpath, NB_OP_CREATE, NULL);
+  nb_cli_enqueue_change (vty, xpath, NB_OP_CREATE, NULL);
 
-	return nb_cli_apply_changes(vty, NULL);
+  return nb_cli_apply_changes (vty, NULL);
 }
 
 DEFPY (interface_no_ipv6_mld_join,
@@ -571,22 +574,25 @@ DEFPY (interface_no_ipv6_mld_join,
        "Multicast group address\n"
        "Source address\n")
 {
-	char xpath[XPATH_MAXLEN];
+  char xpath[XPATH_MAXLEN];
 
-	if (source_str) {
-		if (IPV6_ADDR_SAME(&source, &in6addr_any)) {
-			vty_out(vty, "Bad source address %s\n", source_str);
-			return CMD_WARNING_CONFIG_FAILED;
-		}
-	} else
-		source_str = "::";
+  if (source_str)
+    {
+      if (IPV6_ADDR_SAME (&source, &in6addr_any))
+        {
+          vty_out (vty, "Bad source address %s\n", source_str);
+          return CMD_WARNING_CONFIG_FAILED;
+        }
+    }
+  else
+    source_str = "::";
 
-	snprintf(xpath, sizeof(xpath), FRR_GMP_JOIN_XPATH, "frr-routing:ipv6",
-		 group_str, source_str);
+  snprintf (xpath, sizeof (xpath), FRR_GMP_JOIN_XPATH, "frr-routing:ipv6",
+            group_str, source_str);
 
-	nb_cli_enqueue_change(vty, xpath, NB_OP_DESTROY, NULL);
+  nb_cli_enqueue_change (vty, xpath, NB_OP_DESTROY, NULL);
 
-	return nb_cli_apply_changes(vty, NULL);
+  return nb_cli_apply_changes (vty, NULL);
 }
 
 DEFPY (interface_ipv6_mld,
@@ -595,10 +601,10 @@ DEFPY (interface_ipv6_mld,
        IPV6_STR
        IFACE_MLD_STR)
 {
-	nb_cli_enqueue_change(vty, "./enable", NB_OP_MODIFY, "true");
+  nb_cli_enqueue_change (vty, "./enable", NB_OP_MODIFY, "true");
 
-	return nb_cli_apply_changes(vty, FRR_GMP_INTERFACE_XPATH,
-				    "frr-routing:ipv6");
+  return nb_cli_apply_changes (vty, FRR_GMP_INTERFACE_XPATH,
+                               "frr-routing:ipv6");
 }
 
 DEFPY (interface_no_ipv6_mld,
@@ -608,31 +614,34 @@ DEFPY (interface_no_ipv6_mld,
        IPV6_STR
        IFACE_MLD_STR)
 {
-	const struct lyd_node *pim_enable_dnode;
-	char pim_if_xpath[XPATH_MAXLEN + 64];
+  const struct lyd_node *pim_enable_dnode;
+  char pim_if_xpath[XPATH_MAXLEN + 64];
 
-	snprintf(pim_if_xpath, sizeof(pim_if_xpath),
-		 "%s/frr-pim:pim/address-family[address-family='%s']",
-		 VTY_CURR_XPATH, "frr-routing:ipv6");
+  snprintf (pim_if_xpath, sizeof (pim_if_xpath),
+            "%s/frr-pim:pim/address-family[address-family='%s']",
+            VTY_CURR_XPATH, "frr-routing:ipv6");
 
-	pim_enable_dnode = yang_dnode_getf(vty->candidate_config->dnode,
-					   FRR_PIM_ENABLE_XPATH, VTY_CURR_XPATH,
-					   "frr-routing:ipv6");
-	if (!pim_enable_dnode) {
-		nb_cli_enqueue_change(vty, pim_if_xpath, NB_OP_DESTROY, NULL);
-		nb_cli_enqueue_change(vty, ".", NB_OP_DESTROY, NULL);
-	} else {
-		if (!yang_dnode_get_bool(pim_enable_dnode, ".")) {
-			nb_cli_enqueue_change(vty, pim_if_xpath, NB_OP_DESTROY,
-					      NULL);
-			nb_cli_enqueue_change(vty, ".", NB_OP_DESTROY, NULL);
-		} else
-			nb_cli_enqueue_change(vty, "./enable", NB_OP_MODIFY,
-					      "false");
-	}
+  pim_enable_dnode =
+      yang_dnode_getf (vty->candidate_config->dnode, FRR_PIM_ENABLE_XPATH,
+                       VTY_CURR_XPATH, "frr-routing:ipv6");
+  if (! pim_enable_dnode)
+    {
+      nb_cli_enqueue_change (vty, pim_if_xpath, NB_OP_DESTROY, NULL);
+      nb_cli_enqueue_change (vty, ".", NB_OP_DESTROY, NULL);
+    }
+  else
+    {
+      if (! yang_dnode_get_bool (pim_enable_dnode, "."))
+        {
+          nb_cli_enqueue_change (vty, pim_if_xpath, NB_OP_DESTROY, NULL);
+          nb_cli_enqueue_change (vty, ".", NB_OP_DESTROY, NULL);
+        }
+      else
+        nb_cli_enqueue_change (vty, "./enable", NB_OP_MODIFY, "false");
+    }
 
-	return nb_cli_apply_changes(vty, FRR_GMP_INTERFACE_XPATH,
-				    "frr-routing:ipv6");
+  return nb_cli_apply_changes (vty, FRR_GMP_INTERFACE_XPATH,
+                               "frr-routing:ipv6");
 }
 
 DEFPY (interface_ipv6_mld_version,
@@ -643,11 +652,11 @@ DEFPY (interface_ipv6_mld_version,
        "MLD version\n"
        "MLD version number\n")
 {
-	nb_cli_enqueue_change(vty, "./enable", NB_OP_MODIFY, "true");
-	nb_cli_enqueue_change(vty, "./mld-version", NB_OP_MODIFY, version_str);
+  nb_cli_enqueue_change (vty, "./enable", NB_OP_MODIFY, "true");
+  nb_cli_enqueue_change (vty, "./mld-version", NB_OP_MODIFY, version_str);
 
-	return nb_cli_apply_changes(vty, FRR_GMP_INTERFACE_XPATH,
-				    "frr-routing:ipv6");
+  return nb_cli_apply_changes (vty, FRR_GMP_INTERFACE_XPATH,
+                               "frr-routing:ipv6");
 }
 
 DEFPY (interface_no_ipv6_mld_version,
@@ -659,10 +668,10 @@ DEFPY (interface_no_ipv6_mld_version,
        "MLD version\n"
        "MLD version number\n")
 {
-	nb_cli_enqueue_change(vty, "./mld-version", NB_OP_DESTROY, NULL);
+  nb_cli_enqueue_change (vty, "./mld-version", NB_OP_DESTROY, NULL);
 
-	return nb_cli_apply_changes(vty, FRR_GMP_INTERFACE_XPATH,
-				    "frr-routing:ipv6");
+  return nb_cli_apply_changes (vty, FRR_GMP_INTERFACE_XPATH,
+                               "frr-routing:ipv6");
 }
 
 DEFPY (interface_ipv6_mld_query_interval,
@@ -673,39 +682,41 @@ DEFPY (interface_ipv6_mld_query_interval,
        IFACE_MLD_QUERY_INTERVAL_STR
        "Query interval in seconds\n")
 {
-	const struct lyd_node *pim_enable_dnode;
+  const struct lyd_node *pim_enable_dnode;
 
-	pim_enable_dnode = yang_dnode_getf(vty->candidate_config->dnode,
-					   FRR_PIM_ENABLE_XPATH, VTY_CURR_XPATH,
-					   "frr-routing:ipv6");
-	if (!pim_enable_dnode) {
-		nb_cli_enqueue_change(vty, "./enable", NB_OP_MODIFY, "true");
-	} else {
-		if (!yang_dnode_get_bool(pim_enable_dnode, "."))
-			nb_cli_enqueue_change(vty, "./enable", NB_OP_MODIFY,
-					      "true");
-	}
+  pim_enable_dnode =
+      yang_dnode_getf (vty->candidate_config->dnode, FRR_PIM_ENABLE_XPATH,
+                       VTY_CURR_XPATH, "frr-routing:ipv6");
+  if (! pim_enable_dnode)
+    {
+      nb_cli_enqueue_change (vty, "./enable", NB_OP_MODIFY, "true");
+    }
+  else
+    {
+      if (! yang_dnode_get_bool (pim_enable_dnode, "."))
+        nb_cli_enqueue_change (vty, "./enable", NB_OP_MODIFY, "true");
+    }
 
-	nb_cli_enqueue_change(vty, "./query-interval", NB_OP_MODIFY,
-			      q_interval_str);
+  nb_cli_enqueue_change (vty, "./query-interval", NB_OP_MODIFY,
+                         q_interval_str);
 
-	return nb_cli_apply_changes(vty, FRR_GMP_INTERFACE_XPATH,
-				    "frr-routing:ipv6");
+  return nb_cli_apply_changes (vty, FRR_GMP_INTERFACE_XPATH,
+                               "frr-routing:ipv6");
 }
 
 DEFPY (interface_no_ipv6_mld_query_interval,
-      interface_no_ipv6_mld_query_interval_cmd,
-      "no ipv6 mld query-interval [(1-65535)]",
-      NO_STR
-      IPV6_STR
-      IFACE_MLD_STR
-      IFACE_MLD_QUERY_INTERVAL_STR
-      IGNORED_IN_NO_STR)
+       interface_no_ipv6_mld_query_interval_cmd,
+       "no ipv6 mld query-interval [(1-65535)]",
+       NO_STR
+       IPV6_STR
+       IFACE_MLD_STR
+       IFACE_MLD_QUERY_INTERVAL_STR
+       IGNORED_IN_NO_STR)
 {
-	nb_cli_enqueue_change(vty, "./query-interval", NB_OP_DESTROY, NULL);
+  nb_cli_enqueue_change (vty, "./query-interval", NB_OP_DESTROY, NULL);
 
-	return nb_cli_apply_changes(vty, FRR_GMP_INTERFACE_XPATH,
-				    "frr-routing:ipv6");
+  return nb_cli_apply_changes (vty, FRR_GMP_INTERFACE_XPATH,
+                               "frr-routing:ipv6");
 }
 
 DEFPY (ipv6_mld_group_watermark,
@@ -716,10 +727,10 @@ DEFPY (ipv6_mld_group_watermark,
        "Configure group limit for watermark warning\n"
        "Group count to generate watermark warning\n")
 {
-	PIM_DECLVAR_CONTEXT_VRF(vrf, pim);
-	pim->gm_watermark_limit = limit;
+  PIM_DECLVAR_CONTEXT_VRF (vrf, pim);
+  pim->gm_watermark_limit = limit;
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (no_ipv6_mld_group_watermark,
@@ -731,10 +742,10 @@ DEFPY (no_ipv6_mld_group_watermark,
        "Unconfigure group limit for watermark warning\n"
        IGNORED_IN_NO_STR)
 {
-	PIM_DECLVAR_CONTEXT_VRF(vrf, pim);
-	pim->gm_watermark_limit = 0;
+  PIM_DECLVAR_CONTEXT_VRF (vrf, pim);
+  pim->gm_watermark_limit = 0;
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (interface_ipv6_mld_query_max_response_time,
@@ -745,7 +756,7 @@ DEFPY (interface_ipv6_mld_query_max_response_time,
        IFACE_MLD_QUERY_MAX_RESPONSE_TIME_STR
        "Query response value in milliseconds\n")
 {
-	return gm_process_query_max_response_time_cmd(vty, qmrt_str);
+  return gm_process_query_max_response_time_cmd (vty, qmrt_str);
 }
 
 DEFPY (interface_no_ipv6_mld_query_max_response_time,
@@ -757,7 +768,7 @@ DEFPY (interface_no_ipv6_mld_query_max_response_time,
        IFACE_MLD_QUERY_MAX_RESPONSE_TIME_STR
        IGNORED_IN_NO_STR)
 {
-	return gm_process_no_query_max_response_time_cmd(vty);
+  return gm_process_no_query_max_response_time_cmd (vty);
 }
 
 DEFPY (interface_ipv6_mld_last_member_query_count,
@@ -768,7 +779,7 @@ DEFPY (interface_ipv6_mld_last_member_query_count,
        IFACE_MLD_LAST_MEMBER_QUERY_COUNT_STR
        "Last member query count\n")
 {
-	return gm_process_last_member_query_count_cmd(vty, lmqc_str);
+  return gm_process_last_member_query_count_cmd (vty, lmqc_str);
 }
 
 DEFPY (interface_no_ipv6_mld_last_member_query_count,
@@ -780,7 +791,7 @@ DEFPY (interface_no_ipv6_mld_last_member_query_count,
        IFACE_MLD_LAST_MEMBER_QUERY_COUNT_STR
        IGNORED_IN_NO_STR)
 {
-	return gm_process_no_last_member_query_count_cmd(vty);
+  return gm_process_no_last_member_query_count_cmd (vty);
 }
 
 DEFPY (interface_ipv6_mld_last_member_query_interval,
@@ -791,7 +802,7 @@ DEFPY (interface_ipv6_mld_last_member_query_interval,
        IFACE_MLD_LAST_MEMBER_QUERY_INTERVAL_STR
        "Last member query interval in deciseconds\n")
 {
-	return gm_process_last_member_query_interval_cmd(vty, lmqi_str);
+  return gm_process_last_member_query_interval_cmd (vty, lmqi_str);
 }
 
 DEFPY (interface_no_ipv6_mld_last_member_query_interval,
@@ -803,7 +814,7 @@ DEFPY (interface_no_ipv6_mld_last_member_query_interval,
        IFACE_MLD_LAST_MEMBER_QUERY_INTERVAL_STR
        IGNORED_IN_NO_STR)
 {
-	return gm_process_no_last_member_query_interval_cmd(vty);
+  return gm_process_no_last_member_query_interval_cmd (vty);
 }
 
 DEFPY (show_ipv6_pim_rp,
@@ -817,8 +828,8 @@ DEFPY (show_ipv6_pim_rp,
        "Multicast Group range\n"
        JSON_STR)
 {
-	return pim_show_rp_helper(vrf, vty, group_str, (struct prefix *)group,
-				  !!json);
+  return pim_show_rp_helper (vrf, vty, group_str, (struct prefix *) group,
+                             ! ! json);
 }
 
 DEFPY (show_ipv6_pim_rp_vrf_all,
@@ -832,8 +843,8 @@ DEFPY (show_ipv6_pim_rp_vrf_all,
        "Multicast Group range\n"
        JSON_STR)
 {
-	return pim_show_rp_vrf_all_helper(vty, group_str,
-					  (struct prefix *)group, !!json);
+  return pim_show_rp_vrf_all_helper (vty, group_str, (struct prefix *) group,
+                                     ! ! json);
 }
 
 DEFPY (show_ipv6_pim_rpf,
@@ -846,7 +857,7 @@ DEFPY (show_ipv6_pim_rpf,
        "PIM cached source rpf information\n"
        JSON_STR)
 {
-	return pim_show_rpf_helper(vrf, vty, !!json);
+  return pim_show_rpf_helper (vrf, vty, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_rpf_vrf_all,
@@ -859,7 +870,7 @@ DEFPY (show_ipv6_pim_rpf_vrf_all,
        "PIM cached source rpf information\n"
        JSON_STR)
 {
-	return pim_show_rpf_vrf_all_helper(vty, !!json);
+  return pim_show_rpf_vrf_all_helper (vty, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_secondary,
@@ -871,7 +882,7 @@ DEFPY (show_ipv6_pim_secondary,
        VRF_CMD_HELP_STR
        "PIM neighbor addresses\n")
 {
-	return pim_show_secondary_helper(vrf, vty);
+  return pim_show_secondary_helper (vrf, vty);
 }
 
 DEFPY (show_ipv6_pim_statistics,
@@ -886,7 +897,7 @@ DEFPY (show_ipv6_pim_statistics,
        "PIM interface\n"
        JSON_STR)
 {
-	return pim_show_statistics_helper(vrf, vty, word, !!json);
+  return pim_show_statistics_helper (vrf, vty, word, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_upstream,
@@ -901,7 +912,7 @@ DEFPY (show_ipv6_pim_upstream,
        "The Group\n"
        JSON_STR)
 {
-	return pim_show_upstream_helper(vrf, vty, s_or_g, g, !!json);
+  return pim_show_upstream_helper (vrf, vty, s_or_g, g, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_upstream_vrf_all,
@@ -914,7 +925,7 @@ DEFPY (show_ipv6_pim_upstream_vrf_all,
        "PIM upstream information\n"
        JSON_STR)
 {
-	return pim_show_upstream_vrf_all_helper(vty, !!json);
+  return pim_show_upstream_vrf_all_helper (vty, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_upstream_join_desired,
@@ -927,7 +938,7 @@ DEFPY (show_ipv6_pim_upstream_join_desired,
        "PIM upstream join-desired\n"
        JSON_STR)
 {
-	return pim_show_upstream_join_desired_helper(vrf, vty, !!json);
+  return pim_show_upstream_join_desired_helper (vrf, vty, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_upstream_rpf,
@@ -940,7 +951,7 @@ DEFPY (show_ipv6_pim_upstream_rpf,
        "PIM upstream source rpf\n"
        JSON_STR)
 {
-	return pim_show_upstream_rpf_helper(vrf, vty, !!json);
+  return pim_show_upstream_rpf_helper (vrf, vty, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_state,
@@ -955,7 +966,7 @@ DEFPY (show_ipv6_pim_state,
        "Multicast address\n"
        JSON_STR)
 {
-	return pim_show_state_helper(vrf, vty, s_or_g_str, g_str, !!json);
+  return pim_show_state_helper (vrf, vty, s_or_g_str, g_str, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_state_vrf_all,
@@ -970,7 +981,7 @@ DEFPY (show_ipv6_pim_state_vrf_all,
        "Multicast address\n"
        JSON_STR)
 {
-	return pim_show_state_vrf_all_helper(vty, s_or_g_str, g_str, !!json);
+  return pim_show_state_vrf_all_helper (vty, s_or_g_str, g_str, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_channel,
@@ -983,7 +994,7 @@ DEFPY (show_ipv6_pim_channel,
        "PIM downstream channel info\n"
        JSON_STR)
 {
-	return pim_show_channel_cmd_helper(vrf, vty, !!json);
+  return pim_show_channel_cmd_helper (vrf, vty, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_interface,
@@ -998,8 +1009,7 @@ DEFPY (show_ipv6_pim_interface,
        "interface name\n"
        JSON_STR)
 {
-	return pim_show_interface_cmd_helper(vrf, vty, !!json, false,
-					     interface);
+  return pim_show_interface_cmd_helper (vrf, vty, ! ! json, false, interface);
 }
 
 DEFPY (show_ipv6_pim_interface_vrf_all,
@@ -1014,8 +1024,8 @@ DEFPY (show_ipv6_pim_interface_vrf_all,
        "interface name\n"
        JSON_STR)
 {
-	return pim_show_interface_vrf_all_cmd_helper(vty, !!json, false,
-						     interface);
+  return pim_show_interface_vrf_all_cmd_helper (vty, ! ! json, false,
+                                                interface);
 }
 
 DEFPY (show_ipv6_pim_join,
@@ -1030,7 +1040,7 @@ DEFPY (show_ipv6_pim_join,
        "The Group\n"
        JSON_STR)
 {
-	return pim_show_join_cmd_helper(vrf, vty, s_or_g, g, json);
+  return pim_show_join_cmd_helper (vrf, vty, s_or_g, g, json);
 }
 
 DEFPY (show_ipv6_pim_join_vrf_all,
@@ -1043,7 +1053,7 @@ DEFPY (show_ipv6_pim_join_vrf_all,
        "PIM interface join information\n"
        JSON_STR)
 {
-	return pim_show_join_vrf_all_cmd_helper(vty, json);
+  return pim_show_join_vrf_all_cmd_helper (vty, json);
 }
 
 DEFPY (show_ipv6_pim_jp_agg,
@@ -1055,7 +1065,7 @@ DEFPY (show_ipv6_pim_jp_agg,
        VRF_CMD_HELP_STR
        "join prune aggregation list\n")
 {
-	return pim_show_jp_agg_list_cmd_helper(vrf, vty);
+  return pim_show_jp_agg_list_cmd_helper (vrf, vty);
 }
 
 DEFPY (show_ipv6_pim_local_membership,
@@ -1068,7 +1078,7 @@ DEFPY (show_ipv6_pim_local_membership,
        "PIM interface local-membership\n"
        JSON_STR)
 {
-	return pim_show_membership_cmd_helper(vrf, vty, !!json);
+  return pim_show_membership_cmd_helper (vrf, vty, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_neighbor,
@@ -1083,7 +1093,7 @@ DEFPY (show_ipv6_pim_neighbor,
        "Name of interface or neighbor\n"
        JSON_STR)
 {
-	return pim_show_neighbors_cmd_helper(vrf, vty, json, interface);
+  return pim_show_neighbors_cmd_helper (vrf, vty, json, interface);
 }
 
 DEFPY (show_ipv6_pim_neighbor_vrf_all,
@@ -1098,7 +1108,7 @@ DEFPY (show_ipv6_pim_neighbor_vrf_all,
        "Name of interface or neighbor\n"
        JSON_STR)
 {
-	return pim_show_neighbors_vrf_all_cmd_helper(vty, json, interface);
+  return pim_show_neighbors_vrf_all_cmd_helper (vty, json, interface);
 }
 
 DEFPY (show_ipv6_pim_nexthop,
@@ -1111,7 +1121,7 @@ DEFPY (show_ipv6_pim_nexthop,
        "PIM cached nexthop rpf information\n"
        JSON_STR)
 {
-	return pim_show_nexthop_cmd_helper(vrf, vty, !!json);
+  return pim_show_nexthop_cmd_helper (vrf, vty, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_nexthop_lookup,
@@ -1125,7 +1135,7 @@ DEFPY (show_ipv6_pim_nexthop_lookup,
        "Source/RP address\n"
        "Multicast Group address\n")
 {
-	return pim_show_nexthop_lookup_cmd_helper(vrf, vty, source, group);
+  return pim_show_nexthop_lookup_cmd_helper (vrf, vty, source, group);
 }
 
 DEFPY (show_ipv6_multicast,
@@ -1136,7 +1146,7 @@ DEFPY (show_ipv6_multicast,
        "Multicast global information\n"
        VRF_CMD_HELP_STR)
 {
-	return pim_show_multicast_helper(vrf, vty);
+  return pim_show_multicast_helper (vrf, vty);
 }
 
 DEFPY (show_ipv6_multicast_vrf_all,
@@ -1147,7 +1157,7 @@ DEFPY (show_ipv6_multicast_vrf_all,
        "Multicast global information\n"
        VRF_CMD_HELP_STR)
 {
-	return pim_show_multicast_vrf_all_helper(vty);
+  return pim_show_multicast_vrf_all_helper (vty);
 }
 
 DEFPY (show_ipv6_multicast_count,
@@ -1160,7 +1170,7 @@ DEFPY (show_ipv6_multicast_count,
        VRF_CMD_HELP_STR
        JSON_STR)
 {
-	return pim_show_multicast_count_helper(vrf, vty, !!json);
+  return pim_show_multicast_count_helper (vrf, vty, ! ! json);
 }
 
 DEFPY (show_ipv6_multicast_count_vrf_all,
@@ -1173,7 +1183,7 @@ DEFPY (show_ipv6_multicast_count_vrf_all,
        VRF_CMD_HELP_STR
        JSON_STR)
 {
-	return pim_show_multicast_count_vrf_all_helper(vty, !!json);
+  return pim_show_multicast_count_vrf_all_helper (vty, ! ! json);
 }
 
 DEFPY (show_ipv6_mroute,
@@ -1188,7 +1198,7 @@ DEFPY (show_ipv6_mroute,
        "Fill in Assumed data\n"
        JSON_STR)
 {
-	return pim_show_mroute_helper(vrf, vty, s_or_g, g, !!fill, !!json);
+  return pim_show_mroute_helper (vrf, vty, s_or_g, g, ! ! fill, ! ! json);
 }
 
 DEFPY (show_ipv6_mroute_vrf_all,
@@ -1201,7 +1211,7 @@ DEFPY (show_ipv6_mroute_vrf_all,
        "Fill in Assumed data\n"
        JSON_STR)
 {
-	return pim_show_mroute_vrf_all_helper(vty, !!fill, !!json);
+  return pim_show_mroute_vrf_all_helper (vty, ! ! fill, ! ! json);
 }
 
 DEFPY (show_ipv6_mroute_count,
@@ -1214,7 +1224,7 @@ DEFPY (show_ipv6_mroute_count,
        "Route and packet count data\n"
        JSON_STR)
 {
-	return pim_show_mroute_count_helper(vrf, vty, !!json);
+  return pim_show_mroute_count_helper (vrf, vty, ! ! json);
 }
 
 DEFPY (show_ipv6_mroute_count_vrf_all,
@@ -1227,7 +1237,7 @@ DEFPY (show_ipv6_mroute_count_vrf_all,
        "Route and packet count data\n"
        JSON_STR)
 {
-	return pim_show_mroute_count_vrf_all_helper(vty, !!json);
+  return pim_show_mroute_count_vrf_all_helper (vty, ! ! json);
 }
 
 DEFPY (show_ipv6_mroute_summary,
@@ -1240,7 +1250,7 @@ DEFPY (show_ipv6_mroute_summary,
        "Summary of all mroutes\n"
        JSON_STR)
 {
-	return pim_show_mroute_summary_helper(vrf, vty, !!json);
+  return pim_show_mroute_summary_helper (vrf, vty, ! ! json);
 }
 
 DEFPY (show_ipv6_mroute_summary_vrf_all,
@@ -1253,7 +1263,7 @@ DEFPY (show_ipv6_mroute_summary_vrf_all,
        "Summary of all mroutes\n"
        JSON_STR)
 {
-	return pim_show_mroute_summary_vrf_all_helper(vty, !!json);
+  return pim_show_mroute_summary_vrf_all_helper (vty, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_interface_traffic,
@@ -1268,7 +1278,7 @@ DEFPY (show_ipv6_pim_interface_traffic,
        "Interface name\n"
        JSON_STR)
 {
-	return pim_show_interface_traffic_helper(vrf, if_name, vty, !!json);
+  return pim_show_interface_traffic_helper (vrf, if_name, vty, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_bsr,
@@ -1281,7 +1291,7 @@ DEFPY (show_ipv6_pim_bsr,
        VRF_CMD_HELP_STR
        JSON_STR)
 {
-	return pim_show_bsr_helper(vrf, vty, !!json);
+  return pim_show_bsr_helper (vrf, vty, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_bsm_db,
@@ -1294,7 +1304,7 @@ DEFPY (show_ipv6_pim_bsm_db,
        VRF_CMD_HELP_STR
        JSON_STR)
 {
-	return pim_show_bsm_db_helper(vrf, vty, !!json);
+  return pim_show_bsm_db_helper (vrf, vty, ! ! json);
 }
 
 DEFPY (show_ipv6_pim_bsrp,
@@ -1307,7 +1317,7 @@ DEFPY (show_ipv6_pim_bsrp,
        VRF_CMD_HELP_STR
        JSON_STR)
 {
-	return pim_show_group_rp_mappings_info_helper(vrf, vty, !!json);
+  return pim_show_group_rp_mappings_info_helper (vrf, vty, ! ! json);
 }
 
 DEFPY (clear_ipv6_pim_statistics,
@@ -1319,14 +1329,14 @@ DEFPY (clear_ipv6_pim_statistics,
        VRF_CMD_HELP_STR
        "Reset PIM statistics\n")
 {
-	struct vrf *v = pim_cmd_lookup(vty, name);
+  struct vrf *v = pim_cmd_lookup (vty, name);
 
-	if (!v)
-		return CMD_WARNING;
+  if (! v)
+    return CMD_WARNING;
 
-	clear_pim_statistics(v->info);
+  clear_pim_statistics (v->info);
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (clear_ipv6_pim_interface_traffic,
@@ -1339,7 +1349,7 @@ DEFPY (clear_ipv6_pim_interface_traffic,
        "Reset PIM interfaces\n"
        "Reset Protocol Packet counters\n")
 {
-	return clear_pim_interface_traffic(vrf, vty);
+  return clear_pim_interface_traffic (vrf, vty);
 }
 
 DEFPY (clear_ipv6_mroute,
@@ -1350,14 +1360,14 @@ DEFPY (clear_ipv6_mroute,
        MROUTE_STR
        VRF_CMD_HELP_STR)
 {
-	struct vrf *v = pim_cmd_lookup(vty, name);
+  struct vrf *v = pim_cmd_lookup (vty, name);
 
-	if (!v)
-		return CMD_WARNING;
+  if (! v)
+    return CMD_WARNING;
 
-	clear_mroute(v->info);
+  clear_mroute (v->info);
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (clear_ipv6_pim_oil,
@@ -1369,14 +1379,14 @@ DEFPY (clear_ipv6_pim_oil,
        VRF_CMD_HELP_STR
        "Rescan PIMv6 OIL (output interface list)\n")
 {
-	struct vrf *v = pim_cmd_lookup(vty, name);
+  struct vrf *v = pim_cmd_lookup (vty, name);
 
-	if (!v)
-		return CMD_WARNING;
+  if (! v)
+    return CMD_WARNING;
 
-	pim_scan_oil(v->info);
+  pim_scan_oil (v->info);
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (clear_ipv6_mroute_count,
@@ -1388,7 +1398,7 @@ DEFPY (clear_ipv6_mroute_count,
        VRF_CMD_HELP_STR
        "Route and packet count data\n")
 {
-	return clear_ip_mroute_count_command(vty, name);
+  return clear_ip_mroute_count_command (vty, name);
 }
 
 DEFPY (clear_ipv6_pim_interfaces,
@@ -1400,14 +1410,14 @@ DEFPY (clear_ipv6_pim_interfaces,
        VRF_CMD_HELP_STR
        "Reset PIM interfaces\n")
 {
-	struct vrf *v = pim_cmd_lookup(vty, vrf);
+  struct vrf *v = pim_cmd_lookup (vty, vrf);
 
-	if (!v)
-		return CMD_WARNING;
+  if (! v)
+    return CMD_WARNING;
 
-	clear_pim_interfaces(v->info);
+  clear_pim_interfaces (v->info);
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (clear_ipv6_pim_bsr_db,
@@ -1419,15 +1429,15 @@ DEFPY (clear_ipv6_pim_bsr_db,
        VRF_CMD_HELP_STR
        "Reset pim bsr data\n")
 {
-	struct vrf *v;
+  struct vrf *v;
 
-	v = vrf_lookup_by_name(vrf ? vrf : VRF_DEFAULT_NAME);
-	if (!v)
-		return CMD_WARNING;
+  v = vrf_lookup_by_name (vrf ? vrf : VRF_DEFAULT_NAME);
+  if (! v)
+    return CMD_WARNING;
 
-	pim_bsm_clear(v->info);
+  pim_bsm_clear (v->info);
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_pimv6,
@@ -1437,10 +1447,10 @@ DEFPY (debug_pimv6,
        DEBUG_STR
        DEBUG_PIMV6_STR)
 {
-	if (!no)
-		return pim_debug_pim_cmd();
-	else
-		return pim_no_debug_pim_cmd();
+  if (! no)
+    return pim_debug_pim_cmd ();
+  else
+    return pim_no_debug_pim_cmd ();
 }
 
 DEFPY (debug_pimv6_nht,
@@ -1451,11 +1461,11 @@ DEFPY (debug_pimv6_nht,
        DEBUG_PIMV6_STR
        "Nexthop Tracking\n")
 {
-	if (!no)
-		PIM_DO_DEBUG_PIM_NHT;
-	else
-		PIM_DONT_DEBUG_PIM_NHT;
-	return CMD_SUCCESS;
+  if (! no)
+    PIM_DO_DEBUG_PIM_NHT;
+  else
+    PIM_DONT_DEBUG_PIM_NHT;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_pimv6_nht_det,
@@ -1467,11 +1477,11 @@ DEFPY (debug_pimv6_nht_det,
        "Nexthop Tracking\n"
        "Detailed Information\n")
 {
-	if (!no)
-		PIM_DO_DEBUG_PIM_NHT_DETAIL;
-	else
-		PIM_DONT_DEBUG_PIM_NHT_DETAIL;
-	return CMD_SUCCESS;
+  if (! no)
+    PIM_DO_DEBUG_PIM_NHT_DETAIL;
+  else
+    PIM_DONT_DEBUG_PIM_NHT_DETAIL;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_pimv6_events,
@@ -1482,11 +1492,11 @@ DEFPY (debug_pimv6_events,
        DEBUG_PIMV6_STR
        DEBUG_PIMV6_EVENTS_STR)
 {
-	if (!no)
-		PIM_DO_DEBUG_PIM_EVENTS;
-	else
-		PIM_DONT_DEBUG_PIM_EVENTS;
-	return CMD_SUCCESS;
+  if (! no)
+    PIM_DO_DEBUG_PIM_EVENTS;
+  else
+    PIM_DONT_DEBUG_PIM_EVENTS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_pimv6_packets,
@@ -1500,11 +1510,10 @@ DEFPY (debug_pimv6_packets,
        DEBUG_PIMV6_J_P_PACKETS_STR
        DEBUG_PIMV6_PIM_REG_PACKETS_STR)
 {
-	if (!no)
-		return pim_debug_pim_packets_cmd(hello, joins, registers, vty);
-	else
-		return pim_no_debug_pim_packets_cmd(hello, joins, registers,
-						    vty);
+  if (! no)
+    return pim_debug_pim_packets_cmd (hello, joins, registers, vty);
+  else
+    return pim_no_debug_pim_packets_cmd (hello, joins, registers, vty);
 }
 
 DEFPY (debug_pimv6_packetdump_send,
@@ -1516,11 +1525,11 @@ DEFPY (debug_pimv6_packetdump_send,
        DEBUG_PIMV6_PACKETDUMP_STR
        DEBUG_PIMV6_PACKETDUMP_SEND_STR)
 {
-	if (!no)
-		PIM_DO_DEBUG_PIM_PACKETDUMP_SEND;
-	else
-		PIM_DONT_DEBUG_PIM_PACKETDUMP_SEND;
-	return CMD_SUCCESS;
+  if (! no)
+    PIM_DO_DEBUG_PIM_PACKETDUMP_SEND;
+  else
+    PIM_DONT_DEBUG_PIM_PACKETDUMP_SEND;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_pimv6_packetdump_recv,
@@ -1532,11 +1541,11 @@ DEFPY (debug_pimv6_packetdump_recv,
        DEBUG_PIMV6_PACKETDUMP_STR
        DEBUG_PIMV6_PACKETDUMP_RECV_STR)
 {
-	if (!no)
-		PIM_DO_DEBUG_PIM_PACKETDUMP_RECV;
-	else
-		PIM_DONT_DEBUG_PIM_PACKETDUMP_RECV;
-	return CMD_SUCCESS;
+  if (! no)
+    PIM_DO_DEBUG_PIM_PACKETDUMP_RECV;
+  else
+    PIM_DONT_DEBUG_PIM_PACKETDUMP_RECV;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_pimv6_trace,
@@ -1547,11 +1556,11 @@ DEFPY (debug_pimv6_trace,
        DEBUG_PIMV6_STR
        DEBUG_PIMV6_TRACE_STR)
 {
-	if (!no)
-		PIM_DO_DEBUG_PIM_TRACE;
-	else
-		PIM_DONT_DEBUG_PIM_TRACE;
-	return CMD_SUCCESS;
+  if (! no)
+    PIM_DO_DEBUG_PIM_TRACE;
+  else
+    PIM_DONT_DEBUG_PIM_TRACE;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_pimv6_trace_detail,
@@ -1563,11 +1572,11 @@ DEFPY (debug_pimv6_trace_detail,
        DEBUG_PIMV6_TRACE_STR
        "Detailed Information\n")
 {
-	if (!no)
-		PIM_DO_DEBUG_PIM_TRACE_DETAIL;
-	else
-		PIM_DONT_DEBUG_PIM_TRACE_DETAIL;
-	return CMD_SUCCESS;
+  if (! no)
+    PIM_DO_DEBUG_PIM_TRACE_DETAIL;
+  else
+    PIM_DONT_DEBUG_PIM_TRACE_DETAIL;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_pimv6_zebra,
@@ -1578,11 +1587,11 @@ DEFPY (debug_pimv6_zebra,
        DEBUG_PIMV6_STR
        DEBUG_PIMV6_ZEBRA_STR)
 {
-	if (!no)
-		PIM_DO_DEBUG_ZEBRA;
-	else
-		PIM_DONT_DEBUG_ZEBRA;
-	return CMD_SUCCESS;
+  if (! no)
+    PIM_DO_DEBUG_ZEBRA;
+  else
+    PIM_DONT_DEBUG_ZEBRA;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_mroute6,
@@ -1592,12 +1601,12 @@ DEFPY (debug_mroute6,
        DEBUG_STR
        DEBUG_MROUTE6_STR)
 {
-	if (!no)
-		PIM_DO_DEBUG_MROUTE;
-	else
-		PIM_DONT_DEBUG_MROUTE;
+  if (! no)
+    PIM_DO_DEBUG_MROUTE;
+  else
+    PIM_DONT_DEBUG_MROUTE;
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_mroute6_detail,
@@ -1608,28 +1617,28 @@ DEFPY (debug_mroute6_detail,
        DEBUG_MROUTE6_STR
        "detailed\n")
 {
-	if (!no)
-		PIM_DO_DEBUG_MROUTE_DETAIL;
-	else
-		PIM_DONT_DEBUG_MROUTE_DETAIL;
+  if (! no)
+    PIM_DO_DEBUG_MROUTE_DETAIL;
+  else
+    PIM_DONT_DEBUG_MROUTE_DETAIL;
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFUN_NOSH (show_debugging_pimv6,
-	    show_debugging_pimv6_cmd,
-	    "show debugging [pimv6]",
-	    SHOW_STR
-	    DEBUG_STR
-	    "PIMv6 Information\n")
+            show_debugging_pimv6_cmd,
+            "show debugging [pimv6]",
+            SHOW_STR
+            DEBUG_STR
+            "PIMv6 Information\n")
 {
-	vty_out(vty, "PIMv6 debugging status\n");
+  vty_out (vty, "PIMv6 debugging status\n");
 
-	pim_debug_config_write(vty);
+  pim_debug_config_write (vty);
 
-	cmd_show_lib_debugs(vty);
+  cmd_show_lib_debugs (vty);
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_mld,
@@ -1639,17 +1648,20 @@ DEFPY (debug_mld,
        DEBUG_STR
        DEBUG_MLD_STR)
 {
-	if (!no) {
-		PIM_DO_DEBUG_GM_EVENTS;
-		PIM_DO_DEBUG_GM_PACKETS;
-		PIM_DO_DEBUG_GM_TRACE;
-	} else {
-		PIM_DONT_DEBUG_GM_EVENTS;
-		PIM_DONT_DEBUG_GM_PACKETS;
-		PIM_DONT_DEBUG_GM_TRACE;
-	}
+  if (! no)
+    {
+      PIM_DO_DEBUG_GM_EVENTS;
+      PIM_DO_DEBUG_GM_PACKETS;
+      PIM_DO_DEBUG_GM_TRACE;
+    }
+  else
+    {
+      PIM_DONT_DEBUG_GM_EVENTS;
+      PIM_DONT_DEBUG_GM_PACKETS;
+      PIM_DONT_DEBUG_GM_TRACE;
+    }
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_mld_events,
@@ -1660,12 +1672,12 @@ DEFPY (debug_mld_events,
        DEBUG_MLD_STR
        DEBUG_MLD_EVENTS_STR)
 {
-	if (!no)
-		PIM_DO_DEBUG_GM_EVENTS;
-	else
-		PIM_DONT_DEBUG_GM_EVENTS;
+  if (! no)
+    PIM_DO_DEBUG_GM_EVENTS;
+  else
+    PIM_DONT_DEBUG_GM_EVENTS;
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_mld_packets,
@@ -1676,12 +1688,12 @@ DEFPY (debug_mld_packets,
        DEBUG_MLD_STR
        DEBUG_MLD_PACKETS_STR)
 {
-	if (!no)
-		PIM_DO_DEBUG_GM_PACKETS;
-	else
-		PIM_DONT_DEBUG_GM_PACKETS;
+  if (! no)
+    PIM_DO_DEBUG_GM_PACKETS;
+  else
+    PIM_DONT_DEBUG_GM_PACKETS;
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_mld_trace,
@@ -1692,12 +1704,12 @@ DEFPY (debug_mld_trace,
        DEBUG_MLD_STR
        DEBUG_MLD_TRACE_STR)
 {
-	if (!no)
-		PIM_DO_DEBUG_GM_TRACE;
-	else
-		PIM_DONT_DEBUG_GM_TRACE;
+  if (! no)
+    PIM_DO_DEBUG_GM_TRACE;
+  else
+    PIM_DONT_DEBUG_GM_TRACE;
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_mld_trace_detail,
@@ -1709,12 +1721,12 @@ DEFPY (debug_mld_trace_detail,
        DEBUG_MLD_TRACE_STR
        "detailed\n")
 {
-	if (!no)
-		PIM_DO_DEBUG_GM_TRACE_DETAIL;
-	else
-		PIM_DONT_DEBUG_GM_TRACE_DETAIL;
+  if (! no)
+    PIM_DO_DEBUG_GM_TRACE_DETAIL;
+  else
+    PIM_DONT_DEBUG_GM_TRACE_DETAIL;
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
 DEFPY (debug_pimv6_bsm,
@@ -1725,176 +1737,175 @@ DEFPY (debug_pimv6_bsm,
        DEBUG_PIMV6_STR
        DEBUG_PIMV6_BSM_STR)
 {
-	if (!no)
-		PIM_DO_DEBUG_BSM;
-	else
-		PIM_DONT_DEBUG_BSM;
+  if (! no)
+    PIM_DO_DEBUG_BSM;
+  else
+    PIM_DONT_DEBUG_BSM;
 
-	return CMD_SUCCESS;
+  return CMD_SUCCESS;
 }
 
-void pim_cmd_init(void)
+void
+pim_cmd_init (void)
 {
-	if_cmd_init(pim_interface_config_write);
+  if_cmd_init (pim_interface_config_write);
 
-	install_node(&debug_node);
+  install_node (&debug_node);
 
-	install_element(CONFIG_NODE, &ipv6_pim_joinprune_time_cmd);
-	install_element(CONFIG_NODE, &no_ipv6_pim_joinprune_time_cmd);
-	install_element(CONFIG_NODE, &ipv6_pim_spt_switchover_infinity_cmd);
-	install_element(CONFIG_NODE, &ipv6_pim_spt_switchover_infinity_plist_cmd);
-	install_element(CONFIG_NODE, &no_ipv6_pim_spt_switchover_infinity_cmd);
-	install_element(CONFIG_NODE, &no_ipv6_pim_spt_switchover_infinity_plist_cmd);
-	install_element(CONFIG_NODE, &ipv6_pim_packets_cmd);
-	install_element(CONFIG_NODE, &no_ipv6_pim_packets_cmd);
-	install_element(CONFIG_NODE, &ipv6_pim_keep_alive_cmd);
-	install_element(CONFIG_NODE, &no_ipv6_pim_keep_alive_cmd);
-	install_element(CONFIG_NODE, &ipv6_pim_rp_keep_alive_cmd);
-	install_element(CONFIG_NODE, &no_ipv6_pim_rp_keep_alive_cmd);
-	install_element(CONFIG_NODE, &ipv6_pim_register_suppress_cmd);
-	install_element(CONFIG_NODE, &no_ipv6_pim_register_suppress_cmd);
-	install_element(INTERFACE_NODE, &interface_ipv6_pim_cmd);
-	install_element(INTERFACE_NODE, &interface_no_ipv6_pim_cmd);
-	install_element(INTERFACE_NODE, &interface_ipv6_pim_drprio_cmd);
-	install_element(INTERFACE_NODE, &interface_no_ipv6_pim_drprio_cmd);
-	install_element(INTERFACE_NODE, &interface_ipv6_pim_hello_cmd);
-	install_element(INTERFACE_NODE, &interface_no_ipv6_pim_hello_cmd);
-	install_element(INTERFACE_NODE, &interface_ipv6_pim_activeactive_cmd);
-	install_element(INTERFACE_NODE, &interface_ipv6_pim_ssm_cmd);
-	install_element(INTERFACE_NODE, &interface_no_ipv6_pim_ssm_cmd);
-	install_element(INTERFACE_NODE, &interface_ipv6_pim_sm_cmd);
-	install_element(INTERFACE_NODE, &interface_no_ipv6_pim_sm_cmd);
-	install_element(INTERFACE_NODE,
-			&interface_ipv6_pim_boundary_oil_cmd);
-	install_element(INTERFACE_NODE,
-			&interface_no_ipv6_pim_boundary_oil_cmd);
-	install_element(INTERFACE_NODE, &interface_ipv6_mroute_cmd);
-	install_element(INTERFACE_NODE, &interface_no_ipv6_mroute_cmd);
-	/* Install BSM command */
-	install_element(INTERFACE_NODE, &ipv6_pim_bsm_cmd);
-	install_element(INTERFACE_NODE, &no_ipv6_pim_bsm_cmd);
-	install_element(INTERFACE_NODE, &ipv6_pim_ucast_bsm_cmd);
-	install_element(INTERFACE_NODE, &no_ipv6_pim_ucast_bsm_cmd);
-	install_element(CONFIG_NODE, &ipv6_pim_rp_cmd);
-	install_element(VRF_NODE, &ipv6_pim_rp_cmd);
-	install_element(CONFIG_NODE, &no_ipv6_pim_rp_cmd);
-	install_element(VRF_NODE, &no_ipv6_pim_rp_cmd);
-	install_element(CONFIG_NODE, &ipv6_pim_rp_prefix_list_cmd);
-	install_element(VRF_NODE, &ipv6_pim_rp_prefix_list_cmd);
-	install_element(CONFIG_NODE, &no_ipv6_pim_rp_prefix_list_cmd);
-	install_element(VRF_NODE, &no_ipv6_pim_rp_prefix_list_cmd);
-	install_element(CONFIG_NODE, &ipv6_ssmpingd_cmd);
-	install_element(VRF_NODE, &ipv6_ssmpingd_cmd);
-	install_element(CONFIG_NODE, &no_ipv6_ssmpingd_cmd);
-	install_element(VRF_NODE, &no_ipv6_ssmpingd_cmd);
-	install_element(INTERFACE_NODE, &interface_ipv6_mld_cmd);
-	install_element(INTERFACE_NODE, &interface_no_ipv6_mld_cmd);
-	install_element(INTERFACE_NODE, &interface_ipv6_mld_join_cmd);
-	install_element(INTERFACE_NODE, &interface_no_ipv6_mld_join_cmd);
-	install_element(INTERFACE_NODE, &interface_ipv6_mld_version_cmd);
-	install_element(INTERFACE_NODE, &interface_no_ipv6_mld_version_cmd);
-	install_element(INTERFACE_NODE, &interface_ipv6_mld_query_interval_cmd);
-	install_element(INTERFACE_NODE,
-			&interface_no_ipv6_mld_query_interval_cmd);
-	install_element(CONFIG_NODE, &ipv6_mld_group_watermark_cmd);
-	install_element(VRF_NODE, &ipv6_mld_group_watermark_cmd);
-	install_element(CONFIG_NODE, &no_ipv6_mld_group_watermark_cmd);
-	install_element(VRF_NODE, &no_ipv6_mld_group_watermark_cmd);
-	install_element(INTERFACE_NODE,
-			&interface_ipv6_mld_query_max_response_time_cmd);
-	install_element(INTERFACE_NODE,
-			&interface_no_ipv6_mld_query_max_response_time_cmd);
-	install_element(INTERFACE_NODE,
-			&interface_ipv6_mld_last_member_query_count_cmd);
-	install_element(INTERFACE_NODE,
-			&interface_no_ipv6_mld_last_member_query_count_cmd);
-	install_element(INTERFACE_NODE,
-			&interface_ipv6_mld_last_member_query_interval_cmd);
-	install_element(INTERFACE_NODE,
-			&interface_no_ipv6_mld_last_member_query_interval_cmd);
+  install_element (CONFIG_NODE, &ipv6_pim_joinprune_time_cmd);
+  install_element (CONFIG_NODE, &no_ipv6_pim_joinprune_time_cmd);
+  install_element (CONFIG_NODE, &ipv6_pim_spt_switchover_infinity_cmd);
+  install_element (CONFIG_NODE, &ipv6_pim_spt_switchover_infinity_plist_cmd);
+  install_element (CONFIG_NODE, &no_ipv6_pim_spt_switchover_infinity_cmd);
+  install_element (CONFIG_NODE,
+                   &no_ipv6_pim_spt_switchover_infinity_plist_cmd);
+  install_element (CONFIG_NODE, &ipv6_pim_packets_cmd);
+  install_element (CONFIG_NODE, &no_ipv6_pim_packets_cmd);
+  install_element (CONFIG_NODE, &ipv6_pim_keep_alive_cmd);
+  install_element (CONFIG_NODE, &no_ipv6_pim_keep_alive_cmd);
+  install_element (CONFIG_NODE, &ipv6_pim_rp_keep_alive_cmd);
+  install_element (CONFIG_NODE, &no_ipv6_pim_rp_keep_alive_cmd);
+  install_element (CONFIG_NODE, &ipv6_pim_register_suppress_cmd);
+  install_element (CONFIG_NODE, &no_ipv6_pim_register_suppress_cmd);
+  install_element (INTERFACE_NODE, &interface_ipv6_pim_cmd);
+  install_element (INTERFACE_NODE, &interface_no_ipv6_pim_cmd);
+  install_element (INTERFACE_NODE, &interface_ipv6_pim_drprio_cmd);
+  install_element (INTERFACE_NODE, &interface_no_ipv6_pim_drprio_cmd);
+  install_element (INTERFACE_NODE, &interface_ipv6_pim_hello_cmd);
+  install_element (INTERFACE_NODE, &interface_no_ipv6_pim_hello_cmd);
+  install_element (INTERFACE_NODE, &interface_ipv6_pim_activeactive_cmd);
+  install_element (INTERFACE_NODE, &interface_ipv6_pim_ssm_cmd);
+  install_element (INTERFACE_NODE, &interface_no_ipv6_pim_ssm_cmd);
+  install_element (INTERFACE_NODE, &interface_ipv6_pim_sm_cmd);
+  install_element (INTERFACE_NODE, &interface_no_ipv6_pim_sm_cmd);
+  install_element (INTERFACE_NODE, &interface_ipv6_pim_boundary_oil_cmd);
+  install_element (INTERFACE_NODE, &interface_no_ipv6_pim_boundary_oil_cmd);
+  install_element (INTERFACE_NODE, &interface_ipv6_mroute_cmd);
+  install_element (INTERFACE_NODE, &interface_no_ipv6_mroute_cmd);
+  /* Install BSM command */
+  install_element (INTERFACE_NODE, &ipv6_pim_bsm_cmd);
+  install_element (INTERFACE_NODE, &no_ipv6_pim_bsm_cmd);
+  install_element (INTERFACE_NODE, &ipv6_pim_ucast_bsm_cmd);
+  install_element (INTERFACE_NODE, &no_ipv6_pim_ucast_bsm_cmd);
+  install_element (CONFIG_NODE, &ipv6_pim_rp_cmd);
+  install_element (VRF_NODE, &ipv6_pim_rp_cmd);
+  install_element (CONFIG_NODE, &no_ipv6_pim_rp_cmd);
+  install_element (VRF_NODE, &no_ipv6_pim_rp_cmd);
+  install_element (CONFIG_NODE, &ipv6_pim_rp_prefix_list_cmd);
+  install_element (VRF_NODE, &ipv6_pim_rp_prefix_list_cmd);
+  install_element (CONFIG_NODE, &no_ipv6_pim_rp_prefix_list_cmd);
+  install_element (VRF_NODE, &no_ipv6_pim_rp_prefix_list_cmd);
+  install_element (CONFIG_NODE, &ipv6_ssmpingd_cmd);
+  install_element (VRF_NODE, &ipv6_ssmpingd_cmd);
+  install_element (CONFIG_NODE, &no_ipv6_ssmpingd_cmd);
+  install_element (VRF_NODE, &no_ipv6_ssmpingd_cmd);
+  install_element (INTERFACE_NODE, &interface_ipv6_mld_cmd);
+  install_element (INTERFACE_NODE, &interface_no_ipv6_mld_cmd);
+  install_element (INTERFACE_NODE, &interface_ipv6_mld_join_cmd);
+  install_element (INTERFACE_NODE, &interface_no_ipv6_mld_join_cmd);
+  install_element (INTERFACE_NODE, &interface_ipv6_mld_version_cmd);
+  install_element (INTERFACE_NODE, &interface_no_ipv6_mld_version_cmd);
+  install_element (INTERFACE_NODE, &interface_ipv6_mld_query_interval_cmd);
+  install_element (INTERFACE_NODE, &interface_no_ipv6_mld_query_interval_cmd);
+  install_element (CONFIG_NODE, &ipv6_mld_group_watermark_cmd);
+  install_element (VRF_NODE, &ipv6_mld_group_watermark_cmd);
+  install_element (CONFIG_NODE, &no_ipv6_mld_group_watermark_cmd);
+  install_element (VRF_NODE, &no_ipv6_mld_group_watermark_cmd);
+  install_element (INTERFACE_NODE,
+                   &interface_ipv6_mld_query_max_response_time_cmd);
+  install_element (INTERFACE_NODE,
+                   &interface_no_ipv6_mld_query_max_response_time_cmd);
+  install_element (INTERFACE_NODE,
+                   &interface_ipv6_mld_last_member_query_count_cmd);
+  install_element (INTERFACE_NODE,
+                   &interface_no_ipv6_mld_last_member_query_count_cmd);
+  install_element (INTERFACE_NODE,
+                   &interface_ipv6_mld_last_member_query_interval_cmd);
+  install_element (INTERFACE_NODE,
+                   &interface_no_ipv6_mld_last_member_query_interval_cmd);
 
-	install_element(VIEW_NODE, &show_ipv6_pim_rp_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_rp_vrf_all_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_rpf_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_rpf_vrf_all_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_secondary_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_statistics_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_upstream_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_upstream_vrf_all_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_upstream_join_desired_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_upstream_rpf_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_state_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_state_vrf_all_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_channel_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_interface_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_interface_vrf_all_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_join_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_join_vrf_all_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_jp_agg_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_local_membership_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_neighbor_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_neighbor_vrf_all_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_nexthop_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_nexthop_lookup_cmd);
-	install_element(VIEW_NODE, &show_ipv6_multicast_cmd);
-	install_element(VIEW_NODE, &show_ipv6_multicast_vrf_all_cmd);
-	install_element(VIEW_NODE, &show_ipv6_multicast_count_cmd);
-	install_element(VIEW_NODE, &show_ipv6_multicast_count_vrf_all_cmd);
-	install_element(VIEW_NODE, &show_ipv6_mroute_cmd);
-	install_element(VIEW_NODE, &show_ipv6_mroute_vrf_all_cmd);
-	install_element(VIEW_NODE, &show_ipv6_mroute_count_cmd);
-	install_element(VIEW_NODE, &show_ipv6_mroute_count_vrf_all_cmd);
-	install_element(VIEW_NODE, &show_ipv6_mroute_summary_cmd);
-	install_element(VIEW_NODE, &show_ipv6_mroute_summary_vrf_all_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_interface_traffic_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_bsr_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_bsm_db_cmd);
-	install_element(VIEW_NODE, &show_ipv6_pim_bsrp_cmd);
-	install_element(ENABLE_NODE, &clear_ipv6_pim_statistics_cmd);
-	install_element(ENABLE_NODE, &clear_ipv6_mroute_cmd);
-	install_element(ENABLE_NODE, &clear_ipv6_pim_oil_cmd);
-	install_element(ENABLE_NODE, &clear_ipv6_mroute_count_cmd);
-	install_element(ENABLE_NODE, &clear_ipv6_pim_bsr_db_cmd);
-	install_element(ENABLE_NODE, &clear_ipv6_pim_interfaces_cmd);
-	install_element(ENABLE_NODE, &clear_ipv6_pim_interface_traffic_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_rp_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_rp_vrf_all_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_rpf_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_rpf_vrf_all_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_secondary_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_statistics_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_upstream_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_upstream_vrf_all_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_upstream_join_desired_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_upstream_rpf_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_state_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_state_vrf_all_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_channel_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_interface_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_interface_vrf_all_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_join_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_join_vrf_all_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_jp_agg_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_local_membership_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_neighbor_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_neighbor_vrf_all_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_nexthop_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_nexthop_lookup_cmd);
+  install_element (VIEW_NODE, &show_ipv6_multicast_cmd);
+  install_element (VIEW_NODE, &show_ipv6_multicast_vrf_all_cmd);
+  install_element (VIEW_NODE, &show_ipv6_multicast_count_cmd);
+  install_element (VIEW_NODE, &show_ipv6_multicast_count_vrf_all_cmd);
+  install_element (VIEW_NODE, &show_ipv6_mroute_cmd);
+  install_element (VIEW_NODE, &show_ipv6_mroute_vrf_all_cmd);
+  install_element (VIEW_NODE, &show_ipv6_mroute_count_cmd);
+  install_element (VIEW_NODE, &show_ipv6_mroute_count_vrf_all_cmd);
+  install_element (VIEW_NODE, &show_ipv6_mroute_summary_cmd);
+  install_element (VIEW_NODE, &show_ipv6_mroute_summary_vrf_all_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_interface_traffic_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_bsr_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_bsm_db_cmd);
+  install_element (VIEW_NODE, &show_ipv6_pim_bsrp_cmd);
+  install_element (ENABLE_NODE, &clear_ipv6_pim_statistics_cmd);
+  install_element (ENABLE_NODE, &clear_ipv6_mroute_cmd);
+  install_element (ENABLE_NODE, &clear_ipv6_pim_oil_cmd);
+  install_element (ENABLE_NODE, &clear_ipv6_mroute_count_cmd);
+  install_element (ENABLE_NODE, &clear_ipv6_pim_bsr_db_cmd);
+  install_element (ENABLE_NODE, &clear_ipv6_pim_interfaces_cmd);
+  install_element (ENABLE_NODE, &clear_ipv6_pim_interface_traffic_cmd);
 
-	install_element(ENABLE_NODE, &show_debugging_pimv6_cmd);
+  install_element (ENABLE_NODE, &show_debugging_pimv6_cmd);
 
-	install_element(ENABLE_NODE, &debug_pimv6_cmd);
-	install_element(ENABLE_NODE, &debug_pimv6_nht_cmd);
-	install_element(ENABLE_NODE, &debug_pimv6_nht_det_cmd);
-	install_element(ENABLE_NODE, &debug_pimv6_events_cmd);
-	install_element(ENABLE_NODE, &debug_pimv6_packets_cmd);
-	install_element(ENABLE_NODE, &debug_pimv6_packetdump_send_cmd);
-	install_element(ENABLE_NODE, &debug_pimv6_packetdump_recv_cmd);
-	install_element(ENABLE_NODE, &debug_pimv6_trace_cmd);
-	install_element(ENABLE_NODE, &debug_pimv6_trace_detail_cmd);
-	install_element(ENABLE_NODE, &debug_pimv6_zebra_cmd);
-	install_element(ENABLE_NODE, &debug_mroute6_cmd);
-	install_element(ENABLE_NODE, &debug_mroute6_detail_cmd);
-	install_element(ENABLE_NODE, &debug_mld_cmd);
-	install_element(ENABLE_NODE, &debug_mld_events_cmd);
-	install_element(ENABLE_NODE, &debug_mld_packets_cmd);
-	install_element(ENABLE_NODE, &debug_mld_trace_cmd);
-	install_element(ENABLE_NODE, &debug_mld_trace_detail_cmd);
-	install_element(ENABLE_NODE, &debug_pimv6_bsm_cmd);
+  install_element (ENABLE_NODE, &debug_pimv6_cmd);
+  install_element (ENABLE_NODE, &debug_pimv6_nht_cmd);
+  install_element (ENABLE_NODE, &debug_pimv6_nht_det_cmd);
+  install_element (ENABLE_NODE, &debug_pimv6_events_cmd);
+  install_element (ENABLE_NODE, &debug_pimv6_packets_cmd);
+  install_element (ENABLE_NODE, &debug_pimv6_packetdump_send_cmd);
+  install_element (ENABLE_NODE, &debug_pimv6_packetdump_recv_cmd);
+  install_element (ENABLE_NODE, &debug_pimv6_trace_cmd);
+  install_element (ENABLE_NODE, &debug_pimv6_trace_detail_cmd);
+  install_element (ENABLE_NODE, &debug_pimv6_zebra_cmd);
+  install_element (ENABLE_NODE, &debug_mroute6_cmd);
+  install_element (ENABLE_NODE, &debug_mroute6_detail_cmd);
+  install_element (ENABLE_NODE, &debug_mld_cmd);
+  install_element (ENABLE_NODE, &debug_mld_events_cmd);
+  install_element (ENABLE_NODE, &debug_mld_packets_cmd);
+  install_element (ENABLE_NODE, &debug_mld_trace_cmd);
+  install_element (ENABLE_NODE, &debug_mld_trace_detail_cmd);
+  install_element (ENABLE_NODE, &debug_pimv6_bsm_cmd);
 
-	install_element(CONFIG_NODE, &debug_pimv6_cmd);
-	install_element(CONFIG_NODE, &debug_pimv6_nht_cmd);
-	install_element(CONFIG_NODE, &debug_pimv6_nht_det_cmd);
-	install_element(CONFIG_NODE, &debug_pimv6_events_cmd);
-	install_element(CONFIG_NODE, &debug_pimv6_packets_cmd);
-	install_element(CONFIG_NODE, &debug_pimv6_packetdump_send_cmd);
-	install_element(CONFIG_NODE, &debug_pimv6_packetdump_recv_cmd);
-	install_element(CONFIG_NODE, &debug_pimv6_trace_cmd);
-	install_element(CONFIG_NODE, &debug_pimv6_trace_detail_cmd);
-	install_element(CONFIG_NODE, &debug_pimv6_zebra_cmd);
-	install_element(CONFIG_NODE, &debug_mroute6_cmd);
-	install_element(CONFIG_NODE, &debug_mroute6_detail_cmd);
-	install_element(CONFIG_NODE, &debug_mld_cmd);
-	install_element(CONFIG_NODE, &debug_mld_events_cmd);
-	install_element(CONFIG_NODE, &debug_mld_packets_cmd);
-	install_element(CONFIG_NODE, &debug_mld_trace_cmd);
-	install_element(CONFIG_NODE, &debug_mld_trace_detail_cmd);
-	install_element(CONFIG_NODE, &debug_pimv6_bsm_cmd);
+  install_element (CONFIG_NODE, &debug_pimv6_cmd);
+  install_element (CONFIG_NODE, &debug_pimv6_nht_cmd);
+  install_element (CONFIG_NODE, &debug_pimv6_nht_det_cmd);
+  install_element (CONFIG_NODE, &debug_pimv6_events_cmd);
+  install_element (CONFIG_NODE, &debug_pimv6_packets_cmd);
+  install_element (CONFIG_NODE, &debug_pimv6_packetdump_send_cmd);
+  install_element (CONFIG_NODE, &debug_pimv6_packetdump_recv_cmd);
+  install_element (CONFIG_NODE, &debug_pimv6_trace_cmd);
+  install_element (CONFIG_NODE, &debug_pimv6_trace_detail_cmd);
+  install_element (CONFIG_NODE, &debug_pimv6_zebra_cmd);
+  install_element (CONFIG_NODE, &debug_mroute6_cmd);
+  install_element (CONFIG_NODE, &debug_mroute6_detail_cmd);
+  install_element (CONFIG_NODE, &debug_mld_cmd);
+  install_element (CONFIG_NODE, &debug_mld_events_cmd);
+  install_element (CONFIG_NODE, &debug_mld_packets_cmd);
+  install_element (CONFIG_NODE, &debug_mld_trace_cmd);
+  install_element (CONFIG_NODE, &debug_mld_trace_detail_cmd);
+  install_element (CONFIG_NODE, &debug_pimv6_bsm_cmd);
 }
