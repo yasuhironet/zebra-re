@@ -15,16 +15,18 @@
 
 #include "segment_routing.h"
 
-const char *sr_algorithm_string(uint8_t algo)
+const char *
+sr_algorithm_string (uint8_t algo)
 {
-	switch (algo) {
-	case SR_ALGORITHM_SPF:
-		return "SPF";
-	case SR_ALGORITHM_STRICT_SPF:
-		return "Strict SPF";
-	case SR_ALGORITHM_UNSET:
-		return "Unset";
-	default:
-		return algo >= SR_ALGORITHM_FLEX_MIN ? "Flex-Algo" : "Unknown";
-	}
+  switch (algo)
+    {
+    case SR_ALGORITHM_SPF:
+      return "SPF";
+    case SR_ALGORITHM_STRICT_SPF:
+      return "Strict SPF";
+    case SR_ALGORITHM_UNSET:
+      return "Unset";
+    default:
+      return algo >= SR_ALGORITHM_FLEX_MIN ? "Flex-Algo" : "Unknown";
+    }
 }

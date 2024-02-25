@@ -22,44 +22,46 @@
 #include "lib/vty.h"
 
 /* Global definitions */
-#define VRRP_RADV_INT 16
-#define VRRP_PRIO_MASTER 255
+#define VRRP_RADV_INT          16
+#define VRRP_PRIO_MASTER       255
 #define VRRP_MCASTV4_GROUP_STR "224.0.0.18"
 #define VRRP_MCASTV6_GROUP_STR "ff02:0:0:0:0:0:0:12"
-#define VRRP_MCASTV4_GROUP 0xe0000012
-#define VRRP_MCASTV6_GROUP 0xff020000000000000000000000000012
-#define IPPROTO_VRRP 112
+#define VRRP_MCASTV4_GROUP     0xe0000012
+#define VRRP_MCASTV6_GROUP     0xff020000000000000000000000000012
+#define IPPROTO_VRRP           112
 
 #define VRRP_LOGPFX_VRID "[VRID %u] "
-#define VRRP_LOGPFX_FAM "[%s] "
+#define VRRP_LOGPFX_FAM  "[%s] "
 
 /* Default defaults */
-#define VRRP_XPATH_FULL "/frr-interface:lib/interface/frr-vrrpd:vrrp/vrrp-group"
-#define VRRP_XPATH "./frr-vrrpd:vrrp/vrrp-group"
-#define VRRP_DEFAULT_PRIORITY 100
-#define VRRP_DEFAULT_ADVINT 100
-#define VRRP_DEFAULT_PREEMPT true
-#define VRRP_DEFAULT_ACCEPT true
+#define VRRP_XPATH_FULL                                                       \
+  "/frr-interface:lib/interface/frr-vrrpd:vrrp/vrrp-group"
+#define VRRP_XPATH                                   "./frr-vrrpd:vrrp/vrrp-group"
+#define VRRP_DEFAULT_PRIORITY                        100
+#define VRRP_DEFAULT_ADVINT                          100
+#define VRRP_DEFAULT_PREEMPT                         true
+#define VRRP_DEFAULT_ACCEPT                          true
 #define VRRP_DEFAULT_CHECKSUM_WITH_IPV4_PSEUDOHEADER true
-#define VRRP_DEFAULT_SHUTDOWN false
+#define VRRP_DEFAULT_SHUTDOWN                        false
 
 /* User compatibility constant */
 #define CS2MS 10
 
-DECLARE_MGROUP(VRRPD);
+DECLARE_MGROUP (VRRPD);
 
 /* Northbound */
 extern const struct frr_yang_module_info frr_vrrpd_info;
 
 /* Configured defaults */
-struct vrrp_defaults {
-	uint8_t version;
-	uint8_t priority;
-	uint16_t advertisement_interval;
-	bool preempt_mode;
-	bool accept_mode;
-	bool checksum_with_ipv4_pseudoheader;
-	bool shutdown;
+struct vrrp_defaults
+{
+  uint8_t version;
+  uint8_t priority;
+  uint16_t advertisement_interval;
+  bool preempt_mode;
+  bool accept_mode;
+  bool checksum_with_ipv4_pseudoheader;
+  bool shutdown;
 };
 
 extern struct vrrp_defaults vd;
@@ -79,124 +81,127 @@ extern struct hash *vrrp_vrouters_hash;
  * This struct contains all state for a particular VRRP Router operating
  * in a Virtual Router for either IPv4 or IPv6.
  */
-struct vrrp_router {
-	/*
-	 * Whether this VRRP Router is active.
-	 */
-	bool is_active;
+struct vrrp_router
+{
+  /*
+   * Whether this VRRP Router is active.
+   */
+  bool is_active;
 
-	/* Whether we are the address owner */
-	bool is_owner;
+  /* Whether we are the address owner */
+  bool is_owner;
 
-	/* Rx socket: Rx from parent of mvl_ifp */
-	int sock_rx;
-	/* Tx socket; Tx from mvl_ifp */
-	int sock_tx;
+  /* Rx socket: Rx from parent of mvl_ifp */
+  int sock_rx;
+  /* Tx socket; Tx from mvl_ifp */
+  int sock_tx;
 
-	/* macvlan interface */
-	struct interface *mvl_ifp;
+  /* macvlan interface */
+  struct interface *mvl_ifp;
 
-	/* Source address for advertisements */
-	struct ipaddr src;
+  /* Source address for advertisements */
+  struct ipaddr src;
 
-	/* Socket read buffer */
-	uint8_t ibuf[IP_MAXPACKET];
+  /* Socket read buffer */
+  uint8_t ibuf[IP_MAXPACKET];
 
-	/*
-	 * Address family of this Virtual Router.
-	 * Either AF_INET or AF_INET6.
-	 */
-	int family;
+  /*
+   * Address family of this Virtual Router.
+   * Either AF_INET or AF_INET6.
+   */
+  int family;
 
-	/*
-	 * Virtual Router this VRRP Router is participating in.
-	 */
-	struct vrrp_vrouter *vr;
+  /*
+   * Virtual Router this VRRP Router is participating in.
+   */
+  struct vrrp_vrouter *vr;
 
-	/*
-	 * One or more IPvX addresses associated with this Virtual
-	 * Router. The first address must be the "primary" address this
-	 * Virtual Router is backing up in the case of IPv4. In the case of
-	 * IPv6 it must be the link-local address of vr->ifp.
-	 *
-	 * Type: struct ipaddr *
-	 */
-	struct list *addrs;
+  /*
+   * One or more IPvX addresses associated with this Virtual
+   * Router. The first address must be the "primary" address this
+   * Virtual Router is backing up in the case of IPv4. In the case of
+   * IPv6 it must be the link-local address of vr->ifp.
+   *
+   * Type: struct ipaddr *
+   */
+  struct list *addrs;
 
-	/*
-	 * This flag says whether we are waiting on an interface up
-	 * notification from Zebra before we send an ADVERTISEMENT.
-	 */
-	bool advert_pending;
+  /*
+   * This flag says whether we are waiting on an interface up
+   * notification from Zebra before we send an ADVERTISEMENT.
+   */
+  bool advert_pending;
 
-	/*
-	 * If this is an IPv4 VRRP router, this flag says whether we are
-	 * waiting on an interface up notification from Zebra before we send
-	 * gratuitous ARP packets for all our addresses. Should never be true
-	 * if family == AF_INET6.
-	 */
-	bool garp_pending;
-	/*
-	 * If this is an IPv6 VRRP router, this flag says whether we are
-	 * waiting on an interface up notification from Zebra before we send
-	 * Unsolicited Neighbor Advertisement packets for all our addresses.
-	 * Should never be true if family == AF_INET.
-	 */
-	bool ndisc_pending;
+  /*
+   * If this is an IPv4 VRRP router, this flag says whether we are
+   * waiting on an interface up notification from Zebra before we send
+   * gratuitous ARP packets for all our addresses. Should never be true
+   * if family == AF_INET6.
+   */
+  bool garp_pending;
+  /*
+   * If this is an IPv6 VRRP router, this flag says whether we are
+   * waiting on an interface up notification from Zebra before we send
+   * Unsolicited Neighbor Advertisement packets for all our addresses.
+   * Should never be true if family == AF_INET.
+   */
+  bool ndisc_pending;
 
-	/*
-	 * Effective priority
-	 *    => vr->priority if we are Backup
-	 *    => 255 if we are Master
-	 */
-	uint8_t priority;
+  /*
+   * Effective priority
+   *    => vr->priority if we are Backup
+   *    => 255 if we are Master
+   */
+  uint8_t priority;
 
-	/*
-	 * Advertisement interval contained in ADVERTISEMENTS received from the
-	 * Master (centiseconds)
-	 */
-	uint16_t master_adver_interval;
+  /*
+   * Advertisement interval contained in ADVERTISEMENTS received from the
+   * Master (centiseconds)
+   */
+  uint16_t master_adver_interval;
 
-	/*
-	 * Time to skew Master_Down_Interval in centiseconds. Calculated as:
-	 * (((256 - priority) * Master_Adver_Interval) / 256)
-	 */
-	uint16_t skew_time;
+  /*
+   * Time to skew Master_Down_Interval in centiseconds. Calculated as:
+   * (((256 - priority) * Master_Adver_Interval) / 256)
+   */
+  uint16_t skew_time;
 
-	/*
-	 * Time interval for Backup to declare Master down (centiseconds).
-	 * Calculated as:
-	 * (3 * Master_Adver_Interval) + Skew_time
-	 */
-	uint16_t master_down_interval;
+  /*
+   * Time interval for Backup to declare Master down (centiseconds).
+   * Calculated as:
+   * (3 * Master_Adver_Interval) + Skew_time
+   */
+  uint16_t master_down_interval;
 
-	/*
-	 * The MAC address used for the source MAC address in VRRP
-	 * advertisements, advertised in ARP requests/responses, and advertised
-	 * in ND Neighbor Advertisements.
-	 */
-	struct ethaddr vmac;
+  /*
+   * The MAC address used for the source MAC address in VRRP
+   * advertisements, advertised in ARP requests/responses, and advertised
+   * in ND Neighbor Advertisements.
+   */
+  struct ethaddr vmac;
 
-	struct {
-		int state;
-	} fsm;
+  struct
+  {
+    int state;
+  } fsm;
 
-	struct {
-		/* Total number of advertisements sent and received */
-		uint32_t adver_tx_cnt;
-		uint32_t adver_rx_cnt;
-		/* Total number of gratuitous ARPs sent */
-		uint32_t garp_tx_cnt;
-		/* Total number of unsolicited Neighbor Advertisements sent */
-		uint32_t una_tx_cnt;
-		/* Total number of state transitions */
-		uint32_t trans_cnt;
-	} stats;
+  struct
+  {
+    /* Total number of advertisements sent and received */
+    uint32_t adver_tx_cnt;
+    uint32_t adver_rx_cnt;
+    /* Total number of gratuitous ARPs sent */
+    uint32_t garp_tx_cnt;
+    /* Total number of unsolicited Neighbor Advertisements sent */
+    uint32_t una_tx_cnt;
+    /* Total number of state transitions */
+    uint32_t trans_cnt;
+  } stats;
 
-	struct event *t_master_down_timer;
-	struct event *t_adver_timer;
-	struct event *t_read;
-	struct event *t_write;
+  struct event *t_master_down_timer;
+  struct event *t_adver_timer;
+  struct event *t_read;
+  struct event *t_write;
 };
 
 /*
@@ -216,61 +221,62 @@ struct vrrp_router {
  * v6 instances. This corresponds to the choice made by other industrial
  * implementations.
  */
-struct vrrp_vrouter {
-	/* Whether this instance was automatically configured */
-	bool autoconf;
+struct vrrp_vrouter
+{
+  /* Whether this instance was automatically configured */
+  bool autoconf;
 
-	/* Whether this VRRP router is in administrative shutdown */
-	bool shutdown;
+  /* Whether this VRRP router is in administrative shutdown */
+  bool shutdown;
 
-	/* Interface */
-	struct interface *ifp;
+  /* Interface */
+  struct interface *ifp;
 
-	/* Version */
-	uint8_t version;
+  /* Version */
+  uint8_t version;
 
-	/* Virtual Router Identifier */
-	uint32_t vrid;
+  /* Virtual Router Identifier */
+  uint32_t vrid;
 
-	/* Configured priority */
-	uint8_t priority;
+  /* Configured priority */
+  uint8_t priority;
 
-	/*
-	 * Time interval between ADVERTISEMENTS (centiseconds). Default is 100
-	 * centiseconds (1 second).
-	 */
-	uint16_t advertisement_interval;
+  /*
+   * Time interval between ADVERTISEMENTS (centiseconds). Default is 100
+   * centiseconds (1 second).
+   */
+  uint16_t advertisement_interval;
 
-	/*
-	 * Controls whether a (starting or restarting) higher-priority Backup
-	 * router preempts a lower-priority Master router. Values are True to
-	 * allow preemption and False to prohibit preemption. Default is True.
-	 */
-	bool preempt_mode;
+  /*
+   * Controls whether a (starting or restarting) higher-priority Backup
+   * router preempts a lower-priority Master router. Values are True to
+   * allow preemption and False to prohibit preemption. Default is True.
+   */
+  bool preempt_mode;
 
-	/*
-	 * Controls whether a virtual router in Master state will accept
-	 * packets addressed to the address owner's IPvX address as its own if
-	 * it is not the IPvX address owner. The default is False.
-	 */
-	bool accept_mode;
+  /*
+   * Controls whether a virtual router in Master state will accept
+   * packets addressed to the address owner's IPvX address as its own if
+   * it is not the IPvX address owner. The default is False.
+   */
+  bool accept_mode;
 
-	/*
-	 * Indicates whether this router computes and accepts VRRPv3 checksums
-	 * without pseudoheader, for device interoperability.
-	 *
-	 * This option should only affect IPv4 virtual routers.
-	 */
-	bool checksum_with_ipv4_pseudoheader;
+  /*
+   * Indicates whether this router computes and accepts VRRPv3 checksums
+   * without pseudoheader, for device interoperability.
+   *
+   * This option should only affect IPv4 virtual routers.
+   */
+  bool checksum_with_ipv4_pseudoheader;
 
-	struct vrrp_router *v4;
-	struct vrrp_router *v6;
+  struct vrrp_router *v4;
+  struct vrrp_router *v6;
 };
 
 /*
  * Initialize VRRP global datastructures.
  */
-void vrrp_init(void);
+void vrrp_init (void);
 
 /*
  * Destroy all VRRP instances and gracefully shutdown.
@@ -278,7 +284,7 @@ void vrrp_init(void);
  * For instances in Master state, VRRP advertisements with 0 priority will be
  * sent if possible to notify Backup routers that we are going away.
  */
-void vrrp_fini(void);
+void vrrp_fini (void);
 
 
 /* Creation and destruction ------------------------------------------------ */
@@ -292,15 +298,15 @@ void vrrp_fini(void);
  * vrid
  *    Virtual Router Identifier
  */
-struct vrrp_vrouter *vrrp_vrouter_create(struct interface *ifp, uint8_t vrid,
-					 uint8_t version);
+struct vrrp_vrouter *vrrp_vrouter_create (struct interface *ifp, uint8_t vrid,
+                                          uint8_t version);
 
 /*
  * Destroy a VRRP Virtual Router, freeing all its resources.
  *
  * If there are any running VRRP instances, these are stopped and destroyed.
  */
-void vrrp_vrouter_destroy(struct vrrp_vrouter *vr);
+void vrrp_vrouter_destroy (struct vrrp_vrouter *vr);
 
 
 /* Configuration controllers ----------------------------------------------- */
@@ -311,7 +317,7 @@ void vrrp_vrouter_destroy(struct vrrp_vrouter *vr);
  * vr
  *    Virtual Router to checkstart
  */
-void vrrp_check_start(struct vrrp_vrouter *vr);
+void vrrp_check_start (struct vrrp_vrouter *vr);
 
 /*
  * Change the configured priority of a VRRP Virtual Router.
@@ -327,7 +333,7 @@ void vrrp_check_start(struct vrrp_vrouter *vr);
  * priority
  *    New priority
  */
-void vrrp_set_priority(struct vrrp_vrouter *vr, uint8_t priority);
+void vrrp_set_priority (struct vrrp_vrouter *vr, uint8_t priority);
 
 /*
  * Set Advertisement Interval on this Virtual Router.
@@ -338,8 +344,8 @@ void vrrp_set_priority(struct vrrp_vrouter *vr, uint8_t priority);
  * advertisement_interval
  *    New advertisement interval
  */
-void vrrp_set_advertisement_interval(struct vrrp_vrouter *vr,
-				     uint16_t advertisement_interval);
+void vrrp_set_advertisement_interval (struct vrrp_vrouter *vr,
+                                      uint16_t advertisement_interval);
 
 /*
  * Add an IPvX address to a VRRP Virtual Router.
@@ -358,7 +364,7 @@ void vrrp_set_advertisement_interval(struct vrrp_vrouter *vr,
  *    -1 on error
  *     0 otherwise
  */
-int vrrp_add_ip(struct vrrp_vrouter *vr, struct ipaddr *ip);
+int vrrp_add_ip (struct vrrp_vrouter *vr, struct ipaddr *ip);
 
 /*
  * Add an IPv4 address to a VRRP Virtual Router.
@@ -377,7 +383,7 @@ int vrrp_add_ip(struct vrrp_vrouter *vr, struct ipaddr *ip);
  *    -1 on error
  *     0 otherwise
  */
-int vrrp_add_ipv4(struct vrrp_vrouter *vr, struct in_addr v4);
+int vrrp_add_ipv4 (struct vrrp_vrouter *vr, struct in_addr v4);
 
 /*
  * Add an IPv6 address to a VRRP Virtual Router.
@@ -396,7 +402,7 @@ int vrrp_add_ipv4(struct vrrp_vrouter *vr, struct in_addr v4);
  *    -1 on error
  *     0 otherwise
  */
-int vrrp_add_ipv6(struct vrrp_vrouter *vr, struct in6_addr v6);
+int vrrp_add_ipv6 (struct vrrp_vrouter *vr, struct in6_addr v6);
 
 /*
  * Remove an IP address from a VRRP Virtual Router.
@@ -417,7 +423,7 @@ int vrrp_add_ipv6(struct vrrp_vrouter *vr, struct in6_addr v6);
  *    -1 on error
  *     0 otherwise
  */
-int vrrp_del_ip(struct vrrp_vrouter *vr, struct ipaddr *ip);
+int vrrp_del_ip (struct vrrp_vrouter *vr, struct ipaddr *ip);
 
 /*
  * Remove an IPv4 address from a VRRP Virtual Router.
@@ -438,7 +444,7 @@ int vrrp_del_ip(struct vrrp_vrouter *vr, struct ipaddr *ip);
  *    -1 on error
  *     0 otherwise
  */
-int vrrp_del_ipv4(struct vrrp_vrouter *vr, struct in_addr v4);
+int vrrp_del_ipv4 (struct vrrp_vrouter *vr, struct in_addr v4);
 
 /*
  * Remove an IPv6 address from a VRRP Virtual Router.
@@ -459,15 +465,15 @@ int vrrp_del_ipv4(struct vrrp_vrouter *vr, struct in_addr v4);
  *    -1 on error
  *     0 otherwise
  */
-int vrrp_del_ipv6(struct vrrp_vrouter *vr, struct in6_addr v6);
+int vrrp_del_ipv6 (struct vrrp_vrouter *vr, struct in6_addr v6);
 
 /* State machine ----------------------------------------------------------- */
 
 #define VRRP_STATE_INITIALIZE 0
-#define VRRP_STATE_MASTER 1
-#define VRRP_STATE_BACKUP 2
-#define VRRP_EVENT_STARTUP 0
-#define VRRP_EVENT_SHUTDOWN 1
+#define VRRP_STATE_MASTER     1
+#define VRRP_STATE_BACKUP     2
+#define VRRP_EVENT_STARTUP    0
+#define VRRP_EVENT_SHUTDOWN   1
 
 extern const char *const vrrp_state_names[3];
 
@@ -478,7 +484,8 @@ extern const char *const vrrp_state_names[3];
  * Use this if you need to react to state changes to perform non-critical
  * tasks. Critical tasks should go in the internal state change handlers.
  */
-DECLARE_HOOK(vrrp_change_state_hook, (struct vrrp_router *r, int to), (r, to));
+DECLARE_HOOK (vrrp_change_state_hook, (struct vrrp_router * r, int to),
+              (r, to));
 
 /*
  * Trigger a VRRP event on a given Virtual Router..
@@ -494,7 +501,7 @@ DECLARE_HOOK(vrrp_change_state_hook, (struct vrrp_router *r, int to), (r, to));
  *    < 0 if the event created an error
  *      0 otherwise
  */
-int vrrp_event(struct vrrp_router *r, int event);
+int vrrp_event (struct vrrp_router *r, int event);
 
 /* Autoconfig -------------------------------------------------------------- */
 
@@ -513,7 +520,7 @@ int vrrp_event(struct vrrp_router *r, int event);
  *    -1 on failure
  *     0 otherwise
  */
-int vrrp_autoconfig(void);
+int vrrp_autoconfig (void);
 
 /*
  * Enable autoconfiguration.
@@ -526,23 +533,24 @@ int vrrp_autoconfig(void);
  * version
  *    VRRP version to use for autoconfigured instances. Must be 2 or 3.
  */
-void vrrp_autoconfig_on(int version);
+void vrrp_autoconfig_on (int version);
 
 /*
  * Disable autoconfiguration.
  *
- * Calling this function will delete all existing autoconfigured VRRP instances.
+ * Calling this function will delete all existing autoconfigured VRRP
+ * instances.
  */
-void vrrp_autoconfig_off(void);
+void vrrp_autoconfig_off (void);
 
 /* Interface Tracking ------------------------------------------------------ */
 
-void vrrp_if_add(struct interface *ifp);
-void vrrp_if_del(struct interface *ifp);
-void vrrp_if_up(struct interface *ifp);
-void vrrp_if_down(struct interface *ifp);
-void vrrp_if_address_add(struct interface *ifp);
-void vrrp_if_address_del(struct interface *ifp);
+void vrrp_if_add (struct interface *ifp);
+void vrrp_if_del (struct interface *ifp);
+void vrrp_if_up (struct interface *ifp);
+void vrrp_if_down (struct interface *ifp);
+void vrrp_if_address_add (struct interface *ifp);
+void vrrp_if_address_del (struct interface *ifp);
 
 /* Other ------------------------------------------------------------------- */
 
@@ -555,11 +563,11 @@ void vrrp_if_address_del(struct interface *ifp);
  * Returns:
  *    # of lines written
  */
-int vrrp_config_write_global(struct vty *vty);
+int vrrp_config_write_global (struct vty *vty);
 
 /*
  * Find VRRP Virtual Router by Virtual Router ID
  */
-struct vrrp_vrouter *vrrp_lookup(const struct interface *ifp, uint8_t vrid);
+struct vrrp_vrouter *vrrp_lookup (const struct interface *ifp, uint8_t vrid);
 
 #endif /* __VRRP_H__ */

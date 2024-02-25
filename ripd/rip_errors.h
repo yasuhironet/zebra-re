@@ -10,11 +10,12 @@
 
 #include "lib/ferr.h"
 
-enum rip_log_refs {
-	EC_RIP_PACKET = RIP_FERR_START,
-	RIP_ERR_CONFIG,
+enum rip_log_refs
+{
+  EC_RIP_PACKET = RIP_FERR_START,
+  RIP_ERR_CONFIG,
 };
 
-extern void rip_error_init(void);
+extern void rip_error_init (void);
 
 #endif

@@ -43,47 +43,51 @@
 #include "seqlock.h"
 #include "atomlist.h"
 
-DEFINE_MTYPE_STATIC(LIB, RCU_THREAD,    "RCU thread");
-DEFINE_MTYPE_STATIC(LIB, RCU_NEXT,      "RCU sequence barrier");
+DEFINE_MTYPE_STATIC (LIB, RCU_THREAD, "RCU thread");
+DEFINE_MTYPE_STATIC (LIB, RCU_NEXT, "RCU sequence barrier");
 
-DECLARE_ATOMLIST(rcu_heads, struct rcu_head, head);
+DECLARE_ATOMLIST (rcu_heads, struct rcu_head, head);
 
-PREDECL_ATOMLIST(rcu_threads);
-struct rcu_thread {
-	struct rcu_threads_item head;
+PREDECL_ATOMLIST (rcu_threads);
+struct rcu_thread
+{
+  struct rcu_threads_item head;
 
-	struct rcu_head rcu_head;
+  struct rcu_head rcu_head;
 
-	struct seqlock rcu;
+  struct seqlock rcu;
 
-	/* only accessed by thread itself, not atomic */
-	unsigned depth;
+  /* only accessed by thread itself, not atomic */
+  unsigned depth;
 };
-DECLARE_ATOMLIST(rcu_threads, struct rcu_thread, head);
+DECLARE_ATOMLIST (rcu_threads, struct rcu_thread, head);
 
-static const struct rcu_action rcua_next  = { .type = RCUA_NEXT };
-static const struct rcu_action rcua_end   = { .type = RCUA_END };
+static const struct rcu_action rcua_next = { .type = RCUA_NEXT };
+static const struct rcu_action rcua_end = { .type = RCUA_END };
 static const struct rcu_action rcua_close = { .type = RCUA_CLOSE };
 
-struct rcu_next {
-	struct rcu_head head_free;
-	struct rcu_head head_next;
+struct rcu_next
+{
+  struct rcu_head head_free;
+  struct rcu_head head_next;
 };
 
-#define rcu_free_internal(mtype, ptr, field)                                   \
-	do {                                                                   \
-		typeof(ptr) _ptr = (ptr);                                      \
-		struct rcu_head *_rcu_head = &_ptr->field;                     \
-		static const struct rcu_action _rcu_action = {                 \
+#define rcu_free_internal(mtype, ptr, field)                                  \
+  do                                                                          \
+    {                                                                         \
+      typeof (ptr) _ptr = (ptr);                                              \
+      struct rcu_head *_rcu_head = &_ptr->field;                              \
+      static const struct rcu_action _rcu_action = {                 \
 			.type = RCUA_FREE,                                     \
 			.u.free = {                                            \
 				.mt = mtype,                                   \
 				.offset = offsetof(typeof(*_ptr), field),      \
 			},                                                     \
-		};                                                             \
-		_rcu_head->action = &_rcu_action;                              \
-		rcu_heads_add_tail(&rcu_heads, _rcu_head);                     \
-	} while (0)
+		};        \
+      _rcu_head->action = &_rcu_action;                                       \
+      rcu_heads_add_tail (&rcu_heads, _rcu_head);                             \
+    }                                                                         \
+  while (0)
 
 /* primary global RCU position */
 static struct seqlock rcu_seq;
@@ -113,283 +117,298 @@ static pthread_t rcu_pthread;
 static pthread_key_t rcu_thread_key;
 static bool rcu_active;
 
-static void rcu_start(void);
-static void rcu_bump(void);
+static void rcu_start (void);
+static void rcu_bump (void);
 
 /*
  * preinitialization for main thread
  */
-static void rcu_thread_end(void *rcu_thread);
+static void rcu_thread_end (void *rcu_thread);
 
-static void rcu_preinit(void) __attribute__((constructor));
-static void rcu_preinit(void)
+static void rcu_preinit (void) __attribute__ ((constructor));
+static void
+rcu_preinit (void)
 {
-	struct rcu_thread *rt;
+  struct rcu_thread *rt;
 
-	rt = &rcu_thread_main;
-	rt->depth = 1;
-	seqlock_init(&rt->rcu);
-	seqlock_acquire_val(&rt->rcu, SEQLOCK_STARTVAL);
+  rt = &rcu_thread_main;
+  rt->depth = 1;
+  seqlock_init (&rt->rcu);
+  seqlock_acquire_val (&rt->rcu, SEQLOCK_STARTVAL);
 
-	pthread_key_create(&rcu_thread_key, rcu_thread_end);
-	pthread_setspecific(rcu_thread_key, rt);
+  pthread_key_create (&rcu_thread_key, rcu_thread_end);
+  pthread_setspecific (rcu_thread_key, rt);
 
-	rcu_threads_add_tail(&rcu_threads, rt);
+  rcu_threads_add_tail (&rcu_threads, rt);
 
-	/* RCU sweeper's rcu_thread is a dummy, NOT added to rcu_threads */
-	rt = &rcu_thread_rcu;
-	rt->depth = 1;
+  /* RCU sweeper's rcu_thread is a dummy, NOT added to rcu_threads */
+  rt = &rcu_thread_rcu;
+  rt->depth = 1;
 
-	seqlock_init(&rcu_seq);
-	seqlock_acquire_val(&rcu_seq, SEQLOCK_STARTVAL);
+  seqlock_init (&rcu_seq);
+  seqlock_acquire_val (&rcu_seq, SEQLOCK_STARTVAL);
 }
 
-static struct rcu_thread *rcu_self(void)
+static struct rcu_thread *
+rcu_self (void)
 {
-	return (struct rcu_thread *)pthread_getspecific(rcu_thread_key);
+  return (struct rcu_thread *) pthread_getspecific (rcu_thread_key);
 }
 
 /*
  * thread management (for the non-main thread)
  */
-struct rcu_thread *rcu_thread_prepare(void)
+struct rcu_thread *
+rcu_thread_prepare (void)
 {
-	struct rcu_thread *rt, *cur;
+  struct rcu_thread *rt, *cur;
 
-	rcu_assert_read_locked();
+  rcu_assert_read_locked ();
 
-	if (!rcu_active)
-		rcu_start();
+  if (! rcu_active)
+    rcu_start ();
 
-	cur = rcu_self();
-	assert(cur->depth);
+  cur = rcu_self ();
+  assert (cur->depth);
 
-	/* new thread always starts with rcu_read_lock held at depth 1, and
-	 * holding the same epoch as the parent (this makes it possible to
-	 * use RCU for things passed into the thread through its arg)
-	 */
-	rt = XCALLOC(MTYPE_RCU_THREAD, sizeof(*rt));
-	rt->depth = 1;
+  /* new thread always starts with rcu_read_lock held at depth 1, and
+   * holding the same epoch as the parent (this makes it possible to
+   * use RCU for things passed into the thread through its arg)
+   */
+  rt = XCALLOC (MTYPE_RCU_THREAD, sizeof (*rt));
+  rt->depth = 1;
 
-	seqlock_init(&rt->rcu);
-	seqlock_acquire(&rt->rcu, &cur->rcu);
+  seqlock_init (&rt->rcu);
+  seqlock_acquire (&rt->rcu, &cur->rcu);
 
-	rcu_threads_add_tail(&rcu_threads, rt);
+  rcu_threads_add_tail (&rcu_threads, rt);
 
-	return rt;
+  return rt;
 }
 
-void rcu_thread_start(struct rcu_thread *rt)
+void
+rcu_thread_start (struct rcu_thread *rt)
 {
-	pthread_setspecific(rcu_thread_key, rt);
+  pthread_setspecific (rcu_thread_key, rt);
 }
 
-void rcu_thread_unprepare(struct rcu_thread *rt)
+void
+rcu_thread_unprepare (struct rcu_thread *rt)
 {
-	if (rt == &rcu_thread_rcu)
-		return;
+  if (rt == &rcu_thread_rcu)
+    return;
 
-	rt->depth = 1;
-	seqlock_acquire(&rt->rcu, &rcu_seq);
+  rt->depth = 1;
+  seqlock_acquire (&rt->rcu, &rcu_seq);
 
-	rcu_bump();
-	if (rt != &rcu_thread_main)
-		/* this free() happens after seqlock_release() below */
-		rcu_free_internal(MTYPE_RCU_THREAD, rt, rcu_head);
+  rcu_bump ();
+  if (rt != &rcu_thread_main)
+    /* this free() happens after seqlock_release() below */
+    rcu_free_internal (MTYPE_RCU_THREAD, rt, rcu_head);
 
-	rcu_threads_del(&rcu_threads, rt);
-	seqlock_release(&rt->rcu);
+  rcu_threads_del (&rcu_threads, rt);
+  seqlock_release (&rt->rcu);
 }
 
-static void rcu_thread_end(void *rtvoid)
+static void
+rcu_thread_end (void *rtvoid)
 {
-	struct rcu_thread *rt = rtvoid;
-	rcu_thread_unprepare(rt);
+  struct rcu_thread *rt = rtvoid;
+  rcu_thread_unprepare (rt);
 }
 
 /*
  * main RCU control aspects
  */
 
-static void rcu_bump(void)
+static void
+rcu_bump (void)
 {
-	struct rcu_next *rn;
+  struct rcu_next *rn;
 
-	rn = XMALLOC(MTYPE_RCU_NEXT, sizeof(*rn));
+  rn = XMALLOC (MTYPE_RCU_NEXT, sizeof (*rn));
 
-	/* note: each RCUA_NEXT item corresponds to exactly one seqno bump.
-	 * This means we don't need to communicate which seqno is which
-	 * RCUA_NEXT, since we really don't care.
-	 */
+  /* note: each RCUA_NEXT item corresponds to exactly one seqno bump.
+   * This means we don't need to communicate which seqno is which
+   * RCUA_NEXT, since we really don't care.
+   */
 
-	/*
-	 * Important race condition:  while rcu_heads_add_tail is executing,
-	 * there is an intermediate point where the rcu_heads "last" pointer
-	 * already points to rn->head_next, but rn->head_next isn't added to
-	 * the list yet.  That means any other "add_tail" calls append to this
-	 * item, which isn't fully on the list yet.  Freeze this thread at
-	 * that point and look at another thread doing a rcu_bump.  It adds
-	 * these two items and then does a seqlock_bump.  But the rcu_heads
-	 * list is still "interrupted" and there's no RCUA_NEXT on the list
-	 * yet (from either the frozen thread or the second thread).  So
-	 * rcu_main() might actually hit the end of the list at the
-	 * "interrupt".
-	 *
-	 * This situation is prevented by requiring that rcu_read_lock is held
-	 * for any calls to rcu_bump, since if we're holding the current RCU
-	 * epoch, that means rcu_main can't be chewing on rcu_heads and hit
-	 * that interruption point.  Only by the time the thread has continued
-	 * to rcu_read_unlock() - and therefore completed the add_tail - the
-	 * RCU sweeper gobbles up the epoch and can be sure to find at least
-	 * the RCUA_NEXT and RCUA_FREE items on rcu_heads.
-	 */
-	rn->head_next.action = &rcua_next;
-	rcu_heads_add_tail(&rcu_heads, &rn->head_next);
+  /*
+   * Important race condition:  while rcu_heads_add_tail is executing,
+   * there is an intermediate point where the rcu_heads "last" pointer
+   * already points to rn->head_next, but rn->head_next isn't added to
+   * the list yet.  That means any other "add_tail" calls append to this
+   * item, which isn't fully on the list yet.  Freeze this thread at
+   * that point and look at another thread doing a rcu_bump.  It adds
+   * these two items and then does a seqlock_bump.  But the rcu_heads
+   * list is still "interrupted" and there's no RCUA_NEXT on the list
+   * yet (from either the frozen thread or the second thread).  So
+   * rcu_main() might actually hit the end of the list at the
+   * "interrupt".
+   *
+   * This situation is prevented by requiring that rcu_read_lock is held
+   * for any calls to rcu_bump, since if we're holding the current RCU
+   * epoch, that means rcu_main can't be chewing on rcu_heads and hit
+   * that interruption point.  Only by the time the thread has continued
+   * to rcu_read_unlock() - and therefore completed the add_tail - the
+   * RCU sweeper gobbles up the epoch and can be sure to find at least
+   * the RCUA_NEXT and RCUA_FREE items on rcu_heads.
+   */
+  rn->head_next.action = &rcua_next;
+  rcu_heads_add_tail (&rcu_heads, &rn->head_next);
 
-	/* free rn that we allocated above.
-	 *
-	 * This is INTENTIONALLY not built into the RCUA_NEXT action.  This
-	 * ensures that after the action above is popped off the queue, there
-	 * is still at least 1 item on the RCU queue.  This means we never
-	 * delete the last item, which is extremely important since it keeps
-	 * the atomlist ->last pointer alive and well.
-	 *
-	 * If we were to "run dry" on the RCU queue, add_tail may run into the
-	 * "last item is being deleted - start over" case, and then we may end
-	 * up accessing old RCU queue items that are already free'd.
-	 */
-	rcu_free_internal(MTYPE_RCU_NEXT, rn, head_free);
+  /* free rn that we allocated above.
+   *
+   * This is INTENTIONALLY not built into the RCUA_NEXT action.  This
+   * ensures that after the action above is popped off the queue, there
+   * is still at least 1 item on the RCU queue.  This means we never
+   * delete the last item, which is extremely important since it keeps
+   * the atomlist ->last pointer alive and well.
+   *
+   * If we were to "run dry" on the RCU queue, add_tail may run into the
+   * "last item is being deleted - start over" case, and then we may end
+   * up accessing old RCU queue items that are already free'd.
+   */
+  rcu_free_internal (MTYPE_RCU_NEXT, rn, head_free);
 
-	/* Only allow the RCU sweeper to run after these 2 items are queued.
-	 *
-	 * If another thread enqueues some RCU action in the intermediate
-	 * window here, nothing bad happens - the queued action is associated
-	 * with a larger seq# than strictly necessary.  Thus, it might get
-	 * executed a bit later, but that's not a problem.
-	 *
-	 * If another thread acquires the read lock in this window, it holds
-	 * the previous epoch, but its RCU queue actions will be in the next
-	 * epoch.  This isn't a problem either, just a tad inefficient.
-	 */
-	seqlock_bump(&rcu_seq);
+  /* Only allow the RCU sweeper to run after these 2 items are queued.
+   *
+   * If another thread enqueues some RCU action in the intermediate
+   * window here, nothing bad happens - the queued action is associated
+   * with a larger seq# than strictly necessary.  Thus, it might get
+   * executed a bit later, but that's not a problem.
+   *
+   * If another thread acquires the read lock in this window, it holds
+   * the previous epoch, but its RCU queue actions will be in the next
+   * epoch.  This isn't a problem either, just a tad inefficient.
+   */
+  seqlock_bump (&rcu_seq);
 }
 
-static void rcu_bump_maybe(void)
+static void
+rcu_bump_maybe (void)
 {
-	seqlock_val_t dirty;
+  seqlock_val_t dirty;
 
-	dirty = atomic_load_explicit(&rcu_dirty, memory_order_relaxed);
-	/* no problem if we race here and multiple threads bump rcu_seq;
-	 * bumping too much causes no issues while not bumping enough will
-	 * result in delayed cleanup
-	 */
-	if (dirty == seqlock_cur(&rcu_seq))
-		rcu_bump();
+  dirty = atomic_load_explicit (&rcu_dirty, memory_order_relaxed);
+  /* no problem if we race here and multiple threads bump rcu_seq;
+   * bumping too much causes no issues while not bumping enough will
+   * result in delayed cleanup
+   */
+  if (dirty == seqlock_cur (&rcu_seq))
+    rcu_bump ();
 }
 
-void rcu_read_lock(void)
+void
+rcu_read_lock (void)
 {
-	struct rcu_thread *rt = rcu_self();
+  struct rcu_thread *rt = rcu_self ();
 
-	assert(rt);
-	if (rt->depth++ > 0)
-		return;
+  assert (rt);
+  if (rt->depth++ > 0)
+    return;
 
-	seqlock_acquire(&rt->rcu, &rcu_seq);
-	/* need to hold RCU for bump ... */
-	rcu_bump_maybe();
-	/* ... but no point in holding the old epoch if we just bumped */
-	seqlock_acquire(&rt->rcu, &rcu_seq);
+  seqlock_acquire (&rt->rcu, &rcu_seq);
+  /* need to hold RCU for bump ... */
+  rcu_bump_maybe ();
+  /* ... but no point in holding the old epoch if we just bumped */
+  seqlock_acquire (&rt->rcu, &rcu_seq);
 }
 
-void rcu_read_unlock(void)
+void
+rcu_read_unlock (void)
 {
-	struct rcu_thread *rt = rcu_self();
+  struct rcu_thread *rt = rcu_self ();
 
-	assert(rt && rt->depth);
-	if (--rt->depth > 0)
-		return;
-	rcu_bump_maybe();
-	seqlock_release(&rt->rcu);
+  assert (rt && rt->depth);
+  if (--rt->depth > 0)
+    return;
+  rcu_bump_maybe ();
+  seqlock_release (&rt->rcu);
 }
 
-void rcu_assert_read_locked(void)
+void
+rcu_assert_read_locked (void)
 {
-	struct rcu_thread *rt = rcu_self();
-	assert(rt && rt->depth && seqlock_held(&rt->rcu));
+  struct rcu_thread *rt = rcu_self ();
+  assert (rt && rt->depth && seqlock_held (&rt->rcu));
 }
 
-void rcu_assert_read_unlocked(void)
+void
+rcu_assert_read_unlocked (void)
 {
-	struct rcu_thread *rt = rcu_self();
-	assert(rt && !rt->depth && !seqlock_held(&rt->rcu));
+  struct rcu_thread *rt = rcu_self ();
+  assert (rt && ! rt->depth && ! seqlock_held (&rt->rcu));
 }
 
 /*
  * RCU resource-release thread
  */
 
-static void *rcu_main(void *arg);
+static void *rcu_main (void *arg);
 
-static void rcu_start(void)
+static void
+rcu_start (void)
 {
-	/* ensure we never handle signals on the RCU thread by blocking
-	 * everything here (new thread inherits signal mask)
-	 */
-	sigset_t oldsigs, blocksigs;
+  /* ensure we never handle signals on the RCU thread by blocking
+   * everything here (new thread inherits signal mask)
+   */
+  sigset_t oldsigs, blocksigs;
 
-	sigfillset(&blocksigs);
-	pthread_sigmask(SIG_BLOCK, &blocksigs, &oldsigs);
+  sigfillset (&blocksigs);
+  pthread_sigmask (SIG_BLOCK, &blocksigs, &oldsigs);
 
-	rcu_active = true;
+  rcu_active = true;
 
-	assert(!pthread_create(&rcu_pthread, NULL, rcu_main, NULL));
+  assert (! pthread_create (&rcu_pthread, NULL, rcu_main, NULL));
 
-	pthread_sigmask(SIG_SETMASK, &oldsigs, NULL);
+  pthread_sigmask (SIG_SETMASK, &oldsigs, NULL);
 
 #ifdef HAVE_PTHREAD_SETNAME_NP
-# ifdef GNU_LINUX
-	pthread_setname_np(rcu_pthread, "RCU sweeper");
-# elif defined(__NetBSD__)
-	pthread_setname_np(rcu_pthread, "RCU sweeper", NULL);
-# endif
+#ifdef GNU_LINUX
+  pthread_setname_np (rcu_pthread, "RCU sweeper");
+#elif defined(__NetBSD__)
+  pthread_setname_np (rcu_pthread, "RCU sweeper", NULL);
+#endif
 #elif defined(HAVE_PTHREAD_SET_NAME_NP)
-	pthread_set_name_np(rcu_pthread, "RCU sweeper");
+  pthread_set_name_np (rcu_pthread, "RCU sweeper");
 #endif
 }
 
-static void rcu_do(struct rcu_head *rh)
+static void
+rcu_do (struct rcu_head *rh)
 {
-	struct rcu_head_close *rhc;
-	void *p;
+  struct rcu_head_close *rhc;
+  void *p;
 
-	switch (rh->action->type) {
-	case RCUA_FREE:
-		p = (char *)rh - rh->action->u.free.offset;
-		if (rh->action->u.free.mt)
-			qfree(rh->action->u.free.mt, p);
-		else
-			free(p);
-		break;
-	case RCUA_CLOSE:
-		rhc = container_of(rh, struct rcu_head_close,
-				   rcu_head);
-		close(rhc->fd);
-		break;
-	case RCUA_CALL:
-		p = (char *)rh - rh->action->u.call.offset;
-		rh->action->u.call.fptr(p);
-		break;
+  switch (rh->action->type)
+    {
+    case RCUA_FREE:
+      p = (char *) rh - rh->action->u.free.offset;
+      if (rh->action->u.free.mt)
+        qfree (rh->action->u.free.mt, p);
+      else
+        free (p);
+      break;
+    case RCUA_CLOSE:
+      rhc = container_of (rh, struct rcu_head_close, rcu_head);
+      close (rhc->fd);
+      break;
+    case RCUA_CALL:
+      p = (char *) rh - rh->action->u.call.offset;
+      rh->action->u.call.fptr (p);
+      break;
 
-	case RCUA_INVALID:
-	case RCUA_NEXT:
-	case RCUA_END:
-	default:
-		assert(0);
-	}
+    case RCUA_INVALID:
+    case RCUA_NEXT:
+    case RCUA_END:
+    default:
+      assert (0);
+    }
 }
 
-static void rcu_watchdog(struct rcu_thread *rt)
+static void
+rcu_watchdog (struct rcu_thread *rt)
 {
 #if 0
 	/* future work: print a backtrace for the thread that's holding up
@@ -403,114 +422,124 @@ static void rcu_watchdog(struct rcu_thread *rt)
 #endif
 }
 
-static void *rcu_main(void *arg)
+static void *
+rcu_main (void *arg)
 {
-	struct rcu_thread *rt;
-	struct rcu_head *rh = NULL;
-	bool end = false;
-	struct timespec maxwait;
+  struct rcu_thread *rt;
+  struct rcu_head *rh = NULL;
+  bool end = false;
+  struct timespec maxwait;
 
-	seqlock_val_t rcuval = SEQLOCK_STARTVAL;
+  seqlock_val_t rcuval = SEQLOCK_STARTVAL;
 
-	pthread_setspecific(rcu_thread_key, &rcu_thread_rcu);
+  pthread_setspecific (rcu_thread_key, &rcu_thread_rcu);
 
-	while (!end) {
-		seqlock_wait(&rcu_seq, rcuval);
+  while (! end)
+    {
+      seqlock_wait (&rcu_seq, rcuval);
 
-		/* RCU watchdog timeout, TODO: configurable value */
-		clock_gettime(CLOCK_MONOTONIC, &maxwait);
-		maxwait.tv_nsec += 100 * 1000 * 1000;
-		if (maxwait.tv_nsec >= 1000000000) {
-			maxwait.tv_sec++;
-			maxwait.tv_nsec -= 1000000000;
-		}
+      /* RCU watchdog timeout, TODO: configurable value */
+      clock_gettime (CLOCK_MONOTONIC, &maxwait);
+      maxwait.tv_nsec += 100 * 1000 * 1000;
+      if (maxwait.tv_nsec >= 1000000000)
+        {
+          maxwait.tv_sec++;
+          maxwait.tv_nsec -= 1000000000;
+        }
 
-		frr_each (rcu_threads, &rcu_threads, rt)
-			if (!seqlock_timedwait(&rt->rcu, rcuval, &maxwait)) {
-				rcu_watchdog(rt);
-				seqlock_wait(&rt->rcu, rcuval);
-			}
+      frr_each (rcu_threads, &rcu_threads, rt)
+        if (! seqlock_timedwait (&rt->rcu, rcuval, &maxwait))
+          {
+            rcu_watchdog (rt);
+            seqlock_wait (&rt->rcu, rcuval);
+          }
 
-		while ((rh = rcu_heads_pop(&rcu_heads))) {
-			if (rh->action->type == RCUA_NEXT)
-				break;
-			else if (rh->action->type == RCUA_END)
-				end = true;
-			else
-				rcu_do(rh);
-		}
+      while ((rh = rcu_heads_pop (&rcu_heads)))
+        {
+          if (rh->action->type == RCUA_NEXT)
+            break;
+          else if (rh->action->type == RCUA_END)
+            end = true;
+          else
+            rcu_do (rh);
+        }
 
-		rcuval += SEQLOCK_INCR;
-	}
+      rcuval += SEQLOCK_INCR;
+    }
 
-	/* rcu_shutdown can only be called singlethreaded, and it does a
-	 * pthread_join, so it should be impossible that anything ended up
-	 * on the queue after RCUA_END
-	 */
+    /* rcu_shutdown can only be called singlethreaded, and it does a
+     * pthread_join, so it should be impossible that anything ended up
+     * on the queue after RCUA_END
+     */
 #if 1
-	assert(!rcu_heads_first(&rcu_heads));
+  assert (! rcu_heads_first (&rcu_heads));
 #else
-	while ((rh = rcu_heads_pop(&rcu_heads)))
-		if (rh->action->type >= RCUA_FREE)
-			rcu_do(rh);
+  while ((rh = rcu_heads_pop (&rcu_heads)))
+    if (rh->action->type >= RCUA_FREE)
+      rcu_do (rh);
 #endif
-	return NULL;
+  return NULL;
 }
 
-void rcu_shutdown(void)
+void
+rcu_shutdown (void)
 {
-	static struct rcu_head rcu_head_end;
-	struct rcu_thread *rt = rcu_self();
-	void *retval;
+  static struct rcu_head rcu_head_end;
+  struct rcu_thread *rt = rcu_self ();
+  void *retval;
 
-	if (!rcu_active)
-		return;
+  if (! rcu_active)
+    return;
 
-	rcu_assert_read_locked();
-	assert(rcu_threads_count(&rcu_threads) == 1);
+  rcu_assert_read_locked ();
+  assert (rcu_threads_count (&rcu_threads) == 1);
 
-	rcu_enqueue(&rcu_head_end, &rcua_end);
+  rcu_enqueue (&rcu_head_end, &rcua_end);
 
-	rt->depth = 0;
-	seqlock_release(&rt->rcu);
-	seqlock_release(&rcu_seq);
-	rcu_active = false;
+  rt->depth = 0;
+  seqlock_release (&rt->rcu);
+  seqlock_release (&rcu_seq);
+  rcu_active = false;
 
-	/* clearing rcu_active is before pthread_join in case we hang in
-	 * pthread_join & get a SIGTERM or something - in that case, just
-	 * ignore the maybe-still-running RCU thread
-	 */
-	if (pthread_join(rcu_pthread, &retval) == 0) {
-		seqlock_acquire_val(&rcu_seq, SEQLOCK_STARTVAL);
-		seqlock_acquire_val(&rt->rcu, SEQLOCK_STARTVAL);
-		rt->depth = 1;
-	}
+  /* clearing rcu_active is before pthread_join in case we hang in
+   * pthread_join & get a SIGTERM or something - in that case, just
+   * ignore the maybe-still-running RCU thread
+   */
+  if (pthread_join (rcu_pthread, &retval) == 0)
+    {
+      seqlock_acquire_val (&rcu_seq, SEQLOCK_STARTVAL);
+      seqlock_acquire_val (&rt->rcu, SEQLOCK_STARTVAL);
+      rt->depth = 1;
+    }
 }
 
 /*
  * RCU'd free functions
  */
 
-void rcu_enqueue(struct rcu_head *rh, const struct rcu_action *action)
+void
+rcu_enqueue (struct rcu_head *rh, const struct rcu_action *action)
 {
-	/* refer to rcu_bump() for why we need to hold RCU when adding items
-	 * to rcu_heads
-	 */
-	rcu_assert_read_locked();
+  /* refer to rcu_bump() for why we need to hold RCU when adding items
+   * to rcu_heads
+   */
+  rcu_assert_read_locked ();
 
-	rh->action = action;
+  rh->action = action;
 
-	if (!rcu_active) {
-		rcu_do(rh);
-		return;
-	}
-	rcu_heads_add_tail(&rcu_heads, rh);
-	atomic_store_explicit(&rcu_dirty, seqlock_cur(&rcu_seq),
-			      memory_order_relaxed);
+  if (! rcu_active)
+    {
+      rcu_do (rh);
+      return;
+    }
+  rcu_heads_add_tail (&rcu_heads, rh);
+  atomic_store_explicit (&rcu_dirty, seqlock_cur (&rcu_seq),
+                         memory_order_relaxed);
 }
 
-void rcu_close(struct rcu_head_close *rhc, int fd)
+void
+rcu_close (struct rcu_head_close *rhc, int fd)
 {
-	rhc->fd = fd;
-	rcu_enqueue(&rhc->rcu_head, &rcua_close);
+  rhc->fd = fd;
+  rcu_enqueue (&rhc->rcu_head, &rcua_close);
 }

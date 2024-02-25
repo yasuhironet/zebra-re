@@ -52,30 +52,31 @@
 /* Default configuration file name */
 #define ISISD_DEFAULT_CONFIG "isisd.conf"
 /* Default vty port */
-#define ISISD_VTY_PORT       2608
-#define FABRICD_VTY_PORT     2618
+#define ISISD_VTY_PORT   2608
+#define FABRICD_VTY_PORT 2618
 
 /* isisd privileges */
-zebra_capabilities_t _caps_p[] = {ZCAP_NET_RAW, ZCAP_BIND, ZCAP_SYS_ADMIN};
+zebra_capabilities_t _caps_p[] = { ZCAP_NET_RAW, ZCAP_BIND, ZCAP_SYS_ADMIN };
 
 struct zebra_privs_t isisd_privs = {
 #if defined(FRR_USER)
-	.user = FRR_USER,
+  .user = FRR_USER,
 #endif
 #if defined FRR_GROUP
-	.group = FRR_GROUP,
+  .group = FRR_GROUP,
 #endif
 #ifdef VTY_GROUP
-	.vty_group = VTY_GROUP,
+  .vty_group = VTY_GROUP,
 #endif
-	.caps_p = _caps_p,
-	.cap_num_p = array_size(_caps_p),
-	.cap_num_i = 0};
+  .caps_p = _caps_p,
+  .cap_num_p = array_size (_caps_p),
+  .cap_num_i = 0
+};
 
 /* isisd options */
-static const struct option longopts[] = {
-	{"int_num", required_argument, NULL, 'I'},
-	{0}};
+static const struct option longopts[] = { { "int_num", required_argument, NULL,
+                                            'I' },
+                                          { 0 } };
 
 /* Master of threads. */
 struct event_loop *master;
@@ -83,76 +84,82 @@ struct event_loop *master;
 /*
  * Prototypes.
  */
-void sighup(void);
-void sigint(void);
-void sigterm(void);
-void sigusr1(void);
+void sighup (void);
+void sigint (void);
+void sigterm (void);
+void sigusr1 (void);
 
 
-static __attribute__((__noreturn__)) void terminate(int i)
+static __attribute__ ((__noreturn__)) void
+terminate (int i)
 {
-	isis_terminate();
-	isis_sr_term();
-	isis_zebra_stop();
-	exit(i);
+  isis_terminate ();
+  isis_sr_term ();
+  isis_zebra_stop ();
+  exit (i);
 }
 
 /*
  * Signal handlers
  */
 #ifdef FABRICD
-void sighup(void)
+void
+sighup (void)
 {
-	zlog_notice("SIGHUP/reload is not implemented for fabricd");
-	return;
+  zlog_notice ("SIGHUP/reload is not implemented for fabricd");
+  return;
 }
 #else
 static struct frr_daemon_info isisd_di;
-void sighup(void)
+void
+sighup (void)
 {
-	zlog_info("SIGHUP received");
+  zlog_info ("SIGHUP received");
 
-	/* Reload config file. */
-	vty_read_config(NULL, isisd_di.config_file, config_default);
+  /* Reload config file. */
+  vty_read_config (NULL, isisd_di.config_file, config_default);
 }
 
 #endif
 
-__attribute__((__noreturn__)) void sigint(void)
+__attribute__ ((__noreturn__)) void
+sigint (void)
 {
-	zlog_notice("Terminating on signal SIGINT");
-	terminate(0);
+  zlog_notice ("Terminating on signal SIGINT");
+  terminate (0);
 }
 
-__attribute__((__noreturn__)) void sigterm(void)
+__attribute__ ((__noreturn__)) void
+sigterm (void)
 {
-	zlog_notice("Terminating on signal SIGTERM");
-	terminate(0);
+  zlog_notice ("Terminating on signal SIGTERM");
+  terminate (0);
 }
 
-void sigusr1(void)
+void
+sigusr1 (void)
 {
-	zlog_debug("SIGUSR1 received");
-	zlog_rotate();
+  zlog_debug ("SIGUSR1 received");
+  zlog_rotate ();
 }
 
 struct frr_signal_t isisd_signals[] = {
-	{
-		.signal = SIGHUP,
-		.handler = &sighup,
-	},
-	{
-		.signal = SIGUSR1,
-		.handler = &sigusr1,
-	},
-	{
-		.signal = SIGINT,
-		.handler = &sigint,
-	},
-	{
-		.signal = SIGTERM,
-		.handler = &sigterm,
-	},
+  {
+      .signal = SIGHUP,
+      .handler = &sighup,
+  },
+  {
+      .signal = SIGUSR1,
+      .handler = &sigusr1,
+  },
+  {
+      .signal = SIGINT,
+      .handler = &sigint,
+  },
+  {
+      .signal = SIGTERM,
+      .handler = &sigterm,
+  },
 };
 
 
@@ -170,139 +177,145 @@ static const struct frr_yang_module_info *const isisd_yang_modules[] = {
 /* clang-format on */
 
 
-static void isis_config_finish(struct event *t)
+static void
+isis_config_finish (struct event *t)
 {
-	struct listnode *node, *inode;
-	struct isis *isis;
-	struct isis_area *area;
+  struct listnode *node, *inode;
+  struct isis *isis;
+  struct isis_area *area;
 
-	for (ALL_LIST_ELEMENTS_RO(im->isis, inode, isis)) {
-		for (ALL_LIST_ELEMENTS_RO(isis->area_list, node, area))
-			config_end_lsp_generate(area);
-	}
+  for (ALL_LIST_ELEMENTS_RO (im->isis, inode, isis))
+    {
+      for (ALL_LIST_ELEMENTS_RO (isis->area_list, node, area))
+        config_end_lsp_generate (area);
+    }
 }
 
-static void isis_config_start(void)
+static void
+isis_config_start (void)
 {
-	/* Max wait time for config to load before generating lsp */
+  /* Max wait time for config to load before generating lsp */
 #define ISIS_PRE_CONFIG_MAX_WAIT_SECONDS 600
-	EVENT_OFF(t_isis_cfg);
-	event_add_timer(im->master, isis_config_finish, NULL,
-			ISIS_PRE_CONFIG_MAX_WAIT_SECONDS, &t_isis_cfg);
+  EVENT_OFF (t_isis_cfg);
+  event_add_timer (im->master, isis_config_finish, NULL,
+                   ISIS_PRE_CONFIG_MAX_WAIT_SECONDS, &t_isis_cfg);
 }
 
-static void isis_config_end(void)
+static void
+isis_config_end (void)
 {
-	/* If ISIS config processing thread isn't running, then
-	 * we can return and rely it's properly handled.
-	 */
-	if (!event_is_scheduled(t_isis_cfg))
-		return;
+  /* If ISIS config processing thread isn't running, then
+   * we can return and rely it's properly handled.
+   */
+  if (! event_is_scheduled (t_isis_cfg))
+    return;
 
-	EVENT_OFF(t_isis_cfg);
-	isis_config_finish(t_isis_cfg);
+  EVENT_OFF (t_isis_cfg);
+  isis_config_finish (t_isis_cfg);
 }
 
 #ifdef FABRICD
-FRR_DAEMON_INFO(fabricd, OPEN_FABRIC, .vty_port = FABRICD_VTY_PORT,
+FRR_DAEMON_INFO (
+    fabricd, OPEN_FABRIC, .vty_port = FABRICD_VTY_PORT,
 
-		.proghelp = "Implementation of the OpenFabric routing protocol.",
+    .proghelp = "Implementation of the OpenFabric routing protocol.",
 #else
-FRR_DAEMON_INFO(isisd, ISIS, .vty_port = ISISD_VTY_PORT,
+FRR_DAEMON_INFO (
+    isisd, ISIS, .vty_port = ISISD_VTY_PORT,
 
-		.proghelp = "Implementation of the IS-IS routing protocol.",
+    .proghelp = "Implementation of the IS-IS routing protocol.",
 #endif
-		.copyright =
-			"Copyright (c) 2001-2002 Sampo Saaristo, Ofer Wald and Hannes Gredler",
+    .copyright =
+        "Copyright (c) 2001-2002 Sampo Saaristo, Ofer Wald and Hannes Gredler",
 
-		.signals = isisd_signals,
-		.n_signals = array_size(isisd_signals),
+    .signals = isisd_signals, .n_signals = array_size (isisd_signals),
 
-		.privs = &isisd_privs, .yang_modules = isisd_yang_modules,
-		.n_yang_modules = array_size(isisd_yang_modules),
-);
+    .privs = &isisd_privs, .yang_modules = isisd_yang_modules,
+    .n_yang_modules = array_size (isisd_yang_modules), );
 
 /*
  * Main routine of isisd. Parse arguments and handle IS-IS state machine.
  */
-int main(int argc, char **argv, char **envp)
+int
+main (int argc, char **argv, char **envp)
 {
-	int opt;
-	int instance = 1;
+  int opt;
+  int instance = 1;
 
 #ifdef FABRICD
-	frr_preinit(&fabricd_di, argc, argv);
+  frr_preinit (&fabricd_di, argc, argv);
 #else
-	frr_preinit(&isisd_di, argc, argv);
+  frr_preinit (&isisd_di, argc, argv);
 #endif
-	frr_opt_add(
-		"I:", longopts,
-		"  -I, --int_num      Set instance number (label-manager)\n");
+  frr_opt_add ("I:", longopts,
+               "  -I, --int_num      Set instance number (label-manager)\n");
 
-	/* Command line argument treatment. */
-	while (1) {
-		opt = frr_getopt(argc, argv, NULL);
+  /* Command line argument treatment. */
+  while (1)
+    {
+      opt = frr_getopt (argc, argv, NULL);
 
-		if (opt == EOF)
-			break;
+      if (opt == EOF)
+        break;
 
-		switch (opt) {
-		case 0:
-			break;
-		case 'I':
-			instance = atoi(optarg);
-			if (instance < 1 || instance > (unsigned short)-1)
-				zlog_err("Instance %i out of range (1..%u)",
-					 instance, (unsigned short)-1);
-			break;
-		default:
-			frr_help_exit(1);
-		}
-	}
+      switch (opt)
+        {
+        case 0:
+          break;
+        case 'I':
+          instance = atoi (optarg);
+          if (instance < 1 || instance > (unsigned short) -1)
+            zlog_err ("Instance %i out of range (1..%u)", instance,
+                      (unsigned short) -1);
+          break;
+        default:
+          frr_help_exit (1);
+        }
+    }
 
-	/* thread master */
-	isis_master_init(frr_init());
-	master = im->master;
-	/*
-	 *  initializations
-	 */
-	cmd_init_config_callbacks(isis_config_start, isis_config_end);
-	isis_error_init();
-	access_list_init();
-	access_list_add_hook(isis_filter_update);
-	access_list_delete_hook(isis_filter_update);
-	isis_vrf_init();
-	prefix_list_init();
-	prefix_list_add_hook(isis_prefix_list_update);
-	prefix_list_delete_hook(isis_prefix_list_update);
-	isis_init();
-	isis_circuit_init();
+  /* thread master */
+  isis_master_init (frr_init ());
+  master = im->master;
+  /*
+   *  initializations
+   */
+  cmd_init_config_callbacks (isis_config_start, isis_config_end);
+  isis_error_init ();
+  access_list_init ();
+  access_list_add_hook (isis_filter_update);
+  access_list_delete_hook (isis_filter_update);
+  isis_vrf_init ();
+  prefix_list_init ();
+  prefix_list_add_hook (isis_prefix_list_update);
+  prefix_list_delete_hook (isis_prefix_list_update);
+  isis_init ();
+  isis_circuit_init ();
 #ifdef FABRICD
-	isis_vty_daemon_init();
+  isis_vty_daemon_init ();
 #endif /* FABRICD */
 #ifndef FABRICD
-	isis_cli_init();
+  isis_cli_init ();
 #endif /* ifndef FABRICD */
-	isis_spf_init();
-	isis_redist_init();
-	isis_route_map_init();
-	isis_mpls_te_init();
-	isis_sr_init();
-	lsp_init();
-	mt_init();
+  isis_spf_init ();
+  isis_redist_init ();
+  isis_route_map_init ();
+  isis_mpls_te_init ();
+  isis_sr_init ();
+  lsp_init ();
+  mt_init ();
 
 #ifndef FABRICD
-	isis_affinity_map_init();
+  isis_affinity_map_init ();
 #endif /* ifndef FABRICD */
 
-	isis_zebra_init(master, instance);
-	isis_bfd_init(master);
-	isis_ldp_sync_init();
-	fabricd_init();
+  isis_zebra_init (master, instance);
+  isis_bfd_init (master);
+  isis_ldp_sync_init ();
+  fabricd_init ();
 
-	frr_config_fork();
-	frr_run(master);
+  frr_config_fork ();
+  frr_run (master);
 
-	/* Not reached. */
-	exit(0);
+  /* Not reached. */
+  exit (0);
 }

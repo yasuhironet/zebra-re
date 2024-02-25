@@ -8,12 +8,13 @@
 #define _ZEBRA_PTM_REDISTRIBUTE_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-extern void zebra_interface_bfd_update(struct interface *, struct prefix *,
-				       struct prefix *, int, vrf_id_t);
-extern void zebra_bfd_peer_replay_req(void);
+  extern void zebra_interface_bfd_update (struct interface *, struct prefix *,
+                                          struct prefix *, int, vrf_id_t);
+  extern void zebra_bfd_peer_replay_req (void);
 
 #ifdef __cplusplus
 }

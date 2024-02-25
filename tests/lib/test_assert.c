@@ -13,11 +13,11 @@
  */
 #include <assert.h>
 
-__attribute__((noinline))
-static void func_for_bt(int number)
+__attribute__ ((noinline)) static void
+func_for_bt (int number)
 {
-	assert(number > 2);
-	assertf(number > 3, "(A) the number was %d", number);
+  assert (number > 2);
+  assertf (number > 3, "(A) the number was %d", number);
 }
 
 #include <zebra.h>
@@ -25,27 +25,28 @@ static void func_for_bt(int number)
 #include "frrevent.h"
 #include "lib/sigevent.h"
 
-int main(int argc, char **argv)
+int
+main (int argc, char **argv)
 {
-	int number = 10;
-	struct event_loop *master;
+  int number = 10;
+  struct event_loop *master;
 
-	zlog_aux_init("NONE: ", LOG_DEBUG);
+  zlog_aux_init ("NONE: ", LOG_DEBUG);
 
-	if (argc > 1)
-		number = atoi(argv[1]);
+  if (argc > 1)
+    number = atoi (argv[1]);
 
-	assert(number > 0);
-	assertf(number > 1, "(B) the number was %d", number);
+  assert (number > 0);
+  assertf (number > 1, "(B) the number was %d", number);
 
-	/* set up SIGABRT handler */
-	master = event_master_create("test");
-	signal_init(master, 0, NULL);
+  /* set up SIGABRT handler */
+  master = event_master_create ("test");
+  signal_init (master, 0, NULL);
 
-	func_for_bt(number);
-	assert(number > 4);
-	assertf(number > 5, "(C) the number was %d", number);
+  func_for_bt (number);
+  assert (number > 4);
+  assertf (number > 5, "(C) the number was %d", number);
 
-	assertf(number > 10, "(D) the number was %d", number);
-	return 0;
+  assertf (number > 10, "(D) the number was %d", number);
+  return 0;
 }

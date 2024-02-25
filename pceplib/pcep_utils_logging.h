@@ -38,17 +38,17 @@
 
 
 /* The signature of this logger function is the same as the FRR logger */
-typedef int (*pcep_logger_func)(int, const char *, va_list);
-void register_logger(pcep_logger_func logger);
+typedef int (*pcep_logger_func) (int, const char *, va_list);
+void register_logger (pcep_logger_func logger);
 
 /* These functions only take affect when using the internal stdout logger */
-void set_logging_level(int level);
-int get_logging_level(void);
+void set_logging_level (int level);
+int get_logging_level (void);
 
 /* Log messages either to a previously registered
  * logger or to the internal default stdout logger. */
-void pcep_log(int priority, const char *format, ...);
-void pcep_log_hexbytes(int priority, const char *message, const uint8_t *bytes,
-		       uint8_t bytes_len);
+void pcep_log (int priority, const char *format, ...);
+void pcep_log_hexbytes (int priority, const char *message,
+                        const uint8_t *bytes, uint8_t bytes_len);
 
 #endif /* PCEP_UTILS_INCLUDE_PCEP_UTILS_LOGGING_H_ */

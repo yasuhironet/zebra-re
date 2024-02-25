@@ -10,18 +10,20 @@
 #include "zebra/zserv.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-struct mcast_route_data {
-	int family;
-	struct ipaddr src;
-	struct ipaddr grp;
-	unsigned int ifindex;
-	unsigned long long lastused;
-};
+  struct mcast_route_data
+  {
+    int family;
+    struct ipaddr src;
+    struct ipaddr grp;
+    unsigned int ifindex;
+    unsigned long long lastused;
+  };
 
-void zebra_ipmr_route_stats(ZAPI_HANDLER_ARGS);
+  void zebra_ipmr_route_stats (ZAPI_HANDLER_ARGS);
 
 #ifdef __cplusplus
 }

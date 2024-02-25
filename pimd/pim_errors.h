@@ -10,11 +10,12 @@
 
 #include "lib/ferr.h"
 
-enum pim_log_refs {
-	EC_PIM_MSDP_PACKET = PIM_FERR_START,
-	EC_PIM_CONFIG,
+enum pim_log_refs
+{
+  EC_PIM_MSDP_PACKET = PIM_FERR_START,
+  EC_PIM_CONFIG,
 };
 
-extern void pim_error_init(void);
+extern void pim_error_init (void);
 
 #endif

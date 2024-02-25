@@ -29,26 +29,27 @@
 #include "ripd/rip_errors.h"
 
 /* ripd options. */
-static struct option longopts[] = {{0}};
+static struct option longopts[] = { { 0 } };
 
 /* ripd privileges */
-zebra_capabilities_t _caps_p[] = {ZCAP_NET_RAW, ZCAP_BIND, ZCAP_SYS_ADMIN};
+zebra_capabilities_t _caps_p[] = { ZCAP_NET_RAW, ZCAP_BIND, ZCAP_SYS_ADMIN };
 
 uint32_t zebra_ecmp_count = MULTIPATH_NUM;
 
 struct zebra_privs_t ripd_privs = {
 #if defined(FRR_USER)
-	.user = FRR_USER,
+  .user = FRR_USER,
 #endif
 #if defined FRR_GROUP
-	.group = FRR_GROUP,
+  .group = FRR_GROUP,
 #endif
 #ifdef VTY_GROUP
-	.vty_group = VTY_GROUP,
+  .vty_group = VTY_GROUP,
 #endif
-	.caps_p = _caps_p,
-	.cap_num_p = array_size(_caps_p),
-	.cap_num_i = 0};
+  .caps_p = _caps_p,
+  .cap_num_p = array_size (_caps_p),
+  .cap_num_i = 0
+};
 
 /* Master of threads. */
 struct event_loop *master;
@@ -56,122 +57,127 @@ struct event_loop *master;
 static struct frr_daemon_info ripd_di;
 
 /* SIGHUP handler. */
-static void sighup(void)
+static void
+sighup (void)
 {
-	zlog_info("SIGHUP received");
+  zlog_info ("SIGHUP received");
 
-	/* Reload config file. */
-	vty_read_config(NULL, ripd_di.config_file, config_default);
+  /* Reload config file. */
+  vty_read_config (NULL, ripd_di.config_file, config_default);
 }
 
 /* SIGINT handler. */
-static void sigint(void)
+static void
+sigint (void)
 {
-	zlog_notice("Terminating on signal");
+  zlog_notice ("Terminating on signal");
 
-	bfd_protocol_integration_set_shutdown(true);
-	rip_vrf_terminate();
-	if_rmap_terminate();
-	rip_zclient_stop();
-	frr_fini();
+  bfd_protocol_integration_set_shutdown (true);
+  rip_vrf_terminate ();
+  if_rmap_terminate ();
+  rip_zclient_stop ();
+  frr_fini ();
 
-	exit(0);
+  exit (0);
 }
 
 /* SIGUSR1 handler. */
-static void sigusr1(void)
+static void
+sigusr1 (void)
 {
-	zlog_rotate();
+  zlog_rotate ();
 }
 
 static struct frr_signal_t ripd_signals[] = {
-	{
-		.signal = SIGHUP,
-		.handler = &sighup,
-	},
-	{
-		.signal = SIGUSR1,
-		.handler = &sigusr1,
-	},
-	{
-		.signal = SIGINT,
-		.handler = &sigint,
-	},
-	{
-		.signal = SIGTERM,
-		.handler = &sigint,
-	},
+  {
+      .signal = SIGHUP,
+      .handler = &sighup,
+  },
+  {
+      .signal = SIGUSR1,
+      .handler = &sigusr1,
+  },
+  {
+      .signal = SIGINT,
+      .handler = &sigint,
+  },
+  {
+      .signal = SIGTERM,
+      .handler = &sigint,
+  },
 };
 
 static const struct frr_yang_module_info *const ripd_yang_modules[] = {
-	&frr_filter_info,
-	&frr_interface_info,
-	&frr_ripd_info,
-	&frr_route_map_info,
-	&frr_vrf_info,
+  &frr_filter_info,    &frr_interface_info, &frr_ripd_info,
+  &frr_route_map_info, &frr_vrf_info,
 };
 
-FRR_DAEMON_INFO(ripd, RIP, .vty_port = RIP_VTY_PORT,
+FRR_DAEMON_INFO (ripd, RIP, .vty_port = RIP_VTY_PORT,
 
-		.proghelp = "Implementation of the RIP routing protocol.",
+                 .proghelp = "Implementation of the RIP routing protocol.",
 
-		.signals = ripd_signals, .n_signals = array_size(ripd_signals),
+                 .signals = ripd_signals,
+                 .n_signals = array_size (ripd_signals),
 
-		.privs = &ripd_privs, .yang_modules = ripd_yang_modules,
-		.n_yang_modules = array_size(ripd_yang_modules),
-);
+                 .privs = &ripd_privs, .yang_modules = ripd_yang_modules,
+                 .n_yang_modules = array_size (ripd_yang_modules), );
 
 #define DEPRECATED_OPTIONS ""
 
 /* Main routine of ripd. */
-int main(int argc, char **argv)
+int
+main (int argc, char **argv)
 {
-	frr_preinit(&ripd_di, argc, argv);
+  frr_preinit (&ripd_di, argc, argv);
 
-	frr_opt_add("" DEPRECATED_OPTIONS, longopts, "");
+  frr_opt_add ("" DEPRECATED_OPTIONS, longopts, "");
 
-	/* Command line option parse. */
-	while (1) {
-		int opt;
+  /* Command line option parse. */
+  while (1)
+    {
+      int opt;
 
-		opt = frr_getopt(argc, argv, NULL);
+      opt = frr_getopt (argc, argv, NULL);
 
-		if (opt && opt < 128 && strchr(DEPRECATED_OPTIONS, opt)) {
-			fprintf(stderr,
-				"The -%c option no longer exists.\nPlease refer to the manual.\n",
-				opt);
-			continue;
-		}
+      if (opt && opt < 128 && strchr (DEPRECATED_OPTIONS, opt))
+        {
+          fprintf (
+              stderr,
+              "The -%c option no longer exists.\nPlease refer to the manual.\n",
+              opt);
+          continue;
+        }
 
-		if (opt == EOF)
-			break;
+      if (opt == EOF)
+        break;
 
-		switch (opt) {
-		case 0:
-			break;
-		default:
-			frr_help_exit(1);
-		}
-	}
+      switch (opt)
+        {
+        case 0:
+          break;
+        default:
+          frr_help_exit (1);
+        }
+    }
 
-	/* Prepare master thread. */
-	master = frr_init();
+  /* Prepare master thread. */
+  master = frr_init ();
 
-	/* Library initialization. */
-	rip_error_init();
-	keychain_init();
-	rip_vrf_init();
+  /* Library initialization. */
+  rip_error_init ();
+  keychain_init ();
+  rip_vrf_init ();
 
-	/* RIP related initialization. */
-	rip_init();
-	rip_if_init();
-	rip_cli_init();
-	rip_zclient_init(master);
-	rip_bfd_init(master);
+  /* RIP related initialization. */
+  rip_init ();
+  rip_if_init ();
+  rip_cli_init ();
+  rip_zclient_init (master);
+  rip_bfd_init (master);
 
-	frr_config_fork();
-	frr_run(master);
+  frr_config_fork ();
+  frr_run (master);
 
-	/* Not reached. */
-	return 0;
+  /* Not reached. */
+  return 0;
 }

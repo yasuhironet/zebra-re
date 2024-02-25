@@ -6,8 +6,8 @@
  */
 
 
-extern void *rfapi_create_generic(struct rfapi_ip_addr *vn,
-				  struct rfapi_ip_addr *un);
+extern void *rfapi_create_generic (struct rfapi_ip_addr *vn,
+                                   struct rfapi_ip_addr *un);
 
 /*------------------------------------------
  * rfapi_free_generic
@@ -22,4 +22,4 @@ extern void *rfapi_create_generic(struct rfapi_ip_addr *vn,
  * return value:
  *
  *------------------------------------------*/
-extern void rfapi_free_generic(void *grfd);
+extern void rfapi_free_generic (void *grfd);

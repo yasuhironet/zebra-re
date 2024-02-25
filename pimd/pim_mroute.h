@@ -33,27 +33,27 @@ typedef struct vifctl pim_vifctl;
 typedef struct igmpmsg kernmsg;
 typedef struct sioc_sg_req pim_sioc_sg_req;
 
-#define vc_vifi vifc_vifi
-#define vc_flags vifc_flags
-#define vc_threshold vifc_threshold
-#define vc_rate_limit vifc_rate_limit
-#define vc_lcl_addr vifc_lcl_addr
+#define vc_vifi        vifc_vifi
+#define vc_flags       vifc_flags
+#define vc_threshold   vifc_threshold
+#define vc_rate_limit  vifc_rate_limit
+#define vc_lcl_addr    vifc_lcl_addr
 #define vc_lcl_ifindex vifc_lcl_ifindex
-#define vc_rmt_addr vifc_rmt_addr
+#define vc_rmt_addr    vifc_rmt_addr
 
 #define msg_im_msgtype im_msgtype
-#define msg_im_vif im_vif
-#define msg_im_src im_src
-#define msg_im_dst im_dst
+#define msg_im_vif     im_vif
+#define msg_im_src     im_src
+#define msg_im_dst     im_dst
 
 #ifndef IGMPMSG_WRVIFWHOLE
 #define IGMPMSG_WRVIFWHOLE 4 /* For PIM processing */
 #endif
 
 #ifndef GMMSG_NOCACHE
-#define GMMSG_NOCACHE IGMPMSG_NOCACHE       /* For PIM processing */
-#define GMMSG_WHOLEPKT IGMPMSG_WHOLEPKT     /* For PIM processing */
-#define GMMSG_WRONGVIF IGMPMSG_WRONGVIF     /* For PIM processing */
+#define GMMSG_NOCACHE    IGMPMSG_NOCACHE    /* For PIM processing */
+#define GMMSG_WHOLEPKT   IGMPMSG_WHOLEPKT   /* For PIM processing */
+#define GMMSG_WRONGVIF   IGMPMSG_WRONGVIF   /* For PIM processing */
 #define GMMSG_WRVIFWHOLE IGMPMSG_WRVIFWHOLE /* For PIM processing */
 #endif
 
@@ -75,17 +75,17 @@ typedef struct sioc_sg_req pim_sioc_sg_req;
 #endif
 
 #ifndef MRT_INIT
-#define MRT_BASE MRT6_BASE
-#define MRT_INIT MRT6_INIT
-#define MRT_DONE MRT6_DONE
+#define MRT_BASE    MRT6_BASE
+#define MRT_INIT    MRT6_INIT
+#define MRT_DONE    MRT6_DONE
 #define MRT_ADD_VIF MRT6_ADD_MIF
 #define MRT_DEL_VIF MRT6_DEL_MIF
 #define MRT_ADD_MFC MRT6_ADD_MFC
 #define MRT_DEL_MFC MRT6_DEL_MFC
 #define MRT_VERSION MRT6_VERSION
-#define MRT_ASSERT MRT6_ASSERT
-#define MRT_PIM MRT6_PIM
-#define MRT_TABLE MRT6_TABLE
+#define MRT_ASSERT  MRT6_ASSERT
+#define MRT_PIM     MRT6_PIM
+#define MRT_TABLE   MRT6_TABLE
 #endif
 
 #ifndef PIM_IPPROTO
@@ -101,9 +101,9 @@ typedef struct sioc_sg_req pim_sioc_sg_req;
 #endif
 
 #ifndef GMMSG_NOCACHE
-#define GMMSG_NOCACHE MRT6MSG_NOCACHE       /* For PIM processing */
-#define GMMSG_WHOLEPKT MRT6MSG_WHOLEPKT     /* For PIM processing */
-#define GMMSG_WRONGVIF MRT6MSG_WRONGMIF     /* For PIM processing */
+#define GMMSG_NOCACHE    MRT6MSG_NOCACHE    /* For PIM processing */
+#define GMMSG_WHOLEPKT   MRT6MSG_WHOLEPKT   /* For PIM processing */
+#define GMMSG_WRONGVIF   MRT6MSG_WRONGMIF   /* For PIM processing */
 #define GMMSG_WRVIFWHOLE MRT6MSG_WRMIFWHOLE /* For PIM processing */
 #endif
 
@@ -112,16 +112,16 @@ typedef struct mrt6msg kernmsg;
 typedef mifi_t vifi_t;
 typedef struct sioc_sg_req6 pim_sioc_sg_req;
 
-#define vc_vifi mif6c_mifi
-#define vc_flags mif6c_flags
-#define vc_threshold vifc_threshold
-#define vc_pifi mif6c_pifi
+#define vc_vifi       mif6c_mifi
+#define vc_flags      mif6c_flags
+#define vc_threshold  vifc_threshold
+#define vc_pifi       mif6c_pifi
 #define vc_rate_limit vifc_rate_limit
 
 #define msg_im_msgtype im6_msgtype
-#define msg_im_vif im6_mif
-#define msg_im_src im6_src
-#define msg_im_dst im6_dst
+#define msg_im_vif     im6_mif
+#define msg_im_src     im6_src
+#define msg_im_dst     im6_dst
 
 #ifndef MAXVIFS
 #define MAXVIFS IF_SETSIZE
@@ -138,31 +138,31 @@ typedef struct sioc_sg_req6 pim_sioc_sg_req;
 struct channel_oil;
 struct pim_instance;
 
-int pim_mroute_socket_enable(struct pim_instance *pim);
-int pim_mroute_socket_disable(struct pim_instance *pim);
+int pim_mroute_socket_enable (struct pim_instance *pim);
+int pim_mroute_socket_disable (struct pim_instance *pim);
 
-int pim_mroute_add_vif(struct interface *ifp, pim_addr ifaddr,
-		       unsigned char flags);
-int pim_mroute_del_vif(struct interface *ifp);
+int pim_mroute_add_vif (struct interface *ifp, pim_addr ifaddr,
+                        unsigned char flags);
+int pim_mroute_del_vif (struct interface *ifp);
 
-int pim_upstream_mroute_add(struct channel_oil *c_oil, const char *name);
-int pim_upstream_mroute_iif_update(struct channel_oil *c_oil, const char *name);
-int pim_static_mroute_add(struct channel_oil *c_oil, const char *name);
-void pim_static_mroute_iif_update(struct channel_oil *c_oil,
-				int input_vif_index,
-				const char *name);
-int pim_mroute_del(struct channel_oil *c_oil, const char *name);
+int pim_upstream_mroute_add (struct channel_oil *c_oil, const char *name);
+int pim_upstream_mroute_iif_update (struct channel_oil *c_oil,
+                                    const char *name);
+int pim_static_mroute_add (struct channel_oil *c_oil, const char *name);
+void pim_static_mroute_iif_update (struct channel_oil *c_oil,
+                                   int input_vif_index, const char *name);
+int pim_mroute_del (struct channel_oil *c_oil, const char *name);
 
-void pim_mroute_update_counters(struct channel_oil *c_oil);
-bool pim_mroute_allow_iif_in_oil(struct channel_oil *c_oil,
-		int oif_index);
-int pim_mroute_msg(struct pim_instance *pim, const char *buf, size_t buf_size,
-		   ifindex_t ifindex);
-int pim_mroute_msg_nocache(int fd, struct interface *ifp, const kernmsg *msg);
-int pim_mroute_msg_wholepkt(int fd, struct interface *ifp, const char *buf,
-			    size_t len);
-int pim_mroute_msg_wrongvif(int fd, struct interface *ifp, const kernmsg *msg);
-int pim_mroute_msg_wrvifwhole(int fd, struct interface *ifp, const char *buf,
-			      size_t len);
-int pim_mroute_set(struct pim_instance *pim, int enable);
+void pim_mroute_update_counters (struct channel_oil *c_oil);
+bool pim_mroute_allow_iif_in_oil (struct channel_oil *c_oil, int oif_index);
+int pim_mroute_msg (struct pim_instance *pim, const char *buf, size_t buf_size,
+                    ifindex_t ifindex);
+int pim_mroute_msg_nocache (int fd, struct interface *ifp, const kernmsg *msg);
+int pim_mroute_msg_wholepkt (int fd, struct interface *ifp, const char *buf,
+                             size_t len);
+int pim_mroute_msg_wrongvif (int fd, struct interface *ifp,
+                             const kernmsg *msg);
+int pim_mroute_msg_wrvifwhole (int fd, struct interface *ifp, const char *buf,
+                               size_t len);
+int pim_mroute_set (struct pim_instance *pim, int enable);
 #endif /* PIM_MROUTE_H */

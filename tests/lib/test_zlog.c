@@ -17,33 +17,37 @@
  *
  * At the moment, not crashing is considered success.
  */
-static bool test_zlog_hexdump(void)
+static bool
+test_zlog_hexdump (void)
 {
-	unsigned int nl = 1;
+  unsigned int nl = 1;
 
-	do {
-		uint8_t d[nl];
+  do
+    {
+      uint8_t d[nl];
 
-		for (unsigned int i = 0; i < nl; i++)
-			d[i] = frr_weak_random();
-		zlog_hexdump(d, nl - 1);
+      for (unsigned int i = 0; i < nl; i++)
+        d[i] = frr_weak_random ();
+      zlog_hexdump (d, nl - 1);
 
-		nl += 1 + (nl / 2);
-	} while (nl <= MAXDATA);
+      nl += 1 + (nl / 2);
+    }
+  while (nl <= MAXDATA);
 
-	return true;
+  return true;
 }
 
-bool (*tests[])(void) = {
-	test_zlog_hexdump,
+bool (*tests[]) (void) = {
+  test_zlog_hexdump,
 };
 
-int main(int argc, char **argv)
+int
+main (int argc, char **argv)
 {
-	zlog_aux_init("NONE: ", ZLOG_DISABLED);
+  zlog_aux_init ("NONE: ", ZLOG_DISABLED);
 
-	for (unsigned int i = 0; i < array_size(tests); i++)
-		if (!tests[i]())
-			return 1;
-	return 0;
+  for (unsigned int i = 0; i < array_size (tests); i++)
+    if (! tests[i]())
+      return 1;
+  return 0;
 }

@@ -12,13 +12,14 @@
 /*
  * Events related to circuit
  */
-void isis_event_circuit_state_change(struct isis_circuit *circuit,
-				     struct isis_area *area, int state);
-void isis_event_circuit_type_change(struct isis_circuit *circuit, int newtype);
+void isis_event_circuit_state_change (struct isis_circuit *circuit,
+                                      struct isis_area *area, int state);
+void isis_event_circuit_type_change (struct isis_circuit *circuit,
+                                     int newtype);
 /*
  * Events related to adjacencies
  */
-void isis_event_dis_status_change(struct event *thread);
+void isis_event_dis_status_change (struct event *thread);
 
 /*
  * Error events
@@ -26,7 +27,7 @@ void isis_event_dis_status_change(struct event *thread);
 #define AUTH_ERROR_TYPE_LSP   3
 #define AUTH_ERROR_TYPE_SNP   2
 #define AUTH_ERROR_TYPE_HELLO 1
-void isis_event_auth_failure(char *area_tag, const char *error_string,
-			     uint8_t *sysid);
+void isis_event_auth_failure (char *area_tag, const char *error_string,
+                              uint8_t *sysid);
 
 #endif /* _ZEBRA_ISIS_EVENTS_H */

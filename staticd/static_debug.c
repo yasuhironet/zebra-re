@@ -46,39 +46,44 @@ const char *static_debugs_conflines[] = {
  * set
  *    Whether to set or unset the specified flags
  */
-static void static_debug_set_all(uint32_t flags, bool set)
+static void
+static_debug_set_all (uint32_t flags, bool set)
 {
-	for (unsigned int i = 0; i < array_size(static_debug_arr); i++) {
-		DEBUG_FLAGS_SET(static_debug_arr[i], flags, set);
+  for (unsigned int i = 0; i < array_size (static_debug_arr); i++)
+    {
+      DEBUG_FLAGS_SET (static_debug_arr[i], flags, set);
 
-		/* if all modes have been turned off, don't preserve options */
-		if (!DEBUG_MODE_CHECK(static_debug_arr[i], DEBUG_MODE_ALL))
-			DEBUG_CLEAR(static_debug_arr[i]);
-	}
+      /* if all modes have been turned off, don't preserve options */
+      if (! DEBUG_MODE_CHECK (static_debug_arr[i], DEBUG_MODE_ALL))
+        DEBUG_CLEAR (static_debug_arr[i]);
+    }
 }
 
-static int static_debug_config_write_helper(struct vty *vty, bool config)
+static int
+static_debug_config_write_helper (struct vty *vty, bool config)
 {
-	uint32_t mode = DEBUG_MODE_ALL;
+  uint32_t mode = DEBUG_MODE_ALL;
 
-	if (config)
-		mode = DEBUG_MODE_CONF;
+  if (config)
+    mode = DEBUG_MODE_CONF;
 
-	for (unsigned int i = 0; i < array_size(static_debug_arr); i++)
-		if (DEBUG_MODE_CHECK(static_debug_arr[i], mode))
-			vty_out(vty, "%s\n", static_debugs_conflines[i]);
+  for (unsigned int i = 0; i < array_size (static_debug_arr); i++)
+    if (DEBUG_MODE_CHECK (static_debug_arr[i], mode))
+      vty_out (vty, "%s\n", static_debugs_conflines[i]);
 
-	return 0;
+  return 0;
 }
 
-int static_config_write_debug(struct vty *vty)
+int
+static_config_write_debug (struct vty *vty)
 {
-	return static_debug_config_write_helper(vty, true);
+  return static_debug_config_write_helper (vty, true);
 }
 
-int static_debug_status_write(struct vty *vty)
+int
+static_debug_status_write (struct vty *vty)
 {
-	return static_debug_config_write_helper(vty, false);
+  return static_debug_config_write_helper (vty, false);
 }
 
 /*
@@ -94,30 +99,31 @@ int static_debug_status_write(struct vty *vty)
  *    Debug general internal events
  *
  */
-void static_debug_set(int vtynode, bool onoff, bool events, bool route,
-		      bool bfd)
+void
+static_debug_set (int vtynode, bool onoff, bool events, bool route, bool bfd)
 {
-	uint32_t mode = DEBUG_NODE2MODE(vtynode);
+  uint32_t mode = DEBUG_NODE2MODE (vtynode);
 
-	if (events)
-		DEBUG_MODE_SET(&static_dbg_events, mode, onoff);
-	if (route)
-		DEBUG_MODE_SET(&static_dbg_route, mode, onoff);
-	if (bfd) {
-		DEBUG_MODE_SET(&static_dbg_bfd, mode, onoff);
-		bfd_protocol_integration_set_debug(onoff);
-	}
+  if (events)
+    DEBUG_MODE_SET (&static_dbg_events, mode, onoff);
+  if (route)
+    DEBUG_MODE_SET (&static_dbg_route, mode, onoff);
+  if (bfd)
+    {
+      DEBUG_MODE_SET (&static_dbg_bfd, mode, onoff);
+      bfd_protocol_integration_set_debug (onoff);
+    }
 }
 
 /*
  * Debug lib initialization
  */
 
-struct debug_callbacks static_dbg_cbs = {
-	.debug_set_all = static_debug_set_all
-};
+struct debug_callbacks static_dbg_cbs = { .debug_set_all =
+                                              static_debug_set_all };
 
-void static_debug_init(void)
+void
+static_debug_init (void)
 {
-	debug_init(&static_dbg_cbs);
+  debug_init (&static_dbg_cbs);
 }

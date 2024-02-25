@@ -6,6 +6,6 @@
 #ifndef PIM_MSDP_SOCKET_H
 #define PIM_MSDP_SOCKET_H
 
-int pim_msdp_sock_listen(struct pim_instance *pim);
-int pim_msdp_sock_connect(struct pim_msdp_peer *mp);
+int pim_msdp_sock_listen (struct pim_instance *pim);
+int pim_msdp_sock_connect (struct pim_msdp_peer *mp);
 #endif

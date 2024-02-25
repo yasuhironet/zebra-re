@@ -17,6 +17,6 @@
 
 #include "pcep_timer_internals.h"
 
-void walk_and_process_timers(pcep_timers_context *timers_context);
+void walk_and_process_timers (pcep_timers_context *timers_context);
 
 #endif

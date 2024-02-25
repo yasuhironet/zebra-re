@@ -20,45 +20,49 @@
  * Signal handlers
  */
 
-static void pim_sighup(void)
+static void
+pim_sighup (void)
 {
-	zlog_info("SIGHUP received, ignoring");
+  zlog_info ("SIGHUP received, ignoring");
 }
 
-static void pim_sigint(void)
+static void
+pim_sigint (void)
 {
-	zlog_notice("Terminating on signal SIGINT");
-	pim_terminate();
-	exit(1);
+  zlog_notice ("Terminating on signal SIGINT");
+  pim_terminate ();
+  exit (1);
 }
 
-static void pim_sigterm(void)
+static void
+pim_sigterm (void)
 {
-	zlog_notice("Terminating on signal SIGTERM");
-	pim_terminate();
-	exit(1);
+  zlog_notice ("Terminating on signal SIGTERM");
+  pim_terminate ();
+  exit (1);
 }
 
-static void pim_sigusr1(void)
+static void
+pim_sigusr1 (void)
 {
-	zlog_rotate();
+  zlog_rotate ();
 }
 
 struct frr_signal_t pimd_signals[] = {
-	{
-		.signal = SIGHUP,
-		.handler = &pim_sighup,
-	},
-	{
-		.signal = SIGUSR1,
-		.handler = &pim_sigusr1,
-	},
-	{
-		.signal = SIGINT,
-		.handler = &pim_sigint,
-	},
-	{
-		.signal = SIGTERM,
-		.handler = &pim_sigterm,
-	},
+  {
+      .signal = SIGHUP,
+      .handler = &pim_sighup,
+  },
+  {
+      .signal = SIGUSR1,
+      .handler = &pim_sigusr1,
+  },
+  {
+      .signal = SIGINT,
+      .handler = &pim_sigint,
+  },
+  {
+      .signal = SIGTERM,
+      .handler = &pim_sigterm,
+  },
 };

@@ -9,6 +9,6 @@
 
 
 /* PCEP CLI Functions */
-void pcep_cli_init(void);
+void pcep_cli_init (void);
 
 #endif // _PATH_PCEP_CLI_H_

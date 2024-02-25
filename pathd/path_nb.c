@@ -10,21 +10,23 @@
 
 #include "pathd/path_nb.h"
 
-static int iter_objfun_cb(const struct lyd_node *dnode, void *arg);
-static int dummy_create(struct nb_cb_create_args *args);
-static int dummy_modify(struct nb_cb_modify_args *args);
-static int dummy_destroy(struct nb_cb_destroy_args *args);
+static int iter_objfun_cb (const struct lyd_node *dnode, void *arg);
+static int dummy_create (struct nb_cb_create_args *args);
+static int dummy_modify (struct nb_cb_modify_args *args);
+static int dummy_destroy (struct nb_cb_destroy_args *args);
 
-struct of_cb_pref {
-	uint32_t index;
-	enum objfun_type type;
-	struct of_cb_pref *next;
+struct of_cb_pref
+{
+  uint32_t index;
+  enum objfun_type type;
+  struct of_cb_pref *next;
 };
 
-struct of_cb_args {
-	struct of_cb_pref *first;
-	uint32_t free_slot;
-	struct of_cb_pref prefs[MAX_OBJFUN_TYPE];
+struct of_cb_args
+{
+  struct of_cb_pref *first;
+  uint32_t free_slot;
+  struct of_cb_pref prefs[MAX_OBJFUN_TYPE];
 };
 
 /* clang-format off */

@@ -6,5 +6,5 @@
  */
 #ifndef __EIGRP_VRF_H__
 
-extern void eigrp_vrf_init(void);
+extern void eigrp_vrf_init (void);
 #endif

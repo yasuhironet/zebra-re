@@ -19,7 +19,7 @@
  *
  * @param arg - unused
  */
-extern void *bgp_io_start(void *arg);
+extern void *bgp_io_start (void *arg);
 
 /**
  * Start function for write thread.
@@ -28,7 +28,7 @@ extern void *bgp_io_start(void *arg);
  *
  * @param result - where to store data result, unused
  */
-extern int bgp_io_stop(void **result, struct frr_pthread *fpt);
+extern int bgp_io_stop (void **result, struct frr_pthread *fpt);
 
 /**
  * Turns on packet writing for a peer.
@@ -40,7 +40,7 @@ extern int bgp_io_stop(void **result, struct frr_pthread *fpt);
  *
  * @param peer - peer to register
  */
-extern void bgp_writes_on(struct peer *peer);
+extern void bgp_writes_on (struct peer *peer);
 
 /**
  * Turns off packet writing for a peer.
@@ -54,7 +54,7 @@ extern void bgp_writes_on(struct peer *peer);
  * @param peer - peer to deregister
  * @param flush - as described
  */
-extern void bgp_writes_off(struct peer *peer);
+extern void bgp_writes_off (struct peer *peer);
 
 /**
  * Turns on packet reading for a peer.
@@ -71,7 +71,7 @@ extern void bgp_writes_off(struct peer *peer);
  *
  * @param peer - peer to register
  */
-extern void bgp_reads_on(struct peer *peer);
+extern void bgp_reads_on (struct peer *peer);
 
 /**
  * Turns off packet reading for a peer.
@@ -84,6 +84,6 @@ extern void bgp_reads_on(struct peer *peer);
  *
  * @param peer - peer to deregister
  */
-extern void bgp_reads_off(struct peer *peer);
+extern void bgp_reads_off (struct peer *peer);
 
 #endif /* _FRR_BGP_IO_H */

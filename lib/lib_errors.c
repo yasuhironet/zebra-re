@@ -373,8 +373,9 @@ static struct log_ref ferr_lib_err[] = {
 };
 /* clang-format on */
 
-void lib_error_init(void)
+void
+lib_error_init (void)
 {
-	log_ref_add(ferr_lib_warn);
-	log_ref_add(ferr_lib_err);
+  log_ref_add (ferr_lib_warn);
+  log_ref_add (ferr_lib_err);
 }

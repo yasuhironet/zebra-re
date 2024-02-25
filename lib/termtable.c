@@ -12,7 +12,7 @@
 #include "memory.h"
 #include "termtable.h"
 
-DEFINE_MTYPE_STATIC(LIB, TTABLE, "ASCII table");
+DEFINE_MTYPE_STATIC (LIB, TTABLE, "ASCII table");
 
 /* clang-format off */
 const struct ttable_style ttable_styles[] = {
@@ -78,27 +78,29 @@ const struct ttable_style ttable_styles[] = {
 };
 /* clang-format on */
 
-void ttable_del(struct ttable *tt)
+void
+ttable_del (struct ttable *tt)
 {
-	for (int i = tt->nrows - 1; i >= 0; i--)
-		ttable_del_row(tt, i);
+  for (int i = tt->nrows - 1; i >= 0; i--)
+    ttable_del_row (tt, i);
 
-	XFREE(MTYPE_TTABLE, tt->table);
-	XFREE(MTYPE_TTABLE, tt);
+  XFREE (MTYPE_TTABLE, tt->table);
+  XFREE (MTYPE_TTABLE, tt);
 }
 
-struct ttable *ttable_new(const struct ttable_style *style)
+struct ttable *
+ttable_new (const struct ttable_style *style)
 {
-	struct ttable *tt;
+  struct ttable *tt;
 
-	tt = XCALLOC(MTYPE_TTABLE, sizeof(struct ttable));
-	tt->style = *style;
-	tt->nrows = 0;
-	tt->ncols = 0;
-	tt->size = 0;
-	tt->table = NULL;
+  tt = XCALLOC (MTYPE_TTABLE, sizeof (struct ttable));
+  tt->style = *style;
+  tt->nrows = 0;
+  tt->ncols = 0;
+  tt->size = 0;
+  tt->table = NULL;
 
-	return tt;
+  return tt;
 }
 
 /**
@@ -118,181 +120,200 @@ struct ttable *ttable_new(const struct ttable_style *style)
  *
  * @return pointer to the first cell of allocated row
  */
-PRINTFRR(3, 0)
-static struct ttable_cell *ttable_insert_row_va(struct ttable *tt, int i,
-						const char *format, va_list ap)
+PRINTFRR (3, 0)
+static struct ttable_cell *
+ttable_insert_row_va (struct ttable *tt, int i, const char *format, va_list ap)
 {
-	assert(i >= -1 && i < tt->nrows);
+  assert (i >= -1 && i < tt->nrows);
 
-	char shortbuf[256];
-	char *res, *orig, *section;
-	struct ttable_cell *row;
-	int col = 0;
-	int ncols = 0;
+  char shortbuf[256];
+  char *res, *orig, *section;
+  struct ttable_cell *row;
+  int col = 0;
+  int ncols = 0;
 
-	/* count how many columns we have */
-	for (int j = 0; format[j]; j++)
-		ncols += !!(format[j] == '|');
-	ncols++;
+  /* count how many columns we have */
+  for (int j = 0; format[j]; j++)
+    ncols += ! ! (format[j] == '|');
+  ncols++;
 
-	if (tt->ncols == 0)
-		tt->ncols = ncols;
-	else if (ncols != tt->ncols)
-		return NULL;
+  if (tt->ncols == 0)
+    tt->ncols = ncols;
+  else if (ncols != tt->ncols)
+    return NULL;
 
-	/* reallocate chunk if necessary */
-	while (tt->size < (tt->nrows + 1) * sizeof(struct ttable_cell *)) {
-		tt->size = MAX(2 * tt->size, 2 * sizeof(struct ttable_cell *));
-		tt->table = XREALLOC(MTYPE_TTABLE, tt->table, tt->size);
-	}
+  /* reallocate chunk if necessary */
+  while (tt->size < (tt->nrows + 1) * sizeof (struct ttable_cell *))
+    {
+      tt->size = MAX (2 * tt->size, 2 * sizeof (struct ttable_cell *));
+      tt->table = XREALLOC (MTYPE_TTABLE, tt->table, tt->size);
+    }
 
-	/* CALLOC a block of cells */
-	row = XCALLOC(MTYPE_TTABLE, tt->ncols * sizeof(struct ttable_cell));
+  /* CALLOC a block of cells */
+  row = XCALLOC (MTYPE_TTABLE, tt->ncols * sizeof (struct ttable_cell));
 
-	res = vasnprintfrr(MTYPE_TMP, shortbuf, sizeof(shortbuf), format, ap);
-	orig = res;
+  res = vasnprintfrr (MTYPE_TMP, shortbuf, sizeof (shortbuf), format, ap);
+  orig = res;
 
-	while (res && col < tt->ncols) {
-		section = strsep(&res, "|");
-		row[col].text = XSTRDUP(MTYPE_TTABLE, section);
-		row[col].style = tt->style.cell;
-		col++;
-	}
+  while (res && col < tt->ncols)
+    {
+      section = strsep (&res, "|");
+      row[col].text = XSTRDUP (MTYPE_TTABLE, section);
+      row[col].style = tt->style.cell;
+      col++;
+    }
 
-	if (orig != shortbuf)
-		XFREE(MTYPE_TMP, orig);
+  if (orig != shortbuf)
+    XFREE (MTYPE_TMP, orig);
 
-	/* insert row */
-	if (i == -1 || i == tt->nrows)
-		tt->table[tt->nrows] = row;
-	else {
-		memmove(&tt->table[i + 1], &tt->table[i],
-			(tt->nrows - i) * sizeof(struct ttable_cell *));
-		tt->table[i] = row;
-	}
+  /* insert row */
+  if (i == -1 || i == tt->nrows)
+    tt->table[tt->nrows] = row;
+  else
+    {
+      memmove (&tt->table[i + 1], &tt->table[i],
+               (tt->nrows - i) * sizeof (struct ttable_cell *));
+      tt->table[i] = row;
+    }
 
-	tt->nrows++;
+  tt->nrows++;
 
-	return row;
+  return row;
 }
 
-struct ttable_cell *ttable_insert_row(struct ttable *tt, unsigned int i,
-				      const char *format, ...)
+struct ttable_cell *
+ttable_insert_row (struct ttable *tt, unsigned int i, const char *format, ...)
 {
-	struct ttable_cell *ret;
-	va_list ap;
+  struct ttable_cell *ret;
+  va_list ap;
 
-	va_start(ap, format);
-	ret = ttable_insert_row_va(tt, i, format, ap);
-	va_end(ap);
+  va_start (ap, format);
+  ret = ttable_insert_row_va (tt, i, format, ap);
+  va_end (ap);
 
-	return ret;
+  return ret;
 }
 
-struct ttable_cell *ttable_add_row(struct ttable *tt, const char *format, ...)
+struct ttable_cell *
+ttable_add_row (struct ttable *tt, const char *format, ...)
 {
-	struct ttable_cell *ret;
-	va_list ap;
+  struct ttable_cell *ret;
+  va_list ap;
 
-	va_start(ap, format);
-	ret = ttable_insert_row_va(tt, -1, format, ap);
-	va_end(ap);
+  va_start (ap, format);
+  ret = ttable_insert_row_va (tt, -1, format, ap);
+  va_end (ap);
 
-	return ret;
+  return ret;
 }
 
-void ttable_del_row(struct ttable *tt, unsigned int i)
+void
+ttable_del_row (struct ttable *tt, unsigned int i)
 {
-	assert((int)i < tt->nrows);
+  assert ((int) i < tt->nrows);
 
-	for (int j = 0; j < tt->ncols; j++)
-		XFREE(MTYPE_TTABLE, tt->table[i][j].text);
+  for (int j = 0; j < tt->ncols; j++)
+    XFREE (MTYPE_TTABLE, tt->table[i][j].text);
 
-	XFREE(MTYPE_TTABLE, tt->table[i]);
+  XFREE (MTYPE_TTABLE, tt->table[i]);
 
-	memmove(&tt->table[i], &tt->table[i + 1],
-		(tt->nrows - i - 1) * sizeof(struct ttable_cell *));
+  memmove (&tt->table[i], &tt->table[i + 1],
+           (tt->nrows - i - 1) * sizeof (struct ttable_cell *));
 
-	tt->nrows--;
+  tt->nrows--;
 
-	if (tt->nrows == 0)
-		tt->ncols = 0;
+  if (tt->nrows == 0)
+    tt->ncols = 0;
 }
 
-void ttable_align(struct ttable *tt, unsigned int row, unsigned int col,
-		  unsigned int nrow, unsigned int ncol, enum ttable_align align)
+void
+ttable_align (struct ttable *tt, unsigned int row, unsigned int col,
+              unsigned int nrow, unsigned int ncol, enum ttable_align align)
 {
-	assert((int)row < tt->nrows);
-	assert((int)col < tt->ncols);
-	assert((int)row + (int)nrow <= tt->nrows);
-	assert((int)col + (int)ncol <= tt->ncols);
+  assert ((int) row < tt->nrows);
+  assert ((int) col < tt->ncols);
+  assert ((int) row + (int) nrow <= tt->nrows);
+  assert ((int) col + (int) ncol <= tt->ncols);
 
-	for (unsigned int i = row; i < row + nrow; i++)
-		for (unsigned int j = col; j < col + ncol; j++)
-			tt->table[i][j].style.align = align;
+  for (unsigned int i = row; i < row + nrow; i++)
+    for (unsigned int j = col; j < col + ncol; j++)
+      tt->table[i][j].style.align = align;
 }
 
-static void ttable_cell_pad(struct ttable_cell *cell, enum ttable_align align,
-			    short pad)
+static void
+ttable_cell_pad (struct ttable_cell *cell, enum ttable_align align, short pad)
 {
-	if (align == LEFT)
-		cell->style.lpad = pad;
-	else
-		cell->style.rpad = pad;
+  if (align == LEFT)
+    cell->style.lpad = pad;
+  else
+    cell->style.rpad = pad;
 }
 
-void ttable_pad(struct ttable *tt, unsigned int row, unsigned int col,
-		unsigned int nrow, unsigned int ncol, enum ttable_align align,
-		short pad)
+void
+ttable_pad (struct ttable *tt, unsigned int row, unsigned int col,
+            unsigned int nrow, unsigned int ncol, enum ttable_align align,
+            short pad)
 {
-	assert((int)row < tt->nrows);
-	assert((int)col < tt->ncols);
-	assert((int)row + (int)nrow <= tt->nrows);
-	assert((int)col + (int)ncol <= tt->ncols);
+  assert ((int) row < tt->nrows);
+  assert ((int) col < tt->ncols);
+  assert ((int) row + (int) nrow <= tt->nrows);
+  assert ((int) col + (int) ncol <= tt->ncols);
 
-	for (unsigned int i = row; i < row + nrow; i++)
-		for (unsigned int j = col; j < col + ncol; j++)
-			ttable_cell_pad(&tt->table[i][j], align, pad);
+  for (unsigned int i = row; i < row + nrow; i++)
+    for (unsigned int j = col; j < col + ncol; j++)
+      ttable_cell_pad (&tt->table[i][j], align, pad);
 }
 
-void ttable_restyle(struct ttable *tt)
+void
+ttable_restyle (struct ttable *tt)
 {
-	for (int i = 0; i < tt->nrows; i++)
-		for (int j = 0; j < tt->ncols; j++)
-			tt->table[i][j].style = tt->style.cell;
+  for (int i = 0; i < tt->nrows; i++)
+    for (int j = 0; j < tt->ncols; j++)
+      tt->table[i][j].style = tt->style.cell;
 }
 
-void ttable_colseps(struct ttable *tt, unsigned int col,
-		    enum ttable_align align, bool on, char sep)
+void
+ttable_colseps (struct ttable *tt, unsigned int col, enum ttable_align align,
+                bool on, char sep)
 {
-	for (int i = 0; i < tt->nrows; i++) {
-		if (align == RIGHT) {
-			tt->table[i][col].style.border.right_on = on;
-			tt->table[i][col].style.border.right = sep;
-		} else {
-			tt->table[i][col].style.border.left_on = on;
-			tt->table[i][col].style.border.left = sep;
-		}
-	}
+  for (int i = 0; i < tt->nrows; i++)
+    {
+      if (align == RIGHT)
+        {
+          tt->table[i][col].style.border.right_on = on;
+          tt->table[i][col].style.border.right = sep;
+        }
+      else
+        {
+          tt->table[i][col].style.border.left_on = on;
+          tt->table[i][col].style.border.left = sep;
+        }
+    }
 }
 
-void ttable_rowseps(struct ttable *tt, unsigned int row,
-		    enum ttable_align align, bool on, char sep)
+void
+ttable_rowseps (struct ttable *tt, unsigned int row, enum ttable_align align,
+                bool on, char sep)
 {
-	for (int i = 0; i < tt->ncols; i++) {
-		if (align == TOP) {
-			tt->table[row][i].style.border.top_on = on;
-			tt->table[row][i].style.border.top = sep;
-		} else {
-			tt->table[row][i].style.border.bottom_on = on;
-			tt->table[row][i].style.border.bottom = sep;
-		}
-	}
+  for (int i = 0; i < tt->ncols; i++)
+    {
+      if (align == TOP)
+        {
+          tt->table[row][i].style.border.top_on = on;
+          tt->table[row][i].style.border.top = sep;
+        }
+      else
+        {
+          tt->table[row][i].style.border.bottom_on = on;
+          tt->table[row][i].style.border.bottom = sep;
+        }
+    }
 }
 
-char *ttable_dump(struct ttable *tt, const char *newline)
+char *
+ttable_dump (struct ttable *tt, const char *newline)
 {
-	/* clang-format off */
+  /* clang-format off */
 	char *buf;	   // print buffer
 	size_t pos;	   // position in buffer
 	size_t nl_len;     // strlen(newline)
@@ -305,186 +326,194 @@ char *ttable_dump(struct ttable *tt, const char *newline)
 	char *right;	   // right part of line
 	size_t rsize;	   // size of above
 	struct ttable_cell *cell, *row; // iteration pointers
-	/* clang-format on */
+  /* clang-format on */
 
-	nl_len = strlen(newline);
+  nl_len = strlen (newline);
 
-	/* calculate width of each column */
-	memset(cw, 0x00, sizeof(int) * tt->ncols);
+  /* calculate width of each column */
+  memset (cw, 0x00, sizeof (int) * tt->ncols);
 
-	for (int j = 0; j < tt->ncols; j++)
-		for (int i = 0, cellw = 0; i < tt->nrows; i++) {
-			cell = &tt->table[i][j];
-			cellw = 0;
-			cellw += (int)strlen(cell->text);
-			cellw += cell->style.lpad;
-			cellw += cell->style.rpad;
-			if (j != 0)
-				cellw += cell->style.border.left_on ? 1 : 0;
-			if (j != tt->ncols - 1)
-				cellw += cell->style.border.right_on ? 1 : 0;
-			cw[j] = MAX(cw[j], cellw);
-		}
+  for (int j = 0; j < tt->ncols; j++)
+    for (int i = 0, cellw = 0; i < tt->nrows; i++)
+      {
+        cell = &tt->table[i][j];
+        cellw = 0;
+        cellw += (int) strlen (cell->text);
+        cellw += cell->style.lpad;
+        cellw += cell->style.rpad;
+        if (j != 0)
+          cellw += cell->style.border.left_on ? 1 : 0;
+        if (j != tt->ncols - 1)
+          cellw += cell->style.border.right_on ? 1 : 0;
+        cw[j] = MAX (cw[j], cellw);
+      }
 
-	/* calculate overall line width, including newline */
-	width = 0;
-	width += tt->style.indent;
-	width += tt->style.border.left_on ? 1 : 0;
-	width += tt->style.border.right_on ? 1 : 0;
-	width += strlen(newline);
-	for (int i = 0; i < tt->ncols; i++)
-		width += cw[i];
+  /* calculate overall line width, including newline */
+  width = 0;
+  width += tt->style.indent;
+  width += tt->style.border.left_on ? 1 : 0;
+  width += tt->style.border.right_on ? 1 : 0;
+  width += strlen (newline);
+  for (int i = 0; i < tt->ncols; i++)
+    width += cw[i];
 
-	/* calculate number of lines en total */
-	nlines = tt->nrows;
-	nlines += tt->style.border.top_on ? 1 : 0;
-	nlines += 1; // tt->style.border.bottom_on ? 1 : 1; makes life easier
-	for (int i = 0; i < tt->nrows; i++) {
-		/* if leftmost cell has top / bottom border, whole row does */
-		nlines += tt->table[i][0].style.border.top_on ? 1 : 0;
-		nlines += tt->table[i][0].style.border.bottom_on ? 1 : 0;
-	}
+  /* calculate number of lines en total */
+  nlines = tt->nrows;
+  nlines += tt->style.border.top_on ? 1 : 0;
+  nlines += 1; // tt->style.border.bottom_on ? 1 : 1; makes life easier
+  for (int i = 0; i < tt->nrows; i++)
+    {
+      /* if leftmost cell has top / bottom border, whole row does */
+      nlines += tt->table[i][0].style.border.top_on ? 1 : 0;
+      nlines += tt->table[i][0].style.border.bottom_on ? 1 : 0;
+    }
 
-	/* initialize left & right */
-	lsize = tt->style.indent + (tt->style.border.left_on ? 1 : 0);
-	left = XCALLOC(MTYPE_TTABLE, lsize);
-	rsize = nl_len + (tt->style.border.right_on ? 1 : 0);
-	right = XCALLOC(MTYPE_TTABLE, rsize);
+  /* initialize left & right */
+  lsize = tt->style.indent + (tt->style.border.left_on ? 1 : 0);
+  left = XCALLOC (MTYPE_TTABLE, lsize);
+  rsize = nl_len + (tt->style.border.right_on ? 1 : 0);
+  right = XCALLOC (MTYPE_TTABLE, rsize);
 
-	memset(left, ' ', lsize);
+  memset (left, ' ', lsize);
 
-	if (tt->style.border.left_on)
-		left[lsize - 1] = tt->style.border.left;
+  if (tt->style.border.left_on)
+    left[lsize - 1] = tt->style.border.left;
 
-	if (tt->style.border.right_on) {
-		right[0] = tt->style.border.right;
-		memcpy(&right[1], newline, nl_len);
-	} else
-		memcpy(&right[0], newline, nl_len);
+  if (tt->style.border.right_on)
+    {
+      right[0] = tt->style.border.right;
+      memcpy (&right[1], newline, nl_len);
+    }
+  else
+    memcpy (&right[0], newline, nl_len);
 
-	/* allocate print buffer */
-	buf = XCALLOC(MTYPE_TMP, width * (nlines + 1) + 1);
-	pos = 0;
+  /* allocate print buffer */
+  buf = XCALLOC (MTYPE_TMP, width * (nlines + 1) + 1);
+  pos = 0;
 
-	if (tt->style.border.top_on) {
-		memcpy(&buf[pos], left, lsize);
-		pos += lsize;
+  if (tt->style.border.top_on)
+    {
+      memcpy (&buf[pos], left, lsize);
+      pos += lsize;
 
-		for (size_t i = 0; i < width - lsize - rsize; i++)
-			buf[pos++] = tt->style.border.top;
+      for (size_t i = 0; i < width - lsize - rsize; i++)
+        buf[pos++] = tt->style.border.top;
 
-		memcpy(&buf[pos], right, rsize);
-		pos += rsize;
-	}
+      memcpy (&buf[pos], right, rsize);
+      pos += rsize;
+    }
 
-	for (int i = 0; i < tt->nrows; i++) {
-		row = tt->table[i];
+  for (int i = 0; i < tt->nrows; i++)
+    {
+      row = tt->table[i];
 
-		/* if top border and not first row, print top row border */
-		if (row[0].style.border.top_on && i != 0) {
-			memcpy(&buf[pos], left, lsize);
-			pos += lsize;
+      /* if top border and not first row, print top row border */
+      if (row[0].style.border.top_on && i != 0)
+        {
+          memcpy (&buf[pos], left, lsize);
+          pos += lsize;
 
-			for (size_t l = 0; l < width - lsize - rsize; l++)
-				buf[pos++] = row[0].style.border.top;
+          for (size_t l = 0; l < width - lsize - rsize; l++)
+            buf[pos++] = row[0].style.border.top;
 
-			pos -= width - lsize - rsize;
-			for (int k = 0; k < tt->ncols; k++) {
-				if (k != 0 && row[k].style.border.left_on)
-					buf[pos] = tt->style.corner;
-				pos += cw[k];
-				if (row[k].style.border.right_on
-				    && k != tt->ncols - 1)
-					buf[pos - 1] = tt->style.corner;
-			}
+          pos -= width - lsize - rsize;
+          for (int k = 0; k < tt->ncols; k++)
+            {
+              if (k != 0 && row[k].style.border.left_on)
+                buf[pos] = tt->style.corner;
+              pos += cw[k];
+              if (row[k].style.border.right_on && k != tt->ncols - 1)
+                buf[pos - 1] = tt->style.corner;
+            }
 
-			memcpy(&buf[pos], right, rsize);
-			pos += rsize;
-		}
+          memcpy (&buf[pos], right, rsize);
+          pos += rsize;
+        }
 
-		memcpy(&buf[pos], left, lsize);
-		pos += lsize;
+      memcpy (&buf[pos], left, lsize);
+      pos += lsize;
 
-		for (int j = 0; j < tt->ncols; j++) {
-			/* if left border && not first col print left border */
-			if (row[j].style.border.left_on && j != 0)
-				buf[pos++] = row[j].style.border.left;
+      for (int j = 0; j < tt->ncols; j++)
+        {
+          /* if left border && not first col print left border */
+          if (row[j].style.border.left_on && j != 0)
+            buf[pos++] = row[j].style.border.left;
 
-			/* print left padding */
-			for (int k = 0; k < row[j].style.lpad; k++)
-				buf[pos++] = ' ';
+          /* print left padding */
+          for (int k = 0; k < row[j].style.lpad; k++)
+            buf[pos++] = ' ';
 
-			/* calculate padding for sprintf */
-			abspad = cw[j];
-			abspad -= row[j].style.rpad;
-			abspad -= row[j].style.lpad;
-			if (j != 0)
-				abspad -= row[j].style.border.left_on ? 1 : 0;
-			if (j != tt->ncols - 1)
-				abspad -= row[j].style.border.right_on ? 1 : 0;
+          /* calculate padding for sprintf */
+          abspad = cw[j];
+          abspad -= row[j].style.rpad;
+          abspad -= row[j].style.lpad;
+          if (j != 0)
+            abspad -= row[j].style.border.left_on ? 1 : 0;
+          if (j != tt->ncols - 1)
+            abspad -= row[j].style.border.right_on ? 1 : 0;
 
-			/* print text */
-			if (row[j].style.align == LEFT)
-				pos += sprintf(&buf[pos], "%-*s", abspad,
-					       row[j].text);
-			else
-				pos += sprintf(&buf[pos], "%*s", abspad,
-					       row[j].text);
+          /* print text */
+          if (row[j].style.align == LEFT)
+            pos += sprintf (&buf[pos], "%-*s", abspad, row[j].text);
+          else
+            pos += sprintf (&buf[pos], "%*s", abspad, row[j].text);
 
-			/* print right padding */
-			for (int k = 0; k < row[j].style.rpad; k++)
-				buf[pos++] = ' ';
+          /* print right padding */
+          for (int k = 0; k < row[j].style.rpad; k++)
+            buf[pos++] = ' ';
 
-			/* if right border && not last col print right border */
-			if (row[j].style.border.right_on && j != tt->ncols - 1)
-				buf[pos++] = row[j].style.border.right;
-		}
+          /* if right border && not last col print right border */
+          if (row[j].style.border.right_on && j != tt->ncols - 1)
+            buf[pos++] = row[j].style.border.right;
+        }
 
-		memcpy(&buf[pos], right, rsize);
-		pos += rsize;
+      memcpy (&buf[pos], right, rsize);
+      pos += rsize;
 
-		/* if bottom border and not last row, print bottom border */
-		if (row[0].style.border.bottom_on && i != tt->nrows - 1) {
-			memcpy(&buf[pos], left, lsize);
-			pos += lsize;
+      /* if bottom border and not last row, print bottom border */
+      if (row[0].style.border.bottom_on && i != tt->nrows - 1)
+        {
+          memcpy (&buf[pos], left, lsize);
+          pos += lsize;
 
-			for (size_t l = 0; l < width - lsize - rsize; l++)
-				buf[pos++] = row[0].style.border.bottom;
+          for (size_t l = 0; l < width - lsize - rsize; l++)
+            buf[pos++] = row[0].style.border.bottom;
 
-			pos -= width - lsize - rsize;
-			for (int k = 0; k < tt->ncols; k++) {
-				if (k != 0 && row[k].style.border.left_on)
-					buf[pos] = tt->style.corner;
-				pos += cw[k];
-				if (row[k].style.border.right_on
-				    && k != tt->ncols - 1)
-					buf[pos - 1] = tt->style.corner;
-			}
+          pos -= width - lsize - rsize;
+          for (int k = 0; k < tt->ncols; k++)
+            {
+              if (k != 0 && row[k].style.border.left_on)
+                buf[pos] = tt->style.corner;
+              pos += cw[k];
+              if (row[k].style.border.right_on && k != tt->ncols - 1)
+                buf[pos - 1] = tt->style.corner;
+            }
 
-			memcpy(&buf[pos], right, rsize);
-			pos += rsize;
-		}
+          memcpy (&buf[pos], right, rsize);
+          pos += rsize;
+        }
 
-		assert(!buf[pos]); /* pos == & of first \0 in buf */
-	}
+      assert (! buf[pos]); /* pos == & of first \0 in buf */
+    }
 
-	if (tt->style.border.bottom_on) {
-		memcpy(&buf[pos], left, lsize);
-		pos += lsize;
+  if (tt->style.border.bottom_on)
+    {
+      memcpy (&buf[pos], left, lsize);
+      pos += lsize;
 
-		for (size_t l = 0; l < width - lsize - rsize; l++)
-			buf[pos++] = tt->style.border.bottom;
+      for (size_t l = 0; l < width - lsize - rsize; l++)
+        buf[pos++] = tt->style.border.bottom;
 
-		memcpy(&buf[pos], right, rsize);
-		pos += rsize;
-	}
+      memcpy (&buf[pos], right, rsize);
+      pos += rsize;
+    }
 
-	buf[pos] = '\0';
+  buf[pos] = '\0';
 
-	XFREE(MTYPE_TTABLE, left);
-	XFREE(MTYPE_TTABLE, right);
+  XFREE (MTYPE_TTABLE, left);
+  XFREE (MTYPE_TTABLE, right);
 
-	return buf;
+  return buf;
 }
 
 /* Crude conversion from ttable to json array.
@@ -496,35 +525,39 @@ char *ttable_dump(struct ttable *tt, const char *newline)
  *   l	int64
  *   s	string (default)
  */
-json_object *ttable_json(struct ttable *tt, const char *const formats)
+json_object *
+ttable_json (struct ttable *tt, const char *const formats)
 {
-	struct ttable_cell *row; /* iteration pointers */
-	json_object *json = NULL;
+  struct ttable_cell *row; /* iteration pointers */
+  json_object *json = NULL;
 
-	json = json_object_new_array();
+  json = json_object_new_array ();
 
-	for (int i = 1; i < tt->nrows; i++) {
-		json_object *jobj;
-		json_object *val;
+  for (int i = 1; i < tt->nrows; i++)
+    {
+      json_object *jobj;
+      json_object *val;
 
-		row = tt->table[i];
-		jobj = json_object_new_object();
-		json_object_array_add(json, jobj);
-		for (int j = 0; j < tt->ncols; j++) {
-			switch (formats[j]) {
-			case 'd':
-			case 'l':
-				val = json_object_new_int64(atol(row[j].text));
-				break;
-			case 'f':
-				val = json_object_new_double(atof(row[j].text));
-				break;
-			default:
-				val = json_object_new_string(row[j].text);
-			}
-			json_object_object_add(jobj, tt->table[0][j].text, val);
-		}
-	}
+      row = tt->table[i];
+      jobj = json_object_new_object ();
+      json_object_array_add (json, jobj);
+      for (int j = 0; j < tt->ncols; j++)
+        {
+          switch (formats[j])
+            {
+            case 'd':
+            case 'l':
+              val = json_object_new_int64 (atol (row[j].text));
+              break;
+            case 'f':
+              val = json_object_new_double (atof (row[j].text));
+              break;
+            default:
+              val = json_object_new_string (row[j].text);
+            }
+          json_object_object_add (jobj, tt->table[0][j].text, val);
+        }
+    }
 
-	return json;
+  return json;
 }

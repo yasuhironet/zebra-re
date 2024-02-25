@@ -27,11 +27,12 @@
 #include "zebra/zebra_pbr.h"
 #include "zebra/zebra_errors.h"
 
-enum zebra_dplane_result kernel_pbr_rule_update(struct zebra_dplane_ctx *ctx)
+enum zebra_dplane_result
+kernel_pbr_rule_update (struct zebra_dplane_ctx *ctx)
 {
-	flog_err(EC_LIB_UNAVAILABLE, "%s not Implemented for this platform",
-		 __func__);
-	return ZEBRA_DPLANE_REQUEST_FAILURE;
+  flog_err (EC_LIB_UNAVAILABLE, "%s not Implemented for this platform",
+            __func__);
+  return ZEBRA_DPLANE_REQUEST_FAILURE;
 }
 
 #endif

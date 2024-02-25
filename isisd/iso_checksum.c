@@ -32,29 +32,30 @@
  * Based on Annex C.4 of ISO/IEC 8473
  */
 
-int iso_csum_verify(uint8_t *buffer, int len, uint16_t csum, int offset)
+int
+iso_csum_verify (uint8_t *buffer, int len, uint16_t csum, int offset)
 {
-	uint16_t checksum;
-	uint32_t c0;
-	uint32_t c1;
+  uint16_t checksum;
+  uint32_t c0;
+  uint32_t c1;
 
-	c0 = csum & 0xff00;
-	c1 = csum & 0x00ff;
+  c0 = csum & 0xff00;
+  c1 = csum & 0x00ff;
 
-	/*
-	 * If both are zero return correct
-	 */
-	if (c0 == 0 && c1 == 0)
-		return 0;
+  /*
+   * If both are zero return correct
+   */
+  if (c0 == 0 && c1 == 0)
+    return 0;
 
-	/*
-	 * If either, but not both are zero return incorrect
-	 */
-	if (c0 == 0 || c1 == 0)
-		return 1;
+  /*
+   * If either, but not both are zero return incorrect
+   */
+  if (c0 == 0 || c1 == 0)
+    return 1;
 
-	checksum = fletcher_checksum(buffer, len, offset);
-	if (checksum == htons(csum))
-		return 0;
-	return 1;
+  checksum = fletcher_checksum (buffer, len, offset);
+  if (checksum == htons (csum))
+    return 0;
+  return 1;
 }

@@ -15,19 +15,20 @@
 #include "mgmtd/mgmt_ds.h"
 #include "mgmtd/mgmt_history.h"
 
-struct mgmt_cmt_info_t {
-	struct mgmt_cmt_infos_item cmts;
+struct mgmt_cmt_info_t
+{
+  struct mgmt_cmt_infos_item cmts;
 
-	char cmtid_str[MGMT_SHORT_TIME_MAX_LEN];
-	char time_str[MGMT_LONG_TIME_MAX_LEN];
-	char cmt_json_file[PATH_MAX];
+  char cmtid_str[MGMT_SHORT_TIME_MAX_LEN];
+  char time_str[MGMT_LONG_TIME_MAX_LEN];
+  char cmt_json_file[PATH_MAX];
 };
 
 
-DECLARE_DLIST(mgmt_cmt_infos, struct mgmt_cmt_info_t, cmts);
+DECLARE_DLIST (mgmt_cmt_infos, struct mgmt_cmt_info_t, cmts);
 
-#define FOREACH_CMT_REC(mm, cmt_info)                                          \
-	frr_each_safe (mgmt_cmt_infos, &mm->cmts, cmt_info)
+#define FOREACH_CMT_REC(mm, cmt_info)                                         \
+  frr_each_safe (mgmt_cmt_infos, &mm->cmts, cmt_info)
 
 /*
  * The only instance of VTY session that has triggered an ongoing
@@ -35,345 +36,383 @@ DECLARE_DLIST(mgmt_cmt_infos, struct mgmt_cmt_info_t, cmts);
  */
 static struct vty *rollback_vty;
 
-static bool file_exists(const char *path)
+static bool
+file_exists (const char *path)
 {
-	return !access(path, F_OK);
+  return ! access (path, F_OK);
 }
 
-static void remove_file(const char *path)
+static void
+remove_file (const char *path)
 {
-	if (!file_exists(path))
-		return;
-	if (unlink(path))
-		zlog_err("Failed to remove commit history file %s: %s", path,
-			 safe_strerror(errno));
-}
-
-static struct mgmt_cmt_info_t *mgmt_history_new_cmt_info(void)
-{
-	struct mgmt_cmt_info_t *new;
-	struct timespec tv;
-	struct tm tm;
-
-	new = XCALLOC(MTYPE_MGMTD_CMT_INFO, sizeof(struct mgmt_cmt_info_t));
-
-	clock_gettime(CLOCK_REALTIME, &tv);
-	localtime_r(&tv.tv_sec, &tm);
-
-	mgmt_time_to_string(&tv, true, new->time_str, sizeof(new->time_str));
-	mgmt_time_to_string(&tv, false, new->cmtid_str, sizeof(new->cmtid_str));
-	snprintf(new->cmt_json_file, sizeof(new->cmt_json_file),
-		 MGMTD_COMMIT_FILE_PATH, new->cmtid_str);
-
-	return new;
-}
-
-static struct mgmt_cmt_info_t *mgmt_history_create_cmt_rec(void)
-{
-	struct mgmt_cmt_info_t *new = mgmt_history_new_cmt_info();
-	struct mgmt_cmt_info_t *cmt_info;
-	struct mgmt_cmt_info_t *last_cmt_info = NULL;
-
-	if (mgmt_cmt_infos_count(&mm->cmts) == MGMTD_MAX_COMMIT_LIST) {
-		FOREACH_CMT_REC (mm, cmt_info)
-			last_cmt_info = cmt_info;
-
-		if (last_cmt_info) {
-			remove_file(last_cmt_info->cmt_json_file);
-			mgmt_cmt_infos_del(&mm->cmts, last_cmt_info);
-			XFREE(MTYPE_MGMTD_CMT_INFO, last_cmt_info);
-		}
-	}
-
-	mgmt_cmt_infos_add_head(&mm->cmts, new);
-	return new;
+  if (! file_exists (path))
+    return;
+  if (unlink (path))
+    zlog_err ("Failed to remove commit history file %s: %s", path,
+              safe_strerror (errno));
 }
 
 static struct mgmt_cmt_info_t *
-mgmt_history_find_cmt_record(const char *cmtid_str)
+mgmt_history_new_cmt_info (void)
 {
-	struct mgmt_cmt_info_t *cmt_info;
+  struct mgmt_cmt_info_t *new;
+  struct timespec tv;
+  struct tm tm;
 
-	FOREACH_CMT_REC (mm, cmt_info) {
-		if (strcmp(cmt_info->cmtid_str, cmtid_str) == 0)
-			return cmt_info;
-	}
+  new = XCALLOC (MTYPE_MGMTD_CMT_INFO, sizeof (struct mgmt_cmt_info_t));
 
-	return NULL;
+  clock_gettime (CLOCK_REALTIME, &tv);
+  localtime_r (&tv.tv_sec, &tm);
+
+  mgmt_time_to_string (&tv, true, new->time_str, sizeof (new->time_str));
+  mgmt_time_to_string (&tv, false, new->cmtid_str, sizeof (new->cmtid_str));
+  snprintf (new->cmt_json_file, sizeof (new->cmt_json_file),
+            MGMTD_COMMIT_FILE_PATH, new->cmtid_str);
+
+  return new;
 }
 
-static bool mgmt_history_read_cmt_record_index(void)
+static struct mgmt_cmt_info_t *
+mgmt_history_create_cmt_rec (void)
 {
-	FILE *fp;
-	struct mgmt_cmt_info_t cmt_info;
-	struct mgmt_cmt_info_t *new;
-	int cnt = 0;
+  struct mgmt_cmt_info_t *new = mgmt_history_new_cmt_info ();
+  struct mgmt_cmt_info_t *cmt_info;
+  struct mgmt_cmt_info_t *last_cmt_info = NULL;
 
-	if (!file_exists(MGMTD_COMMIT_FILE_PATH))
-		return false;
+  if (mgmt_cmt_infos_count (&mm->cmts) == MGMTD_MAX_COMMIT_LIST)
+    {
+      FOREACH_CMT_REC (mm, cmt_info)
+        last_cmt_info = cmt_info;
 
-	fp = fopen(MGMTD_COMMIT_INDEX_FILE_NAME, "rb");
-	if (!fp) {
-		zlog_err("Failed to open commit history %s for reading: %s",
-			 MGMTD_COMMIT_INDEX_FILE_NAME, safe_strerror(errno));
-		return false;
-	}
+      if (last_cmt_info)
+        {
+          remove_file (last_cmt_info->cmt_json_file);
+          mgmt_cmt_infos_del (&mm->cmts, last_cmt_info);
+          XFREE (MTYPE_MGMTD_CMT_INFO, last_cmt_info);
+        }
+    }
 
-	while ((fread(&cmt_info, sizeof(cmt_info), 1, fp)) > 0) {
-		if (cnt < MGMTD_MAX_COMMIT_LIST) {
-			if (!file_exists(cmt_info.cmt_json_file)) {
-				zlog_err("Commit in index, but file %s missing",
-					 cmt_info.cmt_json_file);
-				continue;
-			}
-
-			new = XCALLOC(MTYPE_MGMTD_CMT_INFO,
-				      sizeof(struct mgmt_cmt_info_t));
-			memcpy(new, &cmt_info, sizeof(struct mgmt_cmt_info_t));
-			mgmt_cmt_infos_add_tail(&mm->cmts, new);
-		} else {
-			zlog_warn(
-				"More records found in commit history file %s than expected",
-				MGMTD_COMMIT_INDEX_FILE_NAME);
-			fclose(fp);
-			return false;
-		}
-
-		cnt++;
-	}
-
-	fclose(fp);
-	return true;
+  mgmt_cmt_infos_add_head (&mm->cmts, new);
+  return new;
 }
 
-static bool mgmt_history_dump_cmt_record_index(void)
+static struct mgmt_cmt_info_t *
+mgmt_history_find_cmt_record (const char *cmtid_str)
 {
-	FILE *fp;
-	int ret = 0;
-	struct mgmt_cmt_info_t *cmt_info;
-	struct mgmt_cmt_info_t cmt_info_set[10];
-	int cnt = 0;
+  struct mgmt_cmt_info_t *cmt_info;
 
-	fp = fopen(MGMTD_COMMIT_INDEX_FILE_NAME, "wb");
-	if (!fp) {
-		zlog_err("Failed to open commit history %s for writing: %s",
-			 MGMTD_COMMIT_INDEX_FILE_NAME, safe_strerror(errno));
-		return false;
-	}
+  FOREACH_CMT_REC (mm, cmt_info)
+    {
+      if (strcmp (cmt_info->cmtid_str, cmtid_str) == 0)
+        return cmt_info;
+    }
 
-	FOREACH_CMT_REC (mm, cmt_info) {
-		memcpy(&cmt_info_set[cnt], cmt_info,
-		       sizeof(struct mgmt_cmt_info_t));
-		cnt++;
-	}
-
-	if (!cnt) {
-		fclose(fp);
-		return false;
-	}
-
-	ret = fwrite(&cmt_info_set, sizeof(struct mgmt_cmt_info_t), cnt, fp);
-	fclose(fp);
-	if (ret != cnt) {
-		zlog_err("Failed to write full commit history, removing file");
-		remove_file(MGMTD_COMMIT_INDEX_FILE_NAME);
-		return false;
-	}
-	return true;
+  return NULL;
 }
 
-static int mgmt_history_rollback_to_cmt(struct vty *vty,
-				   struct mgmt_cmt_info_t *cmt_info,
-				   bool skip_file_load)
+static bool
+mgmt_history_read_cmt_record_index (void)
 {
-	struct mgmt_ds_ctx *src_ds_ctx;
-	struct mgmt_ds_ctx *dst_ds_ctx;
-	int ret = 0;
+  FILE *fp;
+  struct mgmt_cmt_info_t cmt_info;
+  struct mgmt_cmt_info_t *new;
+  int cnt = 0;
 
-	if (rollback_vty) {
-		vty_out(vty, "ERROR: Rollback already in progress!\n");
-		return -1;
-	}
+  if (! file_exists (MGMTD_COMMIT_FILE_PATH))
+    return false;
 
-	src_ds_ctx = mgmt_ds_get_ctx_by_id(mm, MGMTD_DS_CANDIDATE);
-	dst_ds_ctx = mgmt_ds_get_ctx_by_id(mm, MGMTD_DS_RUNNING);
-	assert(src_ds_ctx);
-	assert(dst_ds_ctx);
+  fp = fopen (MGMTD_COMMIT_INDEX_FILE_NAME, "rb");
+  if (! fp)
+    {
+      zlog_err ("Failed to open commit history %s for reading: %s",
+                MGMTD_COMMIT_INDEX_FILE_NAME, safe_strerror (errno));
+      return false;
+    }
 
-	ret = mgmt_ds_lock(src_ds_ctx, vty->mgmt_session_id);
-	if (ret != 0) {
-		vty_out(vty,
-			"Failed to lock the DS %u for rollback Reason: %s!\n",
-			MGMTD_DS_RUNNING, strerror(ret));
-		return -1;
-	}
+  while ((fread (&cmt_info, sizeof (cmt_info), 1, fp)) > 0)
+    {
+      if (cnt < MGMTD_MAX_COMMIT_LIST)
+        {
+          if (! file_exists (cmt_info.cmt_json_file))
+            {
+              zlog_err ("Commit in index, but file %s missing",
+                        cmt_info.cmt_json_file);
+              continue;
+            }
 
-	ret = mgmt_ds_lock(dst_ds_ctx, vty->mgmt_session_id);
-	if (ret != 0) {
-		mgmt_ds_unlock(src_ds_ctx);
-		vty_out(vty,
-			"Failed to lock the DS %u for rollback Reason: %s!\n",
-			MGMTD_DS_RUNNING, strerror(ret));
-		return -1;
-	}
+          new =
+              XCALLOC (MTYPE_MGMTD_CMT_INFO, sizeof (struct mgmt_cmt_info_t));
+          memcpy (new, &cmt_info, sizeof (struct mgmt_cmt_info_t));
+          mgmt_cmt_infos_add_tail (&mm->cmts, new);
+        }
+      else
+        {
+          zlog_warn (
+              "More records found in commit history file %s than expected",
+              MGMTD_COMMIT_INDEX_FILE_NAME);
+          fclose (fp);
+          return false;
+        }
 
-	if (!skip_file_load) {
-		ret = mgmt_ds_load_config_from_file(
-			src_ds_ctx, cmt_info->cmt_json_file, false);
-		if (ret != 0) {
-			vty_out(vty,
-				"Error with parsing the file with error code %d\n",
-				ret);
-			goto failed_unlock;
-		}
-	}
+      cnt++;
+    }
 
-	/* Internally trigger a commit-request. */
-	ret = mgmt_txn_rollback_trigger_cfg_apply(src_ds_ctx, dst_ds_ctx);
-	if (ret != 0) {
-		vty_out(vty,
-			"Error with creating commit apply txn with error code %d\n",
-			ret);
-		goto failed_unlock;
-	}
+  fclose (fp);
+  return true;
+}
 
-	mgmt_history_dump_cmt_record_index();
+static bool
+mgmt_history_dump_cmt_record_index (void)
+{
+  FILE *fp;
+  int ret = 0;
+  struct mgmt_cmt_info_t *cmt_info;
+  struct mgmt_cmt_info_t cmt_info_set[10];
+  int cnt = 0;
 
-	/*
-	 * TODO: Cleanup: the generic TXN code currently checks for rollback
-	 * and does the unlock when it completes.
-	 */
+  fp = fopen (MGMTD_COMMIT_INDEX_FILE_NAME, "wb");
+  if (! fp)
+    {
+      zlog_err ("Failed to open commit history %s for writing: %s",
+                MGMTD_COMMIT_INDEX_FILE_NAME, safe_strerror (errno));
+      return false;
+    }
 
-	/*
-	 * Block the rollback command from returning till the rollback
-	 * is completed. On rollback completion mgmt_history_rollback_complete()
-	 * shall be called to resume the rollback command return to VTYSH.
-	 */
-	vty->mgmt_req_pending_cmd = "ROLLBACK";
-	rollback_vty = vty;
-	return 0;
+  FOREACH_CMT_REC (mm, cmt_info)
+    {
+      memcpy (&cmt_info_set[cnt], cmt_info, sizeof (struct mgmt_cmt_info_t));
+      cnt++;
+    }
+
+  if (! cnt)
+    {
+      fclose (fp);
+      return false;
+    }
+
+  ret = fwrite (&cmt_info_set, sizeof (struct mgmt_cmt_info_t), cnt, fp);
+  fclose (fp);
+  if (ret != cnt)
+    {
+      zlog_err ("Failed to write full commit history, removing file");
+      remove_file (MGMTD_COMMIT_INDEX_FILE_NAME);
+      return false;
+    }
+  return true;
+}
+
+static int
+mgmt_history_rollback_to_cmt (struct vty *vty,
+                              struct mgmt_cmt_info_t *cmt_info,
+                              bool skip_file_load)
+{
+  struct mgmt_ds_ctx *src_ds_ctx;
+  struct mgmt_ds_ctx *dst_ds_ctx;
+  int ret = 0;
+
+  if (rollback_vty)
+    {
+      vty_out (vty, "ERROR: Rollback already in progress!\n");
+      return -1;
+    }
+
+  src_ds_ctx = mgmt_ds_get_ctx_by_id (mm, MGMTD_DS_CANDIDATE);
+  dst_ds_ctx = mgmt_ds_get_ctx_by_id (mm, MGMTD_DS_RUNNING);
+  assert (src_ds_ctx);
+  assert (dst_ds_ctx);
+
+  ret = mgmt_ds_lock (src_ds_ctx, vty->mgmt_session_id);
+  if (ret != 0)
+    {
+      vty_out (vty, "Failed to lock the DS %u for rollback Reason: %s!\n",
+               MGMTD_DS_RUNNING, strerror (ret));
+      return -1;
+    }
+
+  ret = mgmt_ds_lock (dst_ds_ctx, vty->mgmt_session_id);
+  if (ret != 0)
+    {
+      mgmt_ds_unlock (src_ds_ctx);
+      vty_out (vty, "Failed to lock the DS %u for rollback Reason: %s!\n",
+               MGMTD_DS_RUNNING, strerror (ret));
+      return -1;
+    }
+
+  if (! skip_file_load)
+    {
+      ret = mgmt_ds_load_config_from_file (src_ds_ctx, cmt_info->cmt_json_file,
+                                           false);
+      if (ret != 0)
+        {
+          vty_out (vty, "Error with parsing the file with error code %d\n",
+                   ret);
+          goto failed_unlock;
+        }
+    }
+
+  /* Internally trigger a commit-request. */
+  ret = mgmt_txn_rollback_trigger_cfg_apply (src_ds_ctx, dst_ds_ctx);
+  if (ret != 0)
+    {
+      vty_out (vty,
+               "Error with creating commit apply txn with error code %d\n",
+               ret);
+      goto failed_unlock;
+    }
+
+  mgmt_history_dump_cmt_record_index ();
+
+  /*
+   * TODO: Cleanup: the generic TXN code currently checks for rollback
+   * and does the unlock when it completes.
+   */
+
+  /*
+   * Block the rollback command from returning till the rollback
+   * is completed. On rollback completion mgmt_history_rollback_complete()
+   * shall be called to resume the rollback command return to VTYSH.
+   */
+  vty->mgmt_req_pending_cmd = "ROLLBACK";
+  rollback_vty = vty;
+  return 0;
 
 failed_unlock:
-	mgmt_ds_unlock(src_ds_ctx);
-	mgmt_ds_unlock(dst_ds_ctx);
-	return ret;
+  mgmt_ds_unlock (src_ds_ctx);
+  mgmt_ds_unlock (dst_ds_ctx);
+  return ret;
 }
 
-void mgmt_history_rollback_complete(bool success)
+void
+mgmt_history_rollback_complete (bool success)
 {
-	vty_mgmt_resume_response(rollback_vty, success);
-	rollback_vty = NULL;
+  vty_mgmt_resume_response (rollback_vty, success);
+  rollback_vty = NULL;
 }
 
-int mgmt_history_rollback_by_id(struct vty *vty, const char *cmtid_str)
+int
+mgmt_history_rollback_by_id (struct vty *vty, const char *cmtid_str)
 {
-	int ret = 0;
-	struct mgmt_cmt_info_t *cmt_info;
+  int ret = 0;
+  struct mgmt_cmt_info_t *cmt_info;
 
-	if (!mgmt_cmt_infos_count(&mm->cmts) ||
-	    !mgmt_history_find_cmt_record(cmtid_str)) {
-		vty_out(vty, "Invalid commit Id\n");
-		return -1;
-	}
+  if (! mgmt_cmt_infos_count (&mm->cmts) ||
+      ! mgmt_history_find_cmt_record (cmtid_str))
+    {
+      vty_out (vty, "Invalid commit Id\n");
+      return -1;
+    }
 
-	FOREACH_CMT_REC (mm, cmt_info) {
-		if (strcmp(cmt_info->cmtid_str, cmtid_str) == 0) {
-			ret = mgmt_history_rollback_to_cmt(vty, cmt_info,
-							   false);
-			return ret;
-		}
+  FOREACH_CMT_REC (mm, cmt_info)
+    {
+      if (strcmp (cmt_info->cmtid_str, cmtid_str) == 0)
+        {
+          ret = mgmt_history_rollback_to_cmt (vty, cmt_info, false);
+          return ret;
+        }
 
-		remove_file(cmt_info->cmt_json_file);
-		mgmt_cmt_infos_del(&mm->cmts, cmt_info);
-		XFREE(MTYPE_MGMTD_CMT_INFO, cmt_info);
-	}
+      remove_file (cmt_info->cmt_json_file);
+      mgmt_cmt_infos_del (&mm->cmts, cmt_info);
+      XFREE (MTYPE_MGMTD_CMT_INFO, cmt_info);
+    }
 
-	return 0;
+  return 0;
 }
 
-int mgmt_history_rollback_n(struct vty *vty, int num_cmts)
+int
+mgmt_history_rollback_n (struct vty *vty, int num_cmts)
 {
-	int ret = 0;
-	int cnt = 0;
-	struct mgmt_cmt_info_t *cmt_info;
-	size_t cmts;
+  int ret = 0;
+  int cnt = 0;
+  struct mgmt_cmt_info_t *cmt_info;
+  size_t cmts;
 
-	if (!num_cmts)
-		num_cmts = 1;
+  if (! num_cmts)
+    num_cmts = 1;
 
-	cmts = mgmt_cmt_infos_count(&mm->cmts);
-	if ((int)cmts < num_cmts) {
-		vty_out(vty,
-			"Number of commits found (%d) less than required to rollback\n",
-			(int)cmts);
-		return -1;
-	}
+  cmts = mgmt_cmt_infos_count (&mm->cmts);
+  if ((int) cmts < num_cmts)
+    {
+      vty_out (vty,
+               "Number of commits found (%d) less than required to rollback\n",
+               (int) cmts);
+      return -1;
+    }
 
-	if ((int)cmts == 1 || (int)cmts == num_cmts) {
-		vty_out(vty,
-			"Number of commits found (%d), Rollback of last commit is not supported\n",
-			(int)cmts);
-		return -1;
-	}
+  if ((int) cmts == 1 || (int) cmts == num_cmts)
+    {
+      vty_out (
+          vty,
+          "Number of commits found (%d), Rollback of last commit is not supported\n",
+          (int) cmts);
+      return -1;
+    }
 
-	FOREACH_CMT_REC (mm, cmt_info) {
-		if (cnt == num_cmts) {
-			ret = mgmt_history_rollback_to_cmt(vty, cmt_info,
-							   false);
-			return ret;
-		}
+  FOREACH_CMT_REC (mm, cmt_info)
+    {
+      if (cnt == num_cmts)
+        {
+          ret = mgmt_history_rollback_to_cmt (vty, cmt_info, false);
+          return ret;
+        }
 
-		cnt++;
-		remove_file(cmt_info->cmt_json_file);
-		mgmt_cmt_infos_del(&mm->cmts, cmt_info);
-		XFREE(MTYPE_MGMTD_CMT_INFO, cmt_info);
-	}
+      cnt++;
+      remove_file (cmt_info->cmt_json_file);
+      mgmt_cmt_infos_del (&mm->cmts, cmt_info);
+      XFREE (MTYPE_MGMTD_CMT_INFO, cmt_info);
+    }
 
-	if (!mgmt_cmt_infos_count(&mm->cmts)) {
-		mgmt_ds_reset_candidate();
-		ret = mgmt_history_rollback_to_cmt(vty, cmt_info, true);
-	}
+  if (! mgmt_cmt_infos_count (&mm->cmts))
+    {
+      mgmt_ds_reset_candidate ();
+      ret = mgmt_history_rollback_to_cmt (vty, cmt_info, true);
+    }
 
-	return ret;
+  return ret;
 }
 
-void show_mgmt_cmt_history(struct vty *vty)
+void
+show_mgmt_cmt_history (struct vty *vty)
 {
-	struct mgmt_cmt_info_t *cmt_info;
-	int slno = 0;
+  struct mgmt_cmt_info_t *cmt_info;
+  int slno = 0;
 
-	vty_out(vty, "Last 10 commit history:\n");
-	vty_out(vty, "Slot Commit-ID               Commit-Record-Time\n");
-	FOREACH_CMT_REC (mm, cmt_info) {
-		vty_out(vty, "%4d %23s %s\n", slno, cmt_info->cmtid_str,
-			cmt_info->time_str);
-		slno++;
-	}
+  vty_out (vty, "Last 10 commit history:\n");
+  vty_out (vty, "Slot Commit-ID               Commit-Record-Time\n");
+  FOREACH_CMT_REC (mm, cmt_info)
+    {
+      vty_out (vty, "%4d %23s %s\n", slno, cmt_info->cmtid_str,
+               cmt_info->time_str);
+      slno++;
+    }
 }
 
-void mgmt_history_new_record(struct mgmt_ds_ctx *ds_ctx)
+void
+mgmt_history_new_record (struct mgmt_ds_ctx *ds_ctx)
 {
-	struct mgmt_cmt_info_t *cmt_info = mgmt_history_create_cmt_rec();
+  struct mgmt_cmt_info_t *cmt_info = mgmt_history_create_cmt_rec ();
 
-	mgmt_ds_dump_ds_to_file(cmt_info->cmt_json_file, ds_ctx);
-	mgmt_history_dump_cmt_record_index();
+  mgmt_ds_dump_ds_to_file (cmt_info->cmt_json_file, ds_ctx);
+  mgmt_history_dump_cmt_record_index ();
 }
 
-void mgmt_history_init(void)
+void
+mgmt_history_init (void)
 {
-	/* Create commit record for previously stored commit-apply */
-	mgmt_cmt_infos_init(&mm->cmts);
-	mgmt_history_read_cmt_record_index();
+  /* Create commit record for previously stored commit-apply */
+  mgmt_cmt_infos_init (&mm->cmts);
+  mgmt_history_read_cmt_record_index ();
 }
 
-void mgmt_history_destroy(void)
+void
+mgmt_history_destroy (void)
 {
-	struct mgmt_cmt_info_t *cmt_info;
+  struct mgmt_cmt_info_t *cmt_info;
 
-	FOREACH_CMT_REC(mm, cmt_info) {
-		mgmt_cmt_infos_del(&mm->cmts, cmt_info);
-		XFREE(MTYPE_MGMTD_CMT_INFO, cmt_info);
-	}
+  FOREACH_CMT_REC (mm, cmt_info)
+    {
+      mgmt_cmt_infos_del (&mm->cmts, cmt_info);
+      XFREE (MTYPE_MGMTD_CMT_INFO, cmt_info);
+    }
 
-	mgmt_cmt_infos_fini(&mm->cmts);
+  mgmt_cmt_infos_fini (&mm->cmts);
 }

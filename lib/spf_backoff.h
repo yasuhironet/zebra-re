@@ -14,40 +14,41 @@
 #define _ZEBRA_SPF_BACKOFF_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-struct spf_backoff;
-struct event_loop;
-struct vty;
+  struct spf_backoff;
+  struct event_loop;
+  struct vty;
 
-struct spf_backoff *spf_backoff_new(struct event_loop *m, const char *name,
-				    long init_delay, long short_delay,
-				    long long_delay, long holddown,
-				    long timetolearn);
+  struct spf_backoff *spf_backoff_new (struct event_loop *m, const char *name,
+                                       long init_delay, long short_delay,
+                                       long long_delay, long holddown,
+                                       long timetolearn);
 
-void spf_backoff_free(struct spf_backoff *backoff);
+  void spf_backoff_free (struct spf_backoff *backoff);
 
-/* Called whenever an IGP event is received, returns how many
- * milliseconds routing table computation should be delayed */
-long spf_backoff_schedule(struct spf_backoff *backoff);
+  /* Called whenever an IGP event is received, returns how many
+   * milliseconds routing table computation should be delayed */
+  long spf_backoff_schedule (struct spf_backoff *backoff);
 
-/* Shows status of SPF backoff instance */
-void spf_backoff_show(struct spf_backoff *backoff, struct vty *vty,
-		      const char *prefix);
+  /* Shows status of SPF backoff instance */
+  void spf_backoff_show (struct spf_backoff *backoff, struct vty *vty,
+                         const char *prefix);
 
-/* Writes out global SPF backoff debug config */
-int spf_backoff_write_config(struct vty *vty);
+  /* Writes out global SPF backoff debug config */
+  int spf_backoff_write_config (struct vty *vty);
 
-/* Registers global SPF backoff debug commands */
-void spf_backoff_cmd_init(void);
+  /* Registers global SPF backoff debug commands */
+  void spf_backoff_cmd_init (void);
 
-/* Accessor functions for SPF backoff parameters */
-long spf_backoff_init_delay(struct spf_backoff *backoff);
-long spf_backoff_short_delay(struct spf_backoff *backoff);
-long spf_backoff_long_delay(struct spf_backoff *backoff);
-long spf_backoff_holddown(struct spf_backoff *backoff);
-long spf_backoff_timetolearn(struct spf_backoff *backoff);
+  /* Accessor functions for SPF backoff parameters */
+  long spf_backoff_init_delay (struct spf_backoff *backoff);
+  long spf_backoff_short_delay (struct spf_backoff *backoff);
+  long spf_backoff_long_delay (struct spf_backoff *backoff);
+  long spf_backoff_holddown (struct spf_backoff *backoff);
+  long spf_backoff_timetolearn (struct spf_backoff *backoff);
 
 #ifdef __cplusplus
 }

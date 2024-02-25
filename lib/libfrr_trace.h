@@ -5,7 +5,7 @@
  * Quentin Young
  */
 
-#if !defined(_LIBFRR_TRACE_H_) || defined(TRACEPOINT_HEADER_MULTI_READ)
+#if ! defined(_LIBFRR_TRACE_H_) || defined(TRACEPOINT_HEADER_MULTI_READ)
 #define _LIBFRR_TRACE_H_
 
 #include "trace.h"

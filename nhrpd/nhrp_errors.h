@@ -10,10 +10,11 @@
 
 #include "lib/ferr.h"
 
-enum nhrp_log_refs {
-	EC_NHRP_SWAN = NHRP_FERR_START,
+enum nhrp_log_refs
+{
+  EC_NHRP_SWAN = NHRP_FERR_START,
 };
 
-extern void nhrp_error_init(void);
+extern void nhrp_error_init (void);
 
 #endif

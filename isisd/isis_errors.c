@@ -42,7 +42,8 @@ static struct log_ref ferr_isis_err[] = {
 };
 /* clang-format on */
 
-void isis_error_init(void)
+void
+isis_error_init (void)
 {
-	log_ref_add(ferr_isis_err);
+  log_ref_add (ferr_isis_err);
 }

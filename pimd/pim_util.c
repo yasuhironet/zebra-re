@@ -34,26 +34,31 @@
   --------- ---------
   0x4  0x0  0x0  0x0
 */
-uint8_t igmp_msg_encode16to8(uint16_t value)
+uint8_t
+igmp_msg_encode16to8 (uint16_t value)
 {
-	uint8_t code;
+  uint8_t code;
 
-	if (value < 128) {
-		code = value;
-	} else {
-		uint16_t mask = 0x4000;
-		uint8_t exp;
-		uint16_t mant;
-		for (exp = 7; exp > 0; --exp) {
-			if (mask & value)
-				break;
-			mask >>= 1;
-		}
-		mant = 0x000F & (value >> (exp + 3));
-		code = ((uint8_t)1 << 7) | ((uint8_t)exp << 4) | (uint8_t)mant;
-	}
+  if (value < 128)
+    {
+      code = value;
+    }
+  else
+    {
+      uint16_t mask = 0x4000;
+      uint8_t exp;
+      uint16_t mant;
+      for (exp = 7; exp > 0; --exp)
+        {
+          if (mask & value)
+            break;
+          mask >>= 1;
+        }
+      mant = 0x000F & (value >> (exp + 3));
+      code = ((uint8_t) 1 << 7) | ((uint8_t) exp << 4) | (uint8_t) mant;
+    }
 
-	return code;
+  return code;
 }
 
 /*
@@ -67,103 +72,114 @@ uint8_t igmp_msg_encode16to8(uint16_t value)
   |1| exp | mant  |
   +-+-+-+-+-+-+-+-+
 */
-uint16_t igmp_msg_decode8to16(uint8_t code)
+uint16_t
+igmp_msg_decode8to16 (uint8_t code)
 {
-	uint16_t value;
+  uint16_t value;
 
-	if (code < 128) {
-		value = code;
-	} else {
-		uint16_t mant = (code & 0x0F);
-		uint8_t exp = (code & 0x70) >> 4;
-		value = (mant | 0x10) << (exp + 3);
-	}
+  if (code < 128)
+    {
+      value = code;
+    }
+  else
+    {
+      uint16_t mant = (code & 0x0F);
+      uint8_t exp = (code & 0x70) >> 4;
+      value = (mant | 0x10) << (exp + 3);
+    }
 
-	return value;
+  return value;
 }
 
-void pim_pkt_dump(const char *label, const uint8_t *buf, int size)
+void
+pim_pkt_dump (const char *label, const uint8_t *buf, int size)
 {
-	zlog_debug("%s: pkt dump size=%d", label, size);
-	zlog_hexdump(buf, size);
+  zlog_debug ("%s: pkt dump size=%d", label, size);
+  zlog_hexdump (buf, size);
 }
 
-int pim_is_group_224_0_0_0_24(struct in_addr group_addr)
+int
+pim_is_group_224_0_0_0_24 (struct in_addr group_addr)
 {
-	static int first = 1;
-	static struct prefix group_224;
-	struct prefix group;
+  static int first = 1;
+  static struct prefix group_224;
+  struct prefix group;
 
-	if (first) {
-		if (!str2prefix("224.0.0.0/24", &group_224))
-			return 0;
-		first = 0;
-	}
+  if (first)
+    {
+      if (! str2prefix ("224.0.0.0/24", &group_224))
+        return 0;
+      first = 0;
+    }
 
-	group.family = AF_INET;
-	group.u.prefix4 = group_addr;
-	group.prefixlen = IPV4_MAX_BITLEN;
+  group.family = AF_INET;
+  group.u.prefix4 = group_addr;
+  group.prefixlen = IPV4_MAX_BITLEN;
 
-	return prefix_match(&group_224, &group);
+  return prefix_match (&group_224, &group);
 }
 
-int pim_is_group_224_4(struct in_addr group_addr)
+int
+pim_is_group_224_4 (struct in_addr group_addr)
 {
-	static int first = 1;
-	static struct prefix group_all;
-	struct prefix group;
+  static int first = 1;
+  static struct prefix group_all;
+  struct prefix group;
 
-	if (first) {
-		if (!str2prefix("224.0.0.0/4", &group_all))
-			return 0;
-		first = 0;
-	}
+  if (first)
+    {
+      if (! str2prefix ("224.0.0.0/4", &group_all))
+        return 0;
+      first = 0;
+    }
 
-	group.family = AF_INET;
-	group.u.prefix4 = group_addr;
-	group.prefixlen = IPV4_MAX_BITLEN;
+  group.family = AF_INET;
+  group.u.prefix4 = group_addr;
+  group.prefixlen = IPV4_MAX_BITLEN;
 
-	return prefix_match(&group_all, &group);
+  return prefix_match (&group_all, &group);
 }
 
-bool pim_is_group_filtered(struct pim_interface *pim_ifp, pim_addr *grp)
+bool
+pim_is_group_filtered (struct pim_interface *pim_ifp, pim_addr *grp)
 {
-	struct prefix grp_pfx;
-	struct prefix_list *pl;
+  struct prefix grp_pfx;
+  struct prefix_list *pl;
 
-	if (!pim_ifp->boundary_oil_plist)
-		return false;
+  if (! pim_ifp->boundary_oil_plist)
+    return false;
 
-	pim_addr_to_prefix(&grp_pfx, *grp);
+  pim_addr_to_prefix (&grp_pfx, *grp);
 
-	pl = prefix_list_lookup(PIM_AFI, pim_ifp->boundary_oil_plist);
-	return pl ? prefix_list_apply_ext(pl, NULL, &grp_pfx, true) ==
-			       PREFIX_DENY
-		  : false;
+  pl = prefix_list_lookup (PIM_AFI, pim_ifp->boundary_oil_plist);
+  return pl ? prefix_list_apply_ext (pl, NULL, &grp_pfx, true) == PREFIX_DENY
+            : false;
 }
 
 
 /* This function returns all multicast group */
-int pim_get_all_mcast_group(struct prefix *prefix)
+int
+pim_get_all_mcast_group (struct prefix *prefix)
 {
 #if PIM_IPV == 4
-	if (!str2prefix("224.0.0.0/4", prefix))
-		return 0;
+  if (! str2prefix ("224.0.0.0/4", prefix))
+    return 0;
 #else
-	if (!str2prefix("FF00::0/8", prefix))
-		return 0;
+  if (! str2prefix ("FF00::0/8", prefix))
+    return 0;
 #endif
-	return 1;
+  return 1;
 }
 
-bool pim_addr_is_multicast(pim_addr addr)
+bool
+pim_addr_is_multicast (pim_addr addr)
 {
 #if PIM_IPV == 4
-	if (IN_MULTICAST(ntohl(addr.s_addr)))
-		return true;
+  if (IN_MULTICAST (ntohl (addr.s_addr)))
+    return true;
 #else
-	if (IN6_IS_ADDR_MULTICAST(&addr))
-		return true;
+  if (IN6_IS_ADDR_MULTICAST (&addr))
+    return true;
 #endif
-	return false;
+  return false;
 }

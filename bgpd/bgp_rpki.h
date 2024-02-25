@@ -8,11 +8,12 @@
 #ifndef __BGP_RPKI_H__
 #define __BGP_RPKI_H__
 
-enum rpki_states {
-	RPKI_NOT_BEING_USED,
-	RPKI_VALID,
-	RPKI_NOTFOUND,
-	RPKI_INVALID
+enum rpki_states
+{
+  RPKI_NOT_BEING_USED,
+  RPKI_VALID,
+  RPKI_NOTFOUND,
+  RPKI_INVALID
 };
 
 #endif

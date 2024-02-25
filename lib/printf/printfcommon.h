@@ -45,20 +45,21 @@
  */
 
 
-static CHAR	*__ujtoa(uintmax_t, CHAR *, int, int, const char *);
-static CHAR	*__ultoa(u_long, CHAR *, int, int, const char *);
+static CHAR *__ujtoa (uintmax_t, CHAR *, int, int, const char *);
+static CHAR *__ultoa (u_long, CHAR *, int, int, const char *);
 
 #define NIOV 8
-struct io_state {
-	struct fbuf *cb;
-	size_t avail;
+struct io_state
+{
+  struct fbuf *cb;
+  size_t avail;
 };
 
 static inline void
-io_init(struct io_state *iop, struct fbuf *cb)
+io_init (struct io_state *iop, struct fbuf *cb)
 {
-	iop->cb = cb;
-	iop->avail = cb ? cb->len - (cb->pos - cb->buf) : 0;
+  iop->cb = cb;
+  iop->avail = cb ? cb->len - (cb->pos - cb->buf) : 0;
 }
 
 /*
@@ -66,19 +67,19 @@ io_init(struct io_state *iop, struct fbuf *cb)
  * remain valid until io_flush() is called.
  */
 static inline int
-io_print(struct io_state *iop, const CHAR * __restrict ptr, size_t len)
+io_print (struct io_state *iop, const CHAR *__restrict ptr, size_t len)
 {
-	size_t copylen = len;
+  size_t copylen = len;
 
-	if (!iop->cb)
-		return 0;
-	if (iop->avail < copylen)
-		copylen = iop->avail;
+  if (! iop->cb)
+    return 0;
+  if (iop->avail < copylen)
+    copylen = iop->avail;
 
-	memcpy(iop->cb->pos, ptr, copylen);
-	iop->avail -= copylen;
-	iop->cb->pos += copylen;
-	return 0;
+  memcpy (iop->cb->pos, ptr, copylen);
+  iop->avail -= copylen;
+  iop->cb->pos += copylen;
+  return 0;
 }
 
 /*
@@ -86,28 +87,29 @@ io_print(struct io_state *iop, const CHAR * __restrict ptr, size_t len)
  * fields occur frequently, increase PADSIZE and make the initialisers
  * below longer.
  */
-#define	PADSIZE	16		/* pad chunk size */
-static const CHAR blanks[PADSIZE] =
-{' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '};
-static const CHAR zeroes[PADSIZE] =
-{'0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'};
+#define PADSIZE 16 /* pad chunk size */
+static const CHAR blanks[PADSIZE] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+                                      ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
+static const CHAR zeroes[PADSIZE] = { '0', '0', '0', '0', '0', '0', '0', '0',
+                                      '0', '0', '0', '0', '0', '0', '0', '0' };
 
 /*
  * Pad with blanks or zeroes. 'with' should point to either the blanks array
  * or the zeroes array.
  */
 static inline int
-io_pad(struct io_state *iop, int howmany, const CHAR * __restrict with)
+io_pad (struct io_state *iop, int howmany, const CHAR *__restrict with)
 {
-	int n;
+  int n;
 
-	while (howmany > 0) {
-		n = (howmany >= PADSIZE) ? PADSIZE : howmany;
-		if (io_print(iop, with, n))
-			return (-1);
-		howmany -= n;
-	}
-	return (0);
+  while (howmany > 0)
+    {
+      n = (howmany >= PADSIZE) ? PADSIZE : howmany;
+      if (io_print (iop, with, n))
+        return (-1);
+      howmany -= n;
+    }
+  return (0);
 }
 
 /*
@@ -115,21 +117,24 @@ io_pad(struct io_state *iop, int howmany, const CHAR * __restrict with)
  * or padding with 'with' as necessary.
  */
 static inline int
-io_printandpad(struct io_state *iop, const CHAR *p, const CHAR *ep,
-	       int len, const CHAR * __restrict with)
+io_printandpad (struct io_state *iop, const CHAR *p, const CHAR *ep, int len,
+                const CHAR *__restrict with)
 {
-	int p_len;
+  int p_len;
 
-	p_len = ep - p;
-	if (p_len > len)
-		p_len = len;
-	if (p_len > 0) {
-		if (io_print(iop, p, p_len))
-			return (-1);
-	} else {
-		p_len = 0;
-	}
-	return (io_pad(iop, len - p_len, with));
+  p_len = ep - p;
+  if (p_len > len)
+    p_len = len;
+  if (p_len > 0)
+    {
+      if (io_print (iop, p, p_len))
+        return (-1);
+    }
+  else
+    {
+      p_len = 0;
+    }
+  return (io_pad (iop, len - p_len, with));
 }
 
 /*
@@ -139,106 +144,126 @@ io_printandpad(struct io_state *iop, const CHAR *p, const CHAR *ep,
  * use the given digits.
  */
 static CHAR *
-__ultoa(u_long val, CHAR *endp, int base, int octzero, const char *xdigs)
+__ultoa (u_long val, CHAR *endp, int base, int octzero, const char *xdigs)
 {
-	CHAR *cp = endp;
-	long sval;
+  CHAR *cp = endp;
+  long sval;
 
-	/*
-	 * Handle the three cases separately, in the hope of getting
-	 * better/faster code.
-	 */
-	switch (base) {
-	case 10:
-		if (val < 10) {	/* many numbers are 1 digit */
-			*--cp = to_char(val);
-			return (cp);
-		}
-		/*
-		 * On many machines, unsigned arithmetic is harder than
-		 * signed arithmetic, so we do at most one unsigned mod and
-		 * divide; this is sufficient to reduce the range of
-		 * the incoming value to where signed arithmetic works.
-		 */
-		if (val > LONG_MAX) {
-			*--cp = to_char(val % 10);
-			sval = val / 10;
-		} else
-			sval = val;
-		do {
-			*--cp = to_char(sval % 10);
-			sval /= 10;
-		} while (sval != 0);
-		break;
+  /*
+   * Handle the three cases separately, in the hope of getting
+   * better/faster code.
+   */
+  switch (base)
+    {
+    case 10:
+      if (val < 10)
+        { /* many numbers are 1 digit */
+          *--cp = to_char (val);
+          return (cp);
+        }
+      /*
+       * On many machines, unsigned arithmetic is harder than
+       * signed arithmetic, so we do at most one unsigned mod and
+       * divide; this is sufficient to reduce the range of
+       * the incoming value to where signed arithmetic works.
+       */
+      if (val > LONG_MAX)
+        {
+          *--cp = to_char (val % 10);
+          sval = val / 10;
+        }
+      else
+        sval = val;
+      do
+        {
+          *--cp = to_char (sval % 10);
+          sval /= 10;
+        }
+      while (sval != 0);
+      break;
 
-	case 8:
-		do {
-			*--cp = to_char(val & 7);
-			val >>= 3;
-		} while (val);
-		if (octzero && *cp != '0')
-			*--cp = '0';
-		break;
+    case 8:
+      do
+        {
+          *--cp = to_char (val & 7);
+          val >>= 3;
+        }
+      while (val);
+      if (octzero && *cp != '0')
+        *--cp = '0';
+      break;
 
-	case 16:
-		do {
-			*--cp = xdigs[val & 15];
-			val >>= 4;
-		} while (val);
-		break;
+    case 16:
+      do
+        {
+          *--cp = xdigs[val & 15];
+          val >>= 4;
+        }
+      while (val);
+      break;
 
-	default:			/* oops */
-		abort();
-	}
-	return (cp);
+    default: /* oops */
+      abort ();
+    }
+  return (cp);
 }
 
 /* Identical to __ultoa, but for intmax_t. */
 static CHAR *
-__ujtoa(uintmax_t val, CHAR *endp, int base, int octzero, const char *xdigs)
+__ujtoa (uintmax_t val, CHAR *endp, int base, int octzero, const char *xdigs)
 {
-	CHAR *cp = endp;
-	intmax_t sval;
+  CHAR *cp = endp;
+  intmax_t sval;
 
-	/* quick test for small values; __ultoa is typically much faster */
-	/* (perhaps instead we should run until small, then call __ultoa?) */
-	if (val <= ULONG_MAX)
-		return (__ultoa((u_long)val, endp, base, octzero, xdigs));
-	switch (base) {
-	case 10:
-		if (val < 10) {
-			*--cp = to_char(val % 10);
-			return (cp);
-		}
-		if (val > INTMAX_MAX) {
-			*--cp = to_char(val % 10);
-			sval = val / 10;
-		} else
-			sval = val;
-		do {
-			*--cp = to_char(sval % 10);
-			sval /= 10;
-		} while (sval != 0);
-		break;
+  /* quick test for small values; __ultoa is typically much faster */
+  /* (perhaps instead we should run until small, then call __ultoa?) */
+  if (val <= ULONG_MAX)
+    return (__ultoa ((u_long) val, endp, base, octzero, xdigs));
+  switch (base)
+    {
+    case 10:
+      if (val < 10)
+        {
+          *--cp = to_char (val % 10);
+          return (cp);
+        }
+      if (val > INTMAX_MAX)
+        {
+          *--cp = to_char (val % 10);
+          sval = val / 10;
+        }
+      else
+        sval = val;
+      do
+        {
+          *--cp = to_char (sval % 10);
+          sval /= 10;
+        }
+      while (sval != 0);
+      break;
 
-	case 8:
-		do {
-			*--cp = to_char(val & 7);
-			val >>= 3;
-		} while (val);
-		if (octzero && *cp != '0')
-			*--cp = '0';
-		break;
+    case 8:
+      do
+        {
+          *--cp = to_char (val & 7);
+          val >>= 3;
+        }
+      while (val);
+      if (octzero && *cp != '0')
+        *--cp = '0';
+      break;
 
-	case 16:
-		do {
-			*--cp = xdigs[val & 15];
-			val >>= 4;
-		} while (val);
-		break;
+    case 16:
+      do
+        {
+          *--cp = xdigs[val & 15];
+          val >>= 4;
+        }
+      while (val);
+      break;
 
-	default:
-		abort();
-	}
-	return (cp);
+    default:
+      abort ();
+    }
+  return (cp);
 }

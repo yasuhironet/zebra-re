@@ -80,73 +80,83 @@ union pimprefixconstptr {
 
 /* clang-format on */
 
-static inline bool pim_addr_is_any(pim_addr addr)
+static inline bool
+pim_addr_is_any (pim_addr addr)
 {
-	pim_addr zero = {};
+  pim_addr zero = {};
 
-	return memcmp(&addr, &zero, sizeof(zero)) == 0;
+  return memcmp (&addr, &zero, sizeof (zero)) == 0;
 }
 
-static inline int pim_addr_cmp(pim_addr a, pim_addr b)
+static inline int
+pim_addr_cmp (pim_addr a, pim_addr b)
 {
-	return memcmp(&a, &b, sizeof(a));
+  return memcmp (&a, &b, sizeof (a));
 }
 
-static inline void pim_addr_to_prefix(union pimprefixptr out, pim_addr in)
+static inline void
+pim_addr_to_prefix (union pimprefixptr out, pim_addr in)
 {
-	out.p->family = PIM_AF;
-	out.p->prefixlen = PIM_MAX_BITLEN;
-	memcpy(out.p->u.val, &in, sizeof(in));
+  out.p->family = PIM_AF;
+  out.p->prefixlen = PIM_MAX_BITLEN;
+  memcpy (out.p->u.val, &in, sizeof (in));
 }
 
-static inline pim_addr pim_addr_from_prefix(union pimprefixconstptr in)
+static inline pim_addr
+pim_addr_from_prefix (union pimprefixconstptr in)
 {
-	pim_addr ret;
+  pim_addr ret;
 
-	if (in.p->family != PIM_AF)
-		return PIMADDR_ANY;
+  if (in.p->family != PIM_AF)
+    return PIMADDR_ANY;
 
-	memcpy(&ret, in.p->u.val, sizeof(ret));
-	return ret;
+  memcpy (&ret, in.p->u.val, sizeof (ret));
+  return ret;
 }
 
-static inline uint8_t pim_addr_scope(const pim_addr addr)
+static inline uint8_t
+pim_addr_scope (const pim_addr addr)
 {
-	return PIM_ADDR_FUNCNAME(mcast_scope)(&addr);
+  return PIM_ADDR_FUNCNAME (mcast_scope) (&addr);
 }
 
-static inline bool pim_addr_nofwd(const pim_addr addr)
+static inline bool
+pim_addr_nofwd (const pim_addr addr)
 {
-	return PIM_ADDR_FUNCNAME(mcast_nofwd)(&addr);
+  return PIM_ADDR_FUNCNAME (mcast_nofwd) (&addr);
 }
 
-static inline bool pim_addr_ssm(const pim_addr addr)
+static inline bool
+pim_addr_ssm (const pim_addr addr)
 {
-	return PIM_ADDR_FUNCNAME(mcast_ssm)(&addr);
+  return PIM_ADDR_FUNCNAME (mcast_ssm) (&addr);
 }
 
 /* don't use this struct directly, use the pim_sgaddr typedef */
-struct _pim_sgaddr {
-	pim_addr grp;
-	pim_addr src;
+struct _pim_sgaddr
+{
+  pim_addr grp;
+  pim_addr src;
 };
 
 typedef struct _pim_sgaddr pim_sgaddr;
 
-static inline int pim_sgaddr_cmp(const pim_sgaddr a, const pim_sgaddr b)
+static inline int
+pim_sgaddr_cmp (const pim_sgaddr a, const pim_sgaddr b)
 {
-	/* memcmp over the entire struct = memcmp(grp) + memcmp(src) */
-	return memcmp(&a, &b, sizeof(a));
+  /* memcmp over the entire struct = memcmp(grp) + memcmp(src) */
+  return memcmp (&a, &b, sizeof (a));
 }
 
-static inline uint32_t pim_sgaddr_hash(const pim_sgaddr a, uint32_t initval)
+static inline uint32_t
+pim_sgaddr_hash (const pim_sgaddr a, uint32_t initval)
 {
-	return jhash2((uint32_t *)&a, sizeof(a) / sizeof(uint32_t), initval);
+  return jhash2 ((uint32_t *) &a, sizeof (a) / sizeof (uint32_t), initval);
 }
 
 #ifdef _FRR_ATTRIBUTE_PRINTFRR
-#pragma FRR printfrr_ext "%pPA" (pim_addr *)
-#pragma FRR printfrr_ext "%pSG" (pim_sgaddr *)
+#pragma FRR printfrr_ext "%pPA"(pim_addr *)
+#pragma FRR printfrr_ext "%pSG"(pim_sgaddr *)
 #endif
 
 /*

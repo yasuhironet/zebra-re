@@ -15,13 +15,14 @@
 
 #include "frrlua.h"
 
-void zebra_script_init(void);
+void zebra_script_init (void);
 
-void zebra_script_destroy(void);
+void zebra_script_destroy (void);
 
-void lua_pushnh_grp(lua_State *L, const struct nh_grp *nh_grp);
+void lua_pushnh_grp (lua_State *L, const struct nh_grp *nh_grp);
 
-void lua_pushzebra_dplane_ctx(lua_State *L, const struct zebra_dplane_ctx *ctx);
+void lua_pushzebra_dplane_ctx (lua_State *L,
+                               const struct zebra_dplane_ctx *ctx);
 
 #endif /* HAVE_SCRIPTING */
 

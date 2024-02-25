@@ -30,7 +30,8 @@ static struct log_ref ferr_pim_err[] = {
 };
 /* clang-format on */
 
-void pim_error_init(void)
+void
+pim_error_init (void)
 {
-	log_ref_add(ferr_pim_err);
+  log_ref_add (ferr_pim_err);
 }

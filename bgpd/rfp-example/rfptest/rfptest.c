@@ -13,8 +13,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "rfptest.h"
-int main(void)
+int
+main (void)
 {
-	printf("Your test code goes here.\n");
-	exit(1);
+  printf ("Your test code goes here.\n");
+  exit (1);
 }

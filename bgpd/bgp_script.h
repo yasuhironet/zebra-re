@@ -16,15 +16,15 @@
 /*
  * Initialize scripting stuff.
  */
-void bgp_script_init(void);
+void bgp_script_init (void);
 
-void lua_pushpeer(lua_State *L, const struct peer *peer);
+void lua_pushpeer (lua_State *L, const struct peer *peer);
 
-void lua_pushattr(lua_State *L, const struct attr *attr);
+void lua_pushattr (lua_State *L, const struct attr *attr);
 
-void lua_decode_attr(lua_State *L, int idx, struct attr *attr);
+void lua_decode_attr (lua_State *L, int idx, struct attr *attr);
 
-void *lua_toattr(lua_State *L, int idx);
+void *lua_toattr (lua_State *L, int idx);
 
 #endif /* HAVE_SCRIPTING */
 

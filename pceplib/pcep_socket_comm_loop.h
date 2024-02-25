@@ -15,6 +15,6 @@
 #ifndef PCEPSOCKETCOMMLOOP_H_
 #define PCEPSOCKETCOMMLOOP_H_
 
-void handle_reads(pcep_socket_comm_handle *socket_comm_handle);
+void handle_reads (pcep_socket_comm_handle *socket_comm_handle);
 
 #endif /* PCEPTIMERINTERNALS_H_ */

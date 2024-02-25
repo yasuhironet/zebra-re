@@ -24,69 +24,79 @@
 /*
  * XPath: /frr-ripd:clear-rip-route
  */
-static void clear_rip_route(struct rip *rip)
+static void
+clear_rip_route (struct rip *rip)
 {
-	struct route_node *rp;
+  struct route_node *rp;
 
-	if (IS_RIP_DEBUG_EVENT)
-		zlog_debug("Clearing all RIP routes (VRF %s)", rip->vrf_name);
+  if (IS_RIP_DEBUG_EVENT)
+    zlog_debug ("Clearing all RIP routes (VRF %s)", rip->vrf_name);
 
-	/* Clear received RIP routes */
-	for (rp = route_top(rip->table); rp; rp = route_next(rp)) {
-		struct list *list;
-		struct listnode *listnode;
-		struct rip_info *rinfo;
+  /* Clear received RIP routes */
+  for (rp = route_top (rip->table); rp; rp = route_next (rp))
+    {
+      struct list *list;
+      struct listnode *listnode;
+      struct rip_info *rinfo;
 
-		list = rp->info;
-		if (!list)
-			continue;
+      list = rp->info;
+      if (! list)
+        continue;
 
-		for (ALL_LIST_ELEMENTS_RO(list, listnode, rinfo)) {
-			if (!rip_route_rte(rinfo))
-				continue;
+      for (ALL_LIST_ELEMENTS_RO (list, listnode, rinfo))
+        {
+          if (! rip_route_rte (rinfo))
+            continue;
 
-			if (CHECK_FLAG(rinfo->flags, RIP_RTF_FIB))
-				rip_zebra_ipv4_delete(rip, rp);
-			break;
-		}
+          if (CHECK_FLAG (rinfo->flags, RIP_RTF_FIB))
+            rip_zebra_ipv4_delete (rip, rp);
+          break;
+        }
 
-		if (rinfo) {
-			EVENT_OFF(rinfo->t_timeout);
-			EVENT_OFF(rinfo->t_garbage_collect);
-			listnode_delete(list, rinfo);
-			rip_info_free(rinfo);
-		}
+      if (rinfo)
+        {
+          EVENT_OFF (rinfo->t_timeout);
+          EVENT_OFF (rinfo->t_garbage_collect);
+          listnode_delete (list, rinfo);
+          rip_info_free (rinfo);
+        }
 
-		if (list_isempty(list)) {
-			list_delete(&list);
-			rp->info = NULL;
-			route_unlock_node(rp);
-		}
-	}
+      if (list_isempty (list))
+        {
+          list_delete (&list);
+          rp->info = NULL;
+          route_unlock_node (rp);
+        }
+    }
 }
 
-int clear_rip_route_rpc(struct nb_cb_rpc_args *args)
+int
+clear_rip_route_rpc (struct nb_cb_rpc_args *args)
 {
-	struct rip *rip;
-	struct yang_data *yang_vrf;
+  struct rip *rip;
+  struct yang_data *yang_vrf;
 
-	yang_vrf = yang_data_list_find(args->input, "%s/%s", args->xpath,
-				       "input/vrf");
-	if (yang_vrf) {
-		rip = rip_lookup_by_vrf_name(yang_vrf->value);
-		if (rip)
-			clear_rip_route(rip);
-	} else {
-		struct vrf *vrf;
+  yang_vrf =
+      yang_data_list_find (args->input, "%s/%s", args->xpath, "input/vrf");
+  if (yang_vrf)
+    {
+      rip = rip_lookup_by_vrf_name (yang_vrf->value);
+      if (rip)
+        clear_rip_route (rip);
+    }
+  else
+    {
+      struct vrf *vrf;
 
-		RB_FOREACH (vrf, vrf_name_head, &vrfs_by_name) {
-			rip = vrf->info;
-			if (!rip)
-				continue;
+      RB_FOREACH (vrf, vrf_name_head, &vrfs_by_name)
+        {
+          rip = vrf->info;
+          if (! rip)
+            continue;
 
-			clear_rip_route(rip);
-		}
-	}
+          clear_rip_route (rip);
+        }
+    }
 
-	return NB_OK;
+  return NB_OK;
 }

@@ -5,7 +5,7 @@
  * Quentin Young
  */
 
-#if !defined(_BGP_TRACE_H) || defined(TRACEPOINT_HEADER_MULTI_READ)
+#if ! defined(_BGP_TRACE_H) || defined(TRACEPOINT_HEADER_MULTI_READ)
 #define _BGP_TRACE_H
 
 #include "lib/trace.h"

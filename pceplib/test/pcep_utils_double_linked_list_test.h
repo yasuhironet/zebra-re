@@ -15,12 +15,12 @@
 #ifndef PCEP_UTILS_DOUBLE_LINKED_LIST_TEST_H_
 #define PCEP_UTILS_DOUBLE_LINKED_LIST_TEST_H_
 
-void test_empty_dl_list(void);
-void test_null_dl_list_handle(void);
-void test_dll_prepend_data(void);
-void test_dll_append_data(void);
-void test_dll_delete_first_node(void);
-void test_dll_delete_last_node(void);
-void test_dll_delete_node(void);
+void test_empty_dl_list (void);
+void test_null_dl_list_handle (void);
+void test_dll_prepend_data (void);
+void test_dll_append_data (void);
+void test_dll_delete_first_node (void);
+void test_dll_delete_last_node (void);
+void test_dll_delete_node (void);
 
 #endif /* PCEPTIMERINTERNALS_H_ */

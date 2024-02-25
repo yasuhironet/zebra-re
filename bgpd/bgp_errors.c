@@ -491,8 +491,9 @@ static struct log_ref ferr_bgp_err[] = {
 };
 /* clang-format on */
 
-void bgp_error_init(void)
+void
+bgp_error_init (void)
 {
-	log_ref_add(ferr_bgp_err);
-	log_ref_add(ferr_bgp_warn);
+  log_ref_add (ferr_bgp_err);
+  log_ref_add (ferr_bgp_warn);
 }

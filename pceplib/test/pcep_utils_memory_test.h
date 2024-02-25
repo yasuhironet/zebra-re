@@ -15,7 +15,7 @@
 #ifndef PCEP_MEMORY_TEST_H_
 #define PCEP_MEMORY_TEST_H_
 
-void test_memory_internal_impl(void);
-void test_memory_external_impl(void);
+void test_memory_internal_impl (void);
+void test_memory_external_impl (void);
 
 #endif /* PCEPTIMERINTERNALS_H_ */
