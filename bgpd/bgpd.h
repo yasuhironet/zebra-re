@@ -132,7 +132,7 @@ struct bgp_master
   /* timer to dampen route map changes */
   struct event *t_rmap_update;      /* Handle route map updates */
   uint32_t rmap_update_timer;       /* Route map update timer */
-#define RMAP_DEFAULT_UPDATE_TIMER 5 /* disabled by default */
+#define RMAP_DEFAULT_UPDATE_TIMER 0 /* disabled by default */
 
   /* Id space for automatic RD derivation for an EVI/VRF */
   bitfield_t rd_idspace;
