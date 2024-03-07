@@ -7955,10 +7955,10 @@ DEFUN (no_neighbor_advertise_interval,
 /* Time to wait before processing route-map updates */
 DEFUN (bgp_set_route_map_delay_timer,
        bgp_set_route_map_delay_timer_cmd,
-       "bgp route-map delay-timer (0-600)",
+       "bgp route-map auto-refresh-delay-timer (0-600)",
        SET_STR
-       "BGP route-map delay timer\n"
-       "Time in secs to wait before processing route-map changes\n"
+       "BGP route-map\n"
+       "Time in secs for route-map auto-refresh\n"
        "0 disables the timer, no route updates happen when route-maps change\n")
 {
   int idx_number = 3;
@@ -7990,11 +7990,11 @@ DEFUN (bgp_set_route_map_delay_timer,
 
 DEFUN (no_bgp_set_route_map_delay_timer,
        no_bgp_set_route_map_delay_timer_cmd,
-       "no bgp route-map delay-timer [(0-600)]",
+       "no bgp route-map auto-refresh-delay-timer [(0-600)]",
        NO_STR
        BGP_STR
-       "Default BGP route-map delay timer\n"
-       "Reset to default time to wait for processing route-map changes\n"
+       "Default BGP route-map\n"
+       "Reset to default time for route-map auto-refresh\n"
        "0 disables the timer, no route updates happen when route-maps change\n")
 {
 

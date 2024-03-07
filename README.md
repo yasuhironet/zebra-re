@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://github.com/yasuhironet/zebra/blob/main/zebralogo.jpeg" alt="Icon" width="20%"/>
+<img src="https://github.com/yasuhironet/zebra-re/blob/main/zebralogo.jpeg" alt="Icon" width="20%"/>
 </p>
 
 Zebra
